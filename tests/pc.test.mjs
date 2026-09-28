@@ -398,10 +398,9 @@ test('DPMI 0100h: first fit with MCBs, failure returns CF, AX=8, BX=largest', ()
   assert.ok(p.ax >= 0x6680 && b.ax < 0x1000);
   const big = int86(0x31, { ax: 0x100, bx: 0xffff });
   assert.equal(big.cflag, 1); assert.equal(big.ax, 8); assert.ok(big.bx > 0 && big.bx < 0xffff);
-  assert.equal(int86(0x31, { ax: 0x600, bx: 0, cx: 0, si: 0, di: 0x1000 }).cflag, 0);
 });
 
-test('DPMI selectors: PMODE/W GDT, 0000h top-down (TI=0, RPL=0), 0002h bottom-up and reused, 0101h frees', () => {
+test('DPMI selectors: PMODE/W GDT, 0000h top-down (TI=0, RPL=0), 0101h frees', () => {
   fresh();
   // at program entry PMODE/W/extender hold 0x850..0x870; the top free slot is 0x848
   const p = int86(0x31, { ax: 0x100, bx: 0x11f8 });
@@ -415,10 +414,6 @@ test('DPMI selectors: PMODE/W GDT, 0000h top-down (TI=0, RPL=0), 0002h bottom-up
   assert.deepEqual([p2.dx, b2.dx], [0x848, 0x838]);
   const g = int86(0x31, { ax: 6, bx: b2.dx });
   assert.equal(((g.cx << 16) | g.dx) >>> 0, b2.ax << 4);
-  // 0002h: from 0x70 upward, same segment -> same selector
-  assert.equal(int86(0x31, { ax: 2, bx: 0x700 }).ax, 0x70);
-  assert.equal(int86(0x31, { ax: 2, bx: 0x800 }).ax, 0x78);
-  assert.equal(int86(0x31, { ax: 2, bx: 0x700 }).ax, 0x70);
   // 0101h with a selector whose base is not a DOS block (DS, base 0): DOS error, descriptor kept
   const f = int86(0x31, { ax: 0x101, dx: pc.SEL_DATA });
   assert.equal(f.cflag, 1); assert.equal(f.ax, 9);

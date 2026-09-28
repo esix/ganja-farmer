@@ -11,21 +11,11 @@
 //   (_dos_getvect/_dos_setvect use the Phar Lap AX=2502h/2504h forms only when the extender byte 0x3113a
 //    is 2..8; Watcom cstart 0x23935 stores 1 (DOS/4G-compatible, INT 21h AX=FF00h at 0x238e4) or 0
 //    there, so the AH=35h/25h forms are the ones executed.)
-// INT 31h (DPMI 0.9) functions from the DiamondWare STK client stubs:
-//   0002h segment -> descriptor   0x1e88b (vector discovery 0x1e859)
-//   0006h get segment base        0x1e4d9 (0x1e49e), 0x1e539 (0x1e52c)
-//   0100h allocate DOS memory     0x1e4a7 (probe, BX=0x11F8), 0x1e4b7 (buffer)
-//   0101h free DOS memory         0x1e509, 0x1e518, 0x1e55f
-//   0200h get real-mode int vector 0x1e86e (BL = 0x60..0x66)
-//   0600h lock linear region      0x1e4df, 0x1e7da, 0x1e7fc
-//   0601h unlock linear region    0x1e53f, 0x1e82a, 0x1e84c
-// Every 0x1e49e call (STK init 0x1e8d1, and dws_DPlay 0x1eff8 for each digitized sound played) allocates
-// TWO selectors through 0100h — the 0x11F8-paragraph probe block (0x1e4a7) and the buffer (0x1e4b7) — and
-// frees the probe (0x1e509); the buffer's selector is what 0x1e705 records (0x1e72d: [0x30db5 + 4*i]).
-// With the top-down 0000h search below, the probe always takes the highest free slot and the buffer the
-// next one below it.
-// From the Watcom CRT, only the XI initializer 0x2de33 (_setmbcp(0), src/lib/crt_startup.js) comes
-// through here: 0x2ec2c 0100h BX=1, 0300h INT 21h AX=6501h, 0101h (0x2ec3f/0x2ed57/0x2ed82), and 0300h INT
+// INT 31h (DPMI 0.9): 0006h get segment base, 0100h/0101h allocate/free DOS memory, 0300h simulate a
+// real-mode interrupt. (Stage 1 also served the DiamondWare STK client stubs: 0002h, 0200h, 0600h/0601h
+// and many 0100h/0101h calls; that client is gone since stage 2, lib/stk_client.js.)
+// The only caller left is the Watcom CRT's XI initializer 0x2de33 (_setmbcp(0), src/lib/crt_startup.js):
+// 0x2ec2c 0100h BX=1, 0300h INT 21h AX=6501h, 0101h (0x2ec3f/0x2ed57/0x2ed82), and 0300h INT
 // 21h AX=6300h (0x2ebfb). The CRT's other INT 21h/INT 31h use (file I/O, malloc's DOS memory,
 // signal/Ctrl-Break hooks) is implemented by the CRT layer in JS and does not come through here.
 //
@@ -51,7 +41,7 @@ import { loadRegs, outRegs, lo16, set16 } from './regs.js';
 //   0001h: clears bit 10h of byte 6 (the descriptor's base etc. are kept)       v1.31 0x15a2
 //   0002h: compares dword [+2] (base 0..23 + access 92h) of the slots 8*FREESELECTORS = 70h .. gdtfree-8
 //          (used or not); a match returns that slot, otherwise the slot at gdtfree (fails if it is used)
-//          is set up and gdtfree += 8 — never freed                         v1.31 0x15c9..0x1618
+//          is set up and gdtfree += 8 — never freed (not called any more)   v1.31 0x15c9..0x1618
 //   0006h/0007h: get/set base; "int31testsel" fails (CF=1, registers unchanged) if BX > gdtlimit or
 //          the descriptor is not used; the index is BX & 0FFF8h            v1.31 0x1621, 0x1636, 0x1517
 //   000Ah: 0000h + copy of the source descriptor with access 92h            v1.31 ..0x16c7
@@ -134,23 +124,13 @@ export function selBase(sel) {
 export const rmLinear = (seg, off) => (((seg & 0xffff) << 4) + (off & 0xffff)) >>> 0;
 export const rmFarPtr = (farptr) => rmLinear(farptr >>> 16, farptr & 0xffff);
 
-// Real-mode IVT in memory (read by DPMI 0200h exactly like the real IVT at 0000:0000).
-export function setRmVectorWord(n, seg, off) {
-  const a = (n & 0xff) * 4;
-  u8[a] = off & 0xff; u8[a + 1] = (off >> 8) & 0xff;
-  u8[a + 2] = seg & 0xff; u8[a + 3] = (seg >> 8) & 0xff;
-}
-export function getRmVectorWord(n) {
-  const a = (n & 0xff) * 4;
-  return { off: u8[a] | (u8[a + 1] << 8), seg: u8[a + 2] | (u8[a + 3] << 8) };
-}
-
 // DOS memory arena (INT 21h AH=48h/49h semantics behind DPMI 0100h/0101h): first-fit over a chain of
 // paragraph blocks, each preceded by a 1-paragraph MCB, as DOS does (default strategy 0 = first fit).
 // UNCERTAIN: how much conventional memory was free under the original DOS + STKRUN + PMODE/W setup is
 // not knowable from the binary. The port's flat map reserves 0x10000..0x667CF for the unrelocated
 // program image/stack, so the arena is the two free areas around it: 0x00800..0x0FFFF and
-// 0x66800..0x9FFFF (the STK resident stub occupies 0x07000..0x0700F, see stk.js).
+// 0x66800..0x9FFFF. The paragraph at 0x07000 stays out of the arena, where the STK resident stub used to
+// sit (stage 1), so DOS blocks keep the addresses they had.
 const ARENAS = [[0x0080, 0x0700], [0x0701, 0x1000], [0x6680, 0xa000]]; // [firstSeg, endSeg)
 let blocks; // {mcb, paras, owner} sorted, covering each arena: owner 0 = free
 export function resetDosMemory() {
@@ -254,22 +234,6 @@ export function int31(regs) {
   const fail = () => { const f = loadRegs(regs); f.cflag = 1; return outRegs(f); };
   s.cflag = 0;
   switch (ax) {
-    case 0x0002: { // segment to descriptor: BX = real-mode segment -> AX = selector
-      const base = lo16(s.ebx) << 4;
-      let sel = 8 * FREESELECTORS;
-      for (; sel < gdtFree; sel += 8) {           // cmp dword [edi+eax+2], ecx (base + access 92h)
-        const d = gdt.get(sel);
-        if (d && d.base === base && d.access === 0x92) break;
-      }
-      if (sel >= gdtFree) {
-        const d = gdt.get(sel);
-        if (d && d.used) return fail();           // slot at gdtfree taken by 0000h
-        gdt.set(sel, { used: true, base, access: 0x92 });
-        gdtFree += 8;
-      }
-      s.eax = set16(s.eax, sel);
-      break;
-    }
     case 0x0006: { // get segment base: BX = selector -> CX:DX = linear base
       const d = testsel(s.ebx);
       if (!d) return fail();
@@ -299,16 +263,8 @@ export function int31(regs) {
       d.used = false;                                                 // 0001h
       break;
     }
-    case 0x0200: { // get real-mode interrupt vector: BL -> CX:DX
-      const v = getRmVectorWord(s.ebx & 0xff);
-      s.ecx = set16(s.ecx, v.seg); s.edx = set16(s.edx, v.off);
-      break;
-    }
     case 0x0300: // simulate real-mode interrupt: BL = INT, ES:EDI = real-mode call structure
       simulateRealModeInt(s.ebx & 0xff, selBase(s.es) + s.edi);
-      break;
-    case 0x0600: // lock linear region: no paging in the port, always succeeds
-    case 0x0601: // unlock linear region
       break;
     default:
       throw new Error('dpmi: INT 31h AX=0x' + ax.toString(16) + ' is not used by the program');
