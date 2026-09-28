@@ -1,0 +1,12 @@
+# Local reverse-engineering workspace (disassembly, Ghidra output, difftest harness, audits)
+re/
+# Extracted original archive (the game files used by the port are in assets/game)
+original/
+node_modules/
+out/
+tools/
+.playwright-mcp/
+__pycache__/
+*.pyc
+.DS_Store
+*.rar

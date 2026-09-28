@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ganja Farmer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  html, body { margin: 0; height: 100%; background: #000; }
+  body { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  #status { color: #aaa; font: 13px monospace; position: fixed; bottom: 4px; left: 8px; }
+  /* 4:3 box as large as fits. The canvas holds the frame enlarged by whole numbers (platform/display.js,
+     "sharp bilinear"); the browser's smooth filtering shrinks it into this box.
+     cursor: none: only the game's own arrow is shown (it is drawn 16 game pixels left of the INT 33h
+     position, 0x118b5 `sub 0x10`, so the host arrow would point elsewhere).
+     touch-action: none: touches are pointer events for the mouse, not page scrolling/zooming. */
+  canvas { width: min(100vw, calc(100vh * 4 / 3)); aspect-ratio: 4 / 3; cursor: none; touch-action: none; outline: none; }
+</style>
+</head>
+<body>
+<canvas id="screen" tabindex="0"></canvas>
+<div id="status">loading…</div>
+<script type="module" src="src/boot.js"></script>
+</body>
+</html>
