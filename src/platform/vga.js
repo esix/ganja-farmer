@@ -1,18 +1,17 @@
 // VGA registers and video BIOS used by GANJAFRM.EXE (re/HARDWARE.md §1). Scan-out is display.js.
 //
-// Ports (all through the CRT outp 0x23d99 / inp 0x23da3):
+// Ports (stage 1: through the CRT outp 0x23d99 / inp 0x23da3; stage 2: writeDac / readDac / inRetrace below):
 //   OUT 3C8h  DAC write index   Write_Color_Reg 0x20566
 //   OUT 3C9h  DAC data (r,g,b)  Write_Color_Reg 0x20577, 0x20589, 0x2059b
 //   OUT 3C7h  DAC read index    Read_Color_Reg 0x205cd
 //   IN  3C9h  DAC data (r,g,b)  Read_Color_Reg 0x205d7, 0x205e8, 0x205fa
 //   IN  3DAh  input status #1   Wait_For_Vertical_Retrace 0x21954, 0x21964 (tests bit 3), reached from
 //                               Screen_Transition 0x217e0/0x21853 (effects 3 and 4; the game only uses 0)
-// INT 10h: AH=00h set mode, from Set_Video_Mode 0x203c6 via int386 (0x203f6): AL=13h at 0x1aa2b, AL=03h
+// INT 10h: AH=00h set mode, from Set_Video_Mode 0x203c6 (stage 2: setMode directly): AL=13h at 0x1aa2b, AL=03h
 // at 0x1e02c.
 import { u8, VGA_BASE } from '../runtime/mem.js';
 import { dac } from './display.js';
 import { VGA_PALETTE_248, TEXT_PALETTE_64 } from './vga_palettes.js';
-import { loadRegs, outRegs } from './regs.js';
 
 // ---- DAC ----------------------------------------------------------------------------------------
 // One address register pair + a 3-step component counter, as the VGA DAC (IBM VGA / INMOS G171 and
@@ -115,14 +114,14 @@ function setMode(al) {
   videoMode = m;
 }
 
-export function int10(regs) {
-  const s = loadRegs(regs);
-  const ah = (s.eax >>> 8) & 0xff;
-  if (ah !== 0x00) throw new Error('vga: INT 10h AH=0x' + ah.toString(16) + ' is not used by the program');
-  setMode(s.eax & 0xff);
-  // Registers are returned unchanged. UNCERTAIN: some BIOSes return a value in AL; the program never
-  // reads the result (Set_Video_Mode discards int386's outregs, 0x203fb).
-  return outRegs(s);
-}
+// Set_Video_Mode (0x203c6) calls this directly since stage 2 (was INT 10h AH=00h through int386).
+export { setMode };
+
+// Direct entry points for the library (stage 2; they replace its IN/OUT through the CRT's inp/outp):
+//   Write_Color_Reg 0x20541: OUT 3C8h,i; OUT 3C9h r,g,b.  Read_Color_Reg 0x205a8: OUT 3C7h,i; IN 3C9h x3.
+//   Wait_For_Vertical_Retrace 0x21937: IN 3DAh bit 3.
+export function writeDac(i, r, g, b) { dacWrite(0x3c8, i); dacWrite(0x3c9, r); dacWrite(0x3c9, g); dacWrite(0x3c9, b); }
+export function readDac(i) { dacWrite(0x3c7, i); return [dacRead(), dacRead(), dacRead()]; }
+export const inRetrace = () => (status1() & 0x08) !== 0;
 
 export function reset() { writeIndex = 0; readIndex = 0; pel = 0; lastFrameSeen = -1; videoMode = 0x03; }

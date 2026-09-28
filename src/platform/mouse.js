@@ -1,14 +1,12 @@
 // INT 33h mouse driver (Microsoft Mouse driver interface), only the functions the program calls.
 //
-// All calls come from Squeeze_Mouse 0x230df through int386(0x33) (0x23d5d); inregs only AX is set:
+// All calls come from Squeeze_Mouse 0x230df (originally through int386(0x33), 0x23d5d; inregs only AX set):
 //   AX=0000h reset         0x2311c   from Squeeze_Mouse(0,..) at 0x11755, 0x1cd1d; stores BX -> *buttons
 //   AX=0002h hide cursor   0x2316d   from Squeeze_Mouse(2,..) at 0x11765, 0x1cd2d
 //   AX=0003h position/btn  0x2318f   from Squeeze_Mouse(3,..) at 0x10d8e, 0x118b0, 0x1d147:
 //                                    *x = CX (0x60b48), *y = DX (0x60b4c), *buttons = BX (0x60b50)
 // Squeeze_Mouse also has cases for AX=0001h, 000Bh and 001Ah, but no call site passes those commands,
-// so they are not emulated (a call throws).
-// PMODE/W passes INT 33h from protected mode to the real-mode driver with the general registers
-// (none of these functions takes a pointer, so no translation is involved).
+// so they are not implemented (Squeeze_Mouse throws).
 //
 // Semantics (MS Mouse driver interface; coordinate/granularity rules as in DOSBox src/ints/mouse.cpp):
 //   - Coordinates are "virtual screen" coordinates. In mode 13h the virtual screen is 640x200: x runs
@@ -28,7 +26,6 @@
 //   - Hide: decrements the show counter. The cursor is never shown by this program (fn 1 is never
 //     called), so no cursor is ever drawn into video memory.
 //   - Get position: BX = button state (bit 0 left, bit 1 right), CX = x, DX = y.
-import { loadRegs, outRegs, set16 } from './regs.js';
 import * as vga from './vga.js';
 
 let x = 0, y = 0;
@@ -49,43 +46,33 @@ function applyHost() {
   y = Math.min(maxY, Math.max(0, Math.floor(hostFy * (maxY + 1))));
 }
 
-export function int33(regs) {
-  const s = loadRegs(regs);
-  const ax = s.eax & 0xffff;
-  switch (ax) {
-    case 0x0000: {
-      // virtual screen for the current mode; the program resets only in mode 13h (after 0x1aa2b)
-      if (vga.videoMode === 0x13) { maxX = 639; maxY = 199; granX = 0xfffe; }
-      else throw new Error('mouse: reset in video mode 0x' + vga.videoMode.toString(16) + ' (not used by the program)');
-      // CuteMouse softreset_21 (ctmouse.asm lines 2443-2472): rangemax = 639/199, position = the middle
-      // (shr cx,1 / shr dx,1 -> 320,100), mickey counters and rounding errors cleared; later motion is
-      // added to that position.
-      x = (maxX + 1) >> 1; y = (maxY + 1) >> 1;
-      // Host sync after a reset (port decision, see "host input" below): the port maps the host pointer
-      // absolutely, so the host position (if the pointer has been seen) is NOT discarded here; the next
-      // fn 3 reports it again. With the host cursor hidden over the canvas (index.html) the game's arrow
-      // therefore stays where the player's pointer is, instead of showing the centre and then jumping to
-      // the pointer on the first motion. UNCERTAIN/deviation: on the original the first fn 3 after a
-      // reset returns (320,100) until the mouse moves, and motion is relative to it. If the host pointer
-      // has not been seen since page load, the centre is reported until it is (as on the original).
-      showCount = -1;
-      s.eax = set16(s.eax, 0xffff);
-      s.ebx = set16(s.ebx, 2);
-      break;
-    }
-    case 0x0002:
-      showCount--;
-      break;
-    case 0x0003:
-      applyHost();
-      s.ebx = set16(s.ebx, buttons);
-      s.ecx = set16(s.ecx, x & granX);
-      s.edx = set16(s.edx, y);
-      break;
-    default:
-      throw new Error('mouse: INT 33h AX=0x' + ax.toString(16) + ' is not used by the program');
-  }
-  return outRegs(s);
+// The driver functions the game uses, called directly by Squeeze_Mouse (0x230df) since stage 2 (was INT 33h
+// through int386).
+// AX=0000h reset: returns the number of buttons (BX; AX = FFFFh "installed" is implied).
+export function driverReset() {
+  // virtual screen for the current mode; the program resets only in mode 13h (after 0x1aa2b)
+  if (vga.videoMode === 0x13) { maxX = 639; maxY = 199; granX = 0xfffe; }
+  else throw new Error('mouse: reset in video mode 0x' + vga.videoMode.toString(16) + ' (not used by the program)');
+  // CuteMouse softreset_21 (ctmouse.asm lines 2443-2472): rangemax = 639/199, position = the middle
+  // (shr cx,1 / shr dx,1 -> 320,100), mickey counters and rounding errors cleared; later motion is
+  // added to that position.
+  x = (maxX + 1) >> 1; y = (maxY + 1) >> 1;
+  // Host sync after a reset (port decision, see "host input" below): the port maps the host pointer
+  // absolutely, so the host position (if the pointer has been seen) is NOT discarded here; the next
+  // getState reports it again. With the host cursor hidden over the canvas (index.html) the game's arrow
+  // therefore stays where the player's pointer is, instead of showing the centre and then jumping to
+  // the pointer on the first motion. UNCERTAIN/deviation: on the original the first fn 3 after a
+  // reset returns (320,100) until the mouse moves, and motion is relative to it. If the host pointer
+  // has not been seen since page load, the centre is reported until it is (as on the original).
+  showCount = -1;
+  return 2;
+}
+// AX=0002h hide cursor.
+export function hideCursor() { showCount--; }
+// AX=0003h position and buttons: { x: CX, y: DX, buttons: BX }.
+export function getState() {
+  applyHost();
+  return { x: x & granX, y, buttons };
 }
 
 // ---- host input ---------------------------------------------------------------------------------

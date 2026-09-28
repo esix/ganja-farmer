@@ -2,13 +2,17 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { u8, R32 } from '../src/runtime/mem.js';
-import { outb, inb, int86 } from '../src/runtime/io.js';
-import { register } from '../src/runtime/registry.js';
 import { dac } from '../src/platform/display.js';
 import { VGA_PALETTE_248, TEXT_PALETTE_64 } from '../src/platform/vga_palettes.js';
 import * as pc from '../src/platform/pc.js';
 import { keyBytes } from '../src/platform/kbd.js';
 import * as con from '../src/platform/console.js';
+
+// Port-level access to the devices (the library now calls writeDac/readDac/inRetrace/setMode directly;
+// the port semantics underneath are still what these tests check).
+const outb = (port, v) => { if (port === 0x40 || port === 0x43) pc.pit.writePort(port, v); else if (!pc.vga.out(port, v)) throw new Error('port'); };
+const inb = (port) => { const v = pc.vga.inp(port); if (v === undefined) throw new Error('port'); return v; };
+const mouse3 = () => { const st = pc.mouse.getState(); return { cx: st.x, dx: st.y, bx: st.buttons }; };
 
 let fakeMs = 0;
 function fresh() {
@@ -47,11 +51,11 @@ test('DAC read: 3C7 index, r,g,b then next entry; write index = read index + 1',
   assert.deepEqual([...dac.slice(120, 123)], [r - 3, g - 3, b - 3]);
 });
 
-test('INT 10h AH=00h: mode 13h loads 248 default colors, clears VRAM; mode 3 loads 64 text colors', () => {
+test('mode set (INT 10h AH=00h): mode 13h loads 248 default colors, clears VRAM; mode 3 loads 64 text colors', () => {
   fresh();
   dac.fill(33);
   u8.fill(0x55, 0xa0000, 0xb0000);
-  int86(0x10, { ah: 0, al: 0x13 });
+  pc.vga.setMode(0x13);
   assert.deepEqual([...dac.slice(0, 744)], [...VGA_PALETTE_248]);
   assert.deepEqual([...dac.slice(744)], new Array(24).fill(33), 'entries 248..255 untouched');
   assert.equal(u8.subarray(0xa0000, 0xb0000).every((x) => x === 0), true);
@@ -61,10 +65,9 @@ test('INT 10h AH=00h: mode 13h loads 248 default colors, clears VRAM; mode 3 loa
   // palette table spot checks against the IBM default: 0x0F white, gray ramp 16..31
   assert.deepEqual([...dac.slice(15 * 3, 16 * 3)], [63, 63, 63]);
   assert.deepEqual([...dac.slice(31 * 3, 32 * 3)], [63, 63, 63]);
-  int86(0x10, { ah: 0, al: 0x03 });
+  pc.vga.setMode(0x03);
   assert.deepEqual([...dac.slice(0, 192)], [...TEXT_PALETTE_64]);
   assert.equal(u8[0xb8000], 0x20); assert.equal(u8[0xb8001], 0x07);
-  assert.throws(() => int86(0x10, { ah: 0x0b }));
 });
 
 test('3DAh bit 3: every vertical retrace is seen once by a polling loop (70.086 Hz)', () => {
@@ -190,25 +193,23 @@ test('key delivery first brings the PIT up to date: an overdue IRQ0 is serviced 
 });
 
 // ---------------- mouse ----------------
-test('INT 33h in mode 13h: reset, hide, position 0..639 (even) x 0..199', () => {
+test('mouse driver in mode 13h: reset, hide, position 0..639 (even) x 0..199', () => {
   fresh();
-  int86(0x10, { ah: 0, al: 0x13 });
-  const r = int86(0x33, { ax: 0 });
-  assert.equal(r.ax, 0xffff); assert.equal(r.bx, 2);
-  int86(0x33, { ax: 2 });
+  pc.vga.setMode(0x13);
+  assert.equal(pc.mouse.driverReset(), 2);
+  pc.mouse.hideCursor();
   assert.equal(pc.mouse.state().showCount, -2);
-  let p = int86(0x33, { ax: 3 });
+  let p = mouse3();
   assert.deepEqual([p.cx, p.dx, p.bx], [320, 100, 0]);
-  pc.mouse.hostMove(0, 0); p = int86(0x33, { ax: 3 });
+  pc.mouse.hostMove(0, 0); p = mouse3();
   assert.deepEqual([p.cx, p.dx], [0, 0]);
-  pc.mouse.hostMove(0.9999, 0.9999); p = int86(0x33, { ax: 3 });
+  pc.mouse.hostMove(0.9999, 0.9999); p = mouse3();
   assert.deepEqual([p.cx, p.dx], [638, 199]);
   pc.mouse.hostMove(101.5 / 320, 57.5 / 200); pc.mouse.hostButtons(1); // pixel centres
-  p = int86(0x33, { ax: 3 });
+  p = mouse3();
   assert.deepEqual([p.cx, p.dx, p.bx], [202, 57, 1]);
   assert.equal((p.cx >> 1) - 16, 85); // the game's conversion
-  pc.mouse.hostButtons(3); assert.equal(int86(0x33, { ax: 3 }).bx, 3);
-  assert.throws(() => int86(0x33, { ax: 1 }));
+  pc.mouse.hostButtons(3); assert.equal(mouse3().bx, 3);
 });
 
 // ---------------- host integration: keyboard / DOS console ----------------
@@ -314,11 +315,11 @@ function fakeCanvas() {
 
 test('mouse: pointer capture keeps the release, positions outside the canvas are cut to the range', () => {
   fresh();
-  int86(0x10, { ah: 0, al: 0x13 });
-  int86(0x33, { ax: 0 });
+  pc.vga.setMode(0x13);
+  pc.mouse.driverReset();
   const { win, canvas } = fakeCanvas();
   const off = pc.mouse.attach(canvas);
-  const q = () => { const p = int86(0x33, { ax: 3 }); return [p.cx, p.dx, p.bx]; };
+  const q = () => { const p = mouse3(); return [p.cx, p.dx, p.bx]; };
   // press inside at canvas pixel (320, 240) of 640x480 -> virtual (320, 100)
   const down = domEvent('pointerdown', { clientX: 420, clientY: 290, buttons: 1, pointerId: 7 });
   canvas.dispatchEvent(down);
@@ -349,21 +350,15 @@ test('mouse: pointer capture keeps the release, positions outside the canvas are
 
 test('mouse reset: centre until the host pointer is seen; a known host position is kept (no jump)', () => {
   fresh();
-  int86(0x10, { ah: 0, al: 0x13 });
-  int86(0x33, { ax: 0 });
-  let p = int86(0x33, { ax: 3 });
+  pc.vga.setMode(0x13);
+  pc.mouse.driverReset();
+  let p = mouse3();
   assert.deepEqual([p.cx, p.dx], [320, 100], 'host pointer never seen: centre (CuteMouse softreset)');
   pc.mouse.hostMove(0.25, 0.5);
-  p = int86(0x33, { ax: 3 });
+  p = mouse3();
   assert.deepEqual([p.cx, p.dx], [160, 100]);
-  int86(0x33, { ax: 0 });
-  p = int86(0x33, { ax: 3 });
+  pc.mouse.driverReset();
+  p = mouse3();
   assert.deepEqual([p.cx, p.dx], [160, 100], 'after a reset the game arrow stays at the host pointer');
 });
 
-test('unused ports/interrupts are rejected', () => {
-  fresh();
-  assert.throws(() => outb(0x3c6, 0xff));
-  assert.throws(() => inb(0x201));
-  assert.throws(() => int86(0x16, { ah: 0 }));
-});

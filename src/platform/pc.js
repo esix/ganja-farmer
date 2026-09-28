@@ -1,44 +1,13 @@
-// The emulated PC under GANJAFRM.EXE: an io.js backend (IN/OUT/INT of the ported code) plus the
-// interrupt sources (PIT/IRQ0, keyboard/IRQ1) and the browser attachment. Inventory and citations:
-// re/HARDWARE.md. Only ports and interrupt functions the program uses are accepted; anything else
-// throws, so an unexpected access shows up instead of being silently "emulated".
-//
-//   ports  40h, 43h (OUT)       PIT channel 0    pit.js
-//          3C7h/3C8h (OUT), 3C9h (IN/OUT), 3DAh (IN)  VGA  vga.js
-//   INT    10h AH=00h           video BIOS       vga.js
-//          33h AX=0/2/3         mouse driver     mouse.js
-import { setIoBackend } from '../runtime/io.js';
+// The machine's devices and their browser attachment: timer (pit.js), keyboard (kbd.js), VGA (vga.js), mouse
+// (mouse.js). Stage 2: the library calls them directly; there is no IN/OUT/INT layer any more (stage 1 had
+// runtime/io.js with this module as its backend). Inventory and citations of the original hardware use:
+// re/HARDWARE.md.
 import { setYieldHook } from '../runtime/cpu.js';
 import * as pit from './pit.js';
 import * as kbd from './kbd.js';
 import * as vga from './vga.js';
 import * as mouse from './mouse.js';
 
-const hex = (n) => '0x' + (n >>> 0).toString(16);
-
-export const backend = {
-  out(port, size, value) {
-    if (size !== 1) throw new Error('pc: OUT ' + hex(port) + ' size ' + size + ' not used by the program');
-    if (vga.out(port, value)) return;
-    switch (port) {
-      case 0x40: case 0x43: pit.writePort(port, value); return;
-    }
-    throw new Error('pc: OUT ' + hex(port) + ' not used by the program');
-  },
-  in(port, size) {
-    if (size !== 1) throw new Error('pc: IN ' + hex(port) + ' size ' + size + ' not used by the program');
-    const v = vga.inp(port);
-    if (v !== undefined) return v;
-    throw new Error('pc: IN ' + hex(port) + ' not used by the program');
-  },
-  int(num, regs) {
-    switch (num) {
-      case 0x10: return vga.int10(regs);
-      case 0x33: return mouse.int33(regs);
-    }
-    throw new Error('pc: INT ' + hex(num) + ' not emulated');
-  },
-};
 
 // Power-on state: BIOS tick from the time of day, BIOS INT 8/INT 9 handlers. (The STK driver is called
 // directly by lib/stk_client.js; nothing of STKRUN is resident in memory any more.) The DAC (display.dac) is not touched: it starts all zero, as the
@@ -57,14 +26,13 @@ export function reset({ msSinceMidnight } = {}) {
   pit.setBiosTicksFromTime(msSinceMidnight);
 }
 
-// Install as the io.js backend. Options:
+// Power on the devices. Options:
 //   onBiosKey(scan, ascii): BIOS keyboard buffer sink (console layer's push)
 //   onStkTick(): STK update, called on every STK timer interrupt (sound layer)
 export function install(opts = {}) {
   reset(opts);
   if (opts.onBiosKey) kbd.setOnBiosKey(opts.onBiosKey);
   if (opts.onStkTick) pit.setOnStkTick(opts.onStkTick);
-  return setIoBackend(backend);
 }
 
 // Browser: keyboard on the window, mouse on the canvas, the PIT clock, and the yield hook.

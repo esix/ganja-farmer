@@ -2,16 +2,15 @@
 // behaviour of THIS binary's CRT (addresses cited). Importing this module registers every CRT entry point
 // with the registry (keys `<name>_<addr>`, names from re/names.tsv).
 //   crt_heap.js  : malloc_23dab, free_23ff0
-//   crt_stdio.js : fopen_2264a, fread_1e110, fwrite_2270d, fclose_228ed, fgetc_23bb9, fseek_23ee1,
+//   crt_stdio.js : fopen_2264a, fread_1e110, fwrite_2270d, fclose_228ed, fseek_23ee1,
 //                  ftell_24b81, printf_23783, istream_extract_cstr_2231a
-//   this file    : rand/srand, abs/labs, div, __CHP, atan/cos/sin, strlen/memset/memcpy, outp/inp, int386,
+//   this file    : rand/srand, abs/labs, div, __CHP, atan/cos/sin, strlen/memset/memcpy,
 //                  kbhit/getch
 // Call crtInit() once after the data image is loaded and before main (it performs what cstart's
 // __InitFiles 0x271ba and the cin initializer do); crtExit() when main returns (fini entry 0x2724c).
 import { F, register } from '../runtime/registry.js';
 import { u8, R32, R32u, W32 } from '../runtime/mem.js';
 import { yieldCpu } from '../runtime/cpu.js';
-import { outb, inb, int86 } from '../runtime/io.js';
 import * as x87 from '../runtime/x87.js';
 import * as con from '../platform/console.js';
 import './crt_heap.js';
@@ -126,40 +125,9 @@ register(0x240eb, 'memcpy_240eb', function memcpy_240eb(dst, src, n) {
   return dst;
 });
 
-// ---------------------------------------------------------------- port I/O, interrupts
-// 0x23d99 outp(port, value): `mov al,dl; out dx,al` — a BYTE write. Returns EAX = port with its low byte
-// replaced by the value (what is left in EAX; callers ignore it).
-register(0x23d99, 'outp_23d99', function outp_23d99(port, value) {
-  outb(port & 0xffff, value & 0xff);
-  return ((port & ~0xff) | (value & 0xff)) | 0;
-});
-// 0x23da3 inp(port): `sub eax,eax; in al,dx` — a BYTE read, zero-extended.
-register(0x23da3, 'inp_23da3', function inp_23da3(port) { return inb(port & 0xffff) & 0xff; });
-
-// 0x23d5d int386(intno, inregs, outregs): union REGS = {eax, ebx, ecx, edx, esi, edi, cflag} (dwords,
-// 0x2c6b1..0x2c6bf / 0x2c67c..0x2c68f). All six registers are loaded from inregs, INT intno executed, all
-// six stored to outregs and cflag = CF ? 0xFFFFFFFF : 0 (`sbb eax,eax`, 0x2c68d). Returns outregs->eax.
-// Segment registers are the program's own (segread 0x2618e), not modelled.
-register(0x23d5d, 'int386_23d5d', function int386_23d5d(intno, inregs, outregs) {
-  const r = {
-    eax: R32u(inregs), ebx: R32u(inregs + 4), ecx: R32u(inregs + 8),
-    edx: R32u(inregs + 0xc), esi: R32u(inregs + 0x10), edi: R32u(inregs + 0x14),
-  };
-  const o = int86(intno, r); // every io.js backend returns a register object or throws
-  const get = (k) => (o[k] !== undefined ? o[k] : r[k]) >>> 0;
-  W32(outregs, get('eax'));
-  W32(outregs + 4, get('ebx'));
-  W32(outregs + 8, get('ecx'));
-  W32(outregs + 0xc, get('edx'));
-  W32(outregs + 0x10, get('esi'));
-  W32(outregs + 0x14, get('edi'));
-  W32(outregs + 0x18, (o.cflag ?? o.cf) ? -1 : 0); // platform regs.js reports CF as cflag 0/1
-  return R32(outregs);
-});
-
 // ---------------------------------------------------------------- keyboard (DOS console)
 // kbhit/getch execute INT 21h AH=0Bh/08h in the original (0x2329e, 0x232b8). These CRT-internal DOS calls
-// are served by platform/console.js directly, not through runtime/io.js int86 (re/HARDWARE.md §7).
+// are served by platform/console.js (re/HARDWARE.md §7).
 // Not modelled: DOS checks for Ctrl-C/Ctrl-Break in AH=08h/0Bh and would then issue INT 23h.
 // 0x2328d kbhit: if the ungetch buffer [0x3112c] != 0 -> 1; else INT 21h AH=0Bh and return (int)(signed
 // char)AL, i.e. -1 (0xFF sign-extended) when a key is waiting, 0 otherwise.

@@ -13,6 +13,9 @@ import { stackAlloc, stackFree } from '../src/runtime/stack.js';
 import * as vfs from '../src/platform/vfs.js';
 import * as con from '../src/platform/console.js';
 import { crtInit, crtExit, heapReset } from '../src/lib/crt.js';
+import '../src/lib/203c6_Set_Video_Mode.js';
+import '../src/lib/20541_Write_Color_Reg.js';
+import '../src/lib/205a8_Read_Color_Reg.js';
 
 // runtime/cpu.js yieldCpu() uses a MessageChannel whose port keeps node's event loop alive once used
 // (getch waiting below); end the process when the tests are done.
@@ -273,27 +276,15 @@ test('cin >> buf (0x2231a) is unreachable and says so', () => {
   assert.throws(() => F.istream_extract_cstr_2231a(0x64eb8, scratch), /unreachable/);
 });
 
-test('int386 / outp / inp through runtime/io.js (platform pc.js)', async () => {
-  const pc = await import('../src/platform/pc.js');
-  const { setIoBackend } = await import('../src/runtime/io.js');
+test('Set_Video_Mode / Write_Color_Reg / Read_Color_Reg on the VGA', async () => {
   boot();
-  const prev = pc.install({ msSinceMidnight: 0, onBiosKey: con.push });
-  try {
-    // int386(0x10, &in, &out) with AX=0013h: mode set; outregs copied back, cflag 0
-    const inr = scratch + 0x400, outr = scratch + 0x420;
-    u8.fill(0, inr, inr + 0x1c);
-    W32(inr, 0x13);
-    W32(outr + 0x18, 0x55);
-    assert.equal(F.int386_23d5d(0x10, inr, outr), 0x13);
-    assert.equal(R32(outr), 0x13);
-    assert.equal(R32(outr + 0x18), 0);
-    // outp/inp are byte accesses (DAC write then read back)
-    F.outp_23d99(0x3c8, 7); F.outp_23d99(0x3c9, 1); F.outp_23d99(0x3c9, 2); F.outp_23d99(0x3c9, 0x103);
-    F.outp_23d99(0x3c7, 7);
-    assert.deepEqual([F.inp_23da3(0x3c9), F.inp_23da3(0x3c9), F.inp_23da3(0x3c9)], [1, 2, 3]);
-  } finally {
-    setIoBackend(prev);
-  }
+  F.Set_Video_Mode_203c6(0x13);
+  const c = scratch + 0x400;
+  u8.set([1, 2, 0x43], c);
+  F.Write_Color_Reg_20541(7, c);
+  u8.fill(0, c, c + 3);
+  assert.equal(F.Read_Color_Reg_205a8(7, c), c);
+  assert.deepEqual(bytes(c, 3), [1, 2, 3], 'DAC values are 6-bit');
 });
 
 test('x87: trig results are 64-bit Ext values, rounded once by the following fmul (CW 0x127F)', async () => {
