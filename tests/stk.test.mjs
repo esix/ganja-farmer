@@ -16,12 +16,14 @@ import * as card from '../src/platform/sound/soundcard.js';
 import { createOpl2 } from '../src/platform/sound/opl2.js';
 import { DigiMixer } from '../src/platform/sound/digi-mixer.js';
 import { STKMusic } from '../src/platform/sound/dwm-player.js';
+import * as sounds from '../src/platform/sounds.js';
 
 const root = new URL('../', import.meta.url).pathname;
 const GANJA = root + 'assets/game/';
 loadInitialData(readFileSync(root + 'assets/boot/data_init.bin'));
 loadRomFont(readFileSync(root + 'assets/boot/font8x8.bin'));
 for (const n of readdirSync(GANJA)) vfs.mountBytes(n, readFileSync(GANJA + n));
+sounds.mountAll(); // *.WAV -> *.DWD, as runProgram does
 const snapshot = u8.slice(0, 0x800000);
 
 let fakeMs = 0;
@@ -117,7 +119,7 @@ test('DPlay: EXPLO.DWD through the DOS copy, DAC bytes = 0x80 + samples from blo
   boot();
   await gameInit();
   const snd = loadFile('explo.dwd');
-  const bytes = readFileSync(GANJA + 'EXPLO.DWD');
+  const bytes = vfs.read('EXPLO.DWD'); // rebuilt from EXPLO.WAV by sounds.mountAll()
   const h = dwdHdr(bytes);
   // the game's struct for explo.dwd (0x1c5af..0x1c5ef)
   W32(0x61280, snd); W16(0x61284, 1); W16(0x61286, 0x320); W16(0x61288, 0);
@@ -145,7 +147,7 @@ test('DPlay/DDiscard/DSoundStatus/DPause sequence equals the reference mixer at 
   await gameInit();
   const names = ['click.dwd', 'gewtshot.dwd', 'ufo2.dwd', 'explo.dwd'];
   const ptr = {}, file = {};
-  for (const n of names) { ptr[n] = loadFile(n); file[n] = new Uint8Array(readFileSync(GANJA + n.toUpperCase())); }
+  for (const n of names) { ptr[n] = loadFile(n); file[n] = vfs.read(n); }
   const S = F.malloc_23dab(0x20 * names.length);
   const res = F.malloc_23dab(2);
   // reference: re/digi/digi-mixer.js fed with the file bytes, the same calls at the same DAC byte positions
