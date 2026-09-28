@@ -14,8 +14,11 @@
 // Rates: PIT input clock 1193182 Hz (14.31818 MHz / 12). IRQ0 period = divisor clocks, divisor 0 = 65536
 // (modes 2 and 3 alike).
 import { u8 } from '../runtime/mem.js';
-import * as pic from './pic.js';
-import { setRmHandler, getRmHandler, hardwareInterrupt } from './dpmi.js';
+
+// INT 8 handler chain (stage 2: kept here instead of the PIC + the extender's vectors): the BIOS tick, with
+// the STK timer ISR in front of it while dwt_Init is in effect. Both end their interrupt themselves (the
+// PIC's EOI bookkeeping had no observable effect, since every handler EOIs).
+let int8 = null;
 
 export const PIT_HZ = 1193182;
 const TICK_ADDR = 0x46c;
@@ -72,7 +75,6 @@ function biosInt8() {
   if (t >= TICKS_PER_DAY) { t = 0; u8[MIDNIGHT_ADDR] = 1; }
   u8[TICK_ADDR] = t & 0xff; u8[TICK_ADDR + 1] = (t >>> 8) & 0xff;
   u8[TICK_ADDR + 2] = (t >>> 16) & 0xff; u8[TICK_ADDR + 3] = (t >>> 24) & 0xff;
-  pic.writeCommand(0x20);
 }
 
 // BIOS boot: the tick count is set from the RTC time of day (seconds since midnight * 1193182/65536).
@@ -98,8 +100,6 @@ function stkInt8() {
   if (--stkChainLeft === 0) {
     stkChainLeft = stkChainReload;
     stkOldInt8();
-  } else {
-    pic.writeCommand(0x60);
   }
   if (onStkTick) onStkTick();
 }
@@ -120,7 +120,7 @@ export function stkTimerInstall(rate) {
   writePort(0x43, 0x36);
   writePort(0x40, STK_DIVISOR[r] & 0xff);
   writePort(0x40, STK_DIVISOR[r] >> 8);
-  stkOldInt8 = setRmHandler(8, stkInt8); // INT 21h 3508h / 2508h (0530:00fb, 0530:0112)
+  stkOldInt8 = int8; int8 = stkInt8; // INT 21h 3508h / 2508h (0530:00fb, 0530:0112)
 }
 
 // STKRUN 0530:0069 (dwt kill, fn 0x18).
@@ -130,7 +130,7 @@ export function stkTimerKill() {
   writePort(0x43, 0x36);
   writePort(0x40, 0);
   writePort(0x40, 0);
-  setRmHandler(8, stkOldInt8); // INT 21h 2508h (0530:0090)
+  int8 = stkOldInt8; // INT 21h 2508h (0530:0090)
 }
 export const stkTimerCounter = () => stkCounter;
 
@@ -169,8 +169,7 @@ export function pump() {
     clocks -= step;
     phase = 0;
     if (onAdvance) onAdvance(step);
-    pic.request(0);
-    pic.service();
+    int8();
     n++;
   }
   phase += clocks;
@@ -199,12 +198,11 @@ export function stop() { if (timer) clearInterval(timer); timer = null; }
 export function reset() {
   divisor = 65536; mode = 3; access = 3; writeHi = false; phase = 0; lastMs = null;
   stkInstalled = false; stkChainReload = stkChainLeft = 1; stkCounter = 0; stkPaused = 0; stkOldInt8 = null;
-  setRmHandler(8, biosInt8);
+  int8 = biosInt8;
 }
 
 // IRQ0 -> INT 8 (protected-mode vector; default reflects to the real-mode handler: BIOS or STKRUN).
 export function install() {
-  pic.setIrqHandler(0, () => hardwareInterrupt(8));
-  setRmHandler(8, biosInt8);
+  int8 = biosInt8;
 }
-export const rmInt8IsBios = () => getRmHandler(8) === biosInt8;
+export const rmInt8IsBios = () => int8 === biosInt8;

@@ -5,7 +5,7 @@
 //   crt_stdio.js : fopen_2264a, fread_1e110, fwrite_2270d, fclose_228ed, fgetc_23bb9, fseek_23ee1,
 //                  ftell_24b81, printf_23783, istream_extract_cstr_2231a
 //   this file    : rand/srand, abs/labs, div, __CHP, atan/cos/sin, strlen/memset/memcpy, outp/inp, int386,
-//                  kbhit/getch, _dos_getvect/_dos_setvect
+//                  kbhit/getch
 // Call crtInit() once after the data image is loaded and before main (it performs what cstart's
 // __InitFiles 0x271ba and the cin initializer do); crtExit() when main returns (fini entry 0x2724c).
 import { F, register } from '../runtime/registry.js';
@@ -155,20 +155,6 @@ register(0x23d5d, 'int386_23d5d', function int386_23d5d(intno, inregs, outregs) 
   W32(outregs + 0x14, get('edi'));
   W32(outregs + 0x18, (o.cflag ?? o.cf) ? -1 : 0); // platform regs.js reports CF as cflag 0/1
   return R32(outregs);
-});
-
-// 0x24ccb _dos_getvect(intno): INT 21h AH=35h AL=intno (the Phar Lap AX=2502h path is taken only when the
-// extender type [0x3113a] is 2..8; cstart sets it to 0, 1 or 9 at 0x23935, so never). Returns the far
-// pointer ES:EBX in EDX:EAX (`mov edx,es; mov eax,ebx`, 0x24cf3/0x24cf6); here as {eax: offset, edx: selector}.
-register(0x24ccb, '_dos_getvect_24ccb', function _dos_getvect_24ccb(intno) {
-  const o = int86(0x21, { ah: 0x35, al: intno & 0xff }); // every io.js backend returns a register object or throws
-  return { eax: o.ebx >>> 0, edx: o.es & 0xffff };
-});
-// 0x24cfb _dos_setvect(intno /*EAX*/, offset /*EBX*/, selector /*ECX, low word*/): INT 21h AH=25h AL=intno,
-// DS:EDX = selector:offset (0x24d0e..0x24d21; EDX is saved/restored scratch, not an argument, so the JS
-// parameters are (intno, offset, selector)). No return value.
-register(0x24cfb, '_dos_setvect_24cfb', function _dos_setvect_24cfb(intno, offset, selector) {
-  int86(0x21, { ah: 0x25, al: intno & 0xff, ds: selector & 0xffff, edx: offset >>> 0 });
 });
 
 // ---------------------------------------------------------------- keyboard (DOS console)

@@ -3,9 +3,7 @@
 // re/HARDWARE.md. Only ports and interrupt functions the program uses are accepted; anything else
 // throws, so an unexpected access shows up instead of being silently "emulated".
 //
-//   ports  20h (OUT)            PIC EOI          pic.js
-//          40h, 43h (OUT)       PIT channel 0    pit.js
-//          60h (IN), 61h (IN/OUT) keyboard       kbd.js
+//   ports  40h, 43h (OUT)       PIT channel 0    pit.js
 //          3C7h/3C8h (OUT), 3C9h (IN/OUT), 3DAh (IN)  VGA  vga.js
 //   INT    10h AH=00h           video BIOS       vga.js
 //          21h AH=25h/35h       PMODE/W vectors  dpmi.js (other AH: setDosHandler)
@@ -13,7 +11,6 @@
 //          33h AX=0/2/3         mouse driver     mouse.js
 import { setIoBackend } from '../runtime/io.js';
 import { setYieldHook } from '../runtime/cpu.js';
-import * as pic from './pic.js';
 import * as pit from './pit.js';
 import * as kbd from './kbd.js';
 import * as vga from './vga.js';
@@ -27,9 +24,7 @@ export const backend = {
     if (size !== 1) throw new Error('pc: OUT ' + hex(port) + ' size ' + size + ' not used by the program');
     if (vga.out(port, value)) return;
     switch (port) {
-      case 0x20: pic.writeCommand(value); return;
       case 0x40: case 0x43: pit.writePort(port, value); return;
-      case 0x61: kbd.out61(value); return;
     }
     throw new Error('pc: OUT ' + hex(port) + ' not used by the program');
   },
@@ -37,10 +32,6 @@ export const backend = {
     if (size !== 1) throw new Error('pc: IN ' + hex(port) + ' size ' + size + ' not used by the program');
     const v = vga.inp(port);
     if (v !== undefined) return v;
-    switch (port) {
-      case 0x60: return kbd.in60();
-      case 0x61: return kbd.in61();
-    }
     throw new Error('pc: IN ' + hex(port) + ' not used by the program');
   },
   int(num, regs) {
@@ -62,8 +53,8 @@ export const backend = {
 // all 256. UNCERTAIN: the DAC register indices at program start are not reset here (the mode set
 // resets them before any program access).
 export function reset({ msSinceMidnight } = {}) {
-  pic.reset(); dpmi.resetDpmi(); vga.reset(); mouse.reset(); kbd.reset();
-  pit.install(); pit.reset(); kbd.install();
+  dpmi.resetDpmi(); vga.reset(); mouse.reset(); kbd.reset();
+  pit.install(); pit.reset();
   if (msSinceMidnight === undefined) {
     const d = new Date();
     msSinceMidnight = ((d.getHours() * 60 + d.getMinutes()) * 60 + d.getSeconds()) * 1000 + d.getMilliseconds();
@@ -90,7 +81,7 @@ export function install(opts = {}) {
 // or an input event (keyboard ISR, mouse). So a yield brings the PIT up to date, then sleeps until the next
 // IRQ0 is due or an input event arrives, and delivers the IRQ0s that fell due. The original polled
 // thousands of times per tick; the loops see the same state changes, without a core spinning at 100%.
-// Keyboard IRQs are delivered from the DOM event itself (kbd.js sendBytes), so waking is enough.
+// Key bytes are handled in the DOM event itself (kbd.js sendBytes), so waking is enough.
 //
 // Hidden tab: the machine is suspended (pause chosen by the user, 2026-09-28). While document.hidden, the
 // next yield does not return until the page is visible again, and the PIT clock is stopped, so no
@@ -145,7 +136,7 @@ export function attachBrowser(canvas) {
   };
 }
 
-export { pic, pit, kbd, vga, mouse, dpmi };
+export { pit, kbd, vga, mouse, dpmi };
 export const { setOnStkTick, stkTimerInstall, stkTimerKill } = pit;
 export const { setOnBiosKey } = kbd;
 export const { selBase, rmLinear, SEL_CODE, SEL_DATA } = dpmi;

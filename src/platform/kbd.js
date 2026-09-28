@@ -1,20 +1,12 @@
-// Keyboard: PC/AT keyboard (scan code set 1 as delivered by the 8042), the 8042 output port 0x60,
-// system control port B 0x61, IRQ1 -> INT 9, and the BIOS INT 9 handler (firmware) for the time the
-// game's own handler is not installed. See re/HARDWARE.md §3.
+// Keyboard: PC/AT keyboard (scan code set 1) and where its bytes go. See re/HARDWARE.md §3.
 //
-// The program's use:
-//   Keyboard_Install_Driver 0x22bd7: INT 21h AH=35h AL=9 (0x22c1e), saves ES:EBX to 0x64efc:0x64ef8,
-//     INT 21h AH=25h AL=9 DS:EDX = CS:0x22b04 (0x22c4a). Called at 0x1aa3a (start) and 0x10b55.
-//   Keyboard_Remove_Driver 0x22c58: INT 21h AH=25h AL=9 with the saved vector (0x22c87). Called at
-//     0x10a58 (before the high-score name entry, which then reads keys with kbhit/getch = INT 21h
-//     AH=0Bh/08h, i.e. from the BIOS buffer) and at 0x1e031 (exit).
-//   Keyboard_Driver (ISR) 0x22b04: IN 60h (0x22b23) -> raw_key 0x64f00; IN 61h (0x22b32);
-//     OUT 61h, v|82h (0x22b46); OUT 61h, (v|82h)&7Fh (0x22b59); OUT 20h,20h (0x22b68); updates
-//     keyboard_state[] 0x64f04 / keys_active 0x65104; IRETD. It does NOT chain to the old INT 9, so
-//     while it is installed no key reaches the BIOS buffer.
-import * as pic from './pic.js';
+// Stage 2: the bytes go straight to a handler, without the 8042 ports 0x60/0x61, IRQ1 and INT 9:
+//   - while the game's driver is installed (Keyboard_Install_Driver 0x22bd7 .. Keyboard_Remove_Driver
+//     0x22c58), to its key-table update (lib/22b04_Keyboard_Driver.js, setGameHandler);
+//   - otherwise to the BIOS INT 9 logic below, which types into the BIOS buffer (console.js). The game
+//     removes its driver for the high-score name entry (0x10a58), which reads keys with kbhit/getch.
+// The original ISR did not chain to the old INT 9, so while it is installed no key reaches the BIOS buffer.
 import * as pit from './pit.js';
-import { hardwareInterrupt, setRmHandler } from './dpmi.js';
 
 // ---- browser KeyboardEvent.code -> set-1 make code (0x100 = E0-prefixed) ------------------------
 // Standard 101/104-key AT keyboard, scan code set 1 (IBM PC AT / PS/2 Technical Reference;
@@ -90,57 +82,21 @@ export function keyBytes(code, down) {
   return bytes;
 }
 
-// ---- 8042 controller ------------------------------------------------------------------------------
-// The keyboard buffers bytes; on overflow the last buffered byte becomes the keyboard-error code, which
-// is FFh as the host sees it: FFh in scan code set 1, 00h in sets 2/3, and with 8042 translation on both
-// arrive as FFh (A. Brouwer, "Keyboard scancodes" §1, "Keyboard error" — local copy
-// re/ref/aeb_scancodes-1.html). For the game's ISR FFh is a break of 7Fh: no key state changes.
-// UNCERTAIN: the keyboard's internal buffer depth (16 bytes here) is not taken from a cited source.
-// The controller holds one byte in its output buffer and raises IRQ1 for it; the next byte is
-// transferred when the host has read port 0x60 and the IRQ has been serviced.
-const fifo = [];
-const KB_FIFO = 16;
-let outBuf = 0;      // last byte presented at port 0x60 (re-reads return it again)
-let outFull = false; // a byte waiting for the host
-let port61 = 0x00;   // system control port B, bits 0..3 read back (see HARDWARE.md for bits 1/7)
-
-function feedController() {
-  if (outFull || fifo.length === 0) return;
-  outBuf = fifo.shift();
-  outFull = true;
-  pic.request(1);
-}
+// ---- delivery -------------------------------------------------------------------------------------
+let gameHandler = null; // (byte) => void while the game's keyboard driver is installed
+export function setGameHandler(fn) { gameHandler = fn; }
 
 export function sendBytes(bytes) {
-  // Real ordering: host key events arrive between PIT pumps, but on the PC every IRQ0 that fell due before
-  // the key press has already been taken. Deliver the overdue ticks first (PIC priority would also put
-  // IRQ0 before IRQ1 if both were pending). pit.js does not import kbd.js: no import cycle.
+  // Every timer tick that fell due before the key press is delivered first, as on the PC (IRQ0 has
+  // priority over IRQ1). pit.js does not import kbd.js: no import cycle.
   pit.pump();
   for (const b of bytes) {
-    if (fifo.length >= KB_FIFO) { fifo[KB_FIFO - 1] = 0xff; break; } // overrun: keyboard error code
-    fifo.push(b & 0xff);
-  }
-  deliver();
-}
-
-// Run IRQ1s until the keyboard's bytes are consumed (or the PIC blocks: handler did not EOI).
-export function deliver() {
-  for (let guard = 0; guard < 64; guard++) {
-    feedController();
-    if (!pic.pending(1)) break;
-    pic.service();
-    if (pic.pending(1)) break; // still blocked (IRQ1 in service without EOI)
-    if (outFull) break; // host did not read 0x60: the 8042 holds the byte, the keyboard waits
+    if (gameHandler) gameHandler(b & 0xff);
+    else biosKey(b & 0xff);
   }
 }
 
-export function in60() { outFull = false; return outBuf; }
-export function in61() { return port61 & 0x0f; }
-// Bit 7 (keyboard clear on the PC/XT) has no function on the AT; bits 0/1 gate timer 2 / the speaker,
-// which nothing in the program uses (PC speaker not emulated).
-export function out61(v) { port61 = v & 0x0f; }
-
-// ---- BIOS INT 9 (firmware: active while PM INT 9 is PMODE/W's default, which reflects to real mode) ---
+// ---- BIOS INT 9 (firmware: active while the game's driver is not installed) ------------------------
 // Scan code -> BIOS buffer word (scan<<8 | ascii) for [normal, shift, ctrl, alt]; -1 = no key stored.
 // IBM PC AT BIOS keyboard tables (Enhanced keyboard support, as documented in RBIL INT 16 "Table 00006").
 const T = [];
@@ -226,11 +182,10 @@ function translate(sc, e0) {
   return shift ? t[1] : t[0];
 }
 
-function biosInt9() {
-  const b = in60();
-  if (e1Count > 0) { e1Count--; pic.writeCommand(0x20); return; } // Pause sequence: pause loop not emulated
-  if (b === 0xe1) { e1Count = 2; pic.writeCommand(0x20); return; }
-  if (b === 0xe0) { e0Flag = true; pic.writeCommand(0x20); return; }
+function biosKey(b) {
+  if (e1Count > 0) { e1Count--; return; } // Pause sequence: pause loop not emulated
+  if (b === 0xe1) { e1Count = 2; return; }
+  if (b === 0xe0) { e0Flag = true; return; }
   const e0 = e0Flag; e0Flag = false;
   const make = (b & 0x80) === 0, sc = b & 0x7f;
   switch (sc) {
@@ -249,16 +204,10 @@ function biosInt9() {
         if (w >= 0 && onBiosKey) onBiosKey((w >> 8) & 0xff, w & 0xff);
       }
   }
-  pic.writeCommand(0x20);
-}
-
-export function install() {
-  pic.setIrqHandler(1, () => hardwareInterrupt(9));
-  setRmHandler(9, biosInt9);
 }
 
 export function reset() {
-  fifo.length = 0; outBuf = 0; outFull = false; port61 = 0;
+  gameHandler = null;
   kbLShift = kbRShift = kbCtrl = kbAlt = false; ledNumLock = false;
   bLShift = bRShift = bCtrl = bAlt = bCaps = bScroll = false; bNum = false;
   capsDown = numDown = scrollDown = false; e0Flag = false; e1Count = 0;
@@ -271,8 +220,8 @@ export function reset() {
 //
 // Keys held when the page loses the keyboard (window blur, tab hidden) never get their keyup event.
 // A real keyboard sends the break code when the key is released, so the port treats losing focus as
-// the release of every key it has sent a make for: releaseAll() sends their break bytes through the
-// normal 8042 / IRQ1 path (sendBytes), so the game's ISR (or the BIOS INT 9) sees ordinary breaks.
+// the release of every key it has sent a make for: releaseAll() sends their break bytes (sendBytes), so the
+// game's handler (or the BIOS INT 9 logic) sees ordinary breaks.
 //
 // preventDefault (browser shortcuts): every AT key is still delivered to the emulated keyboard; only the
 // browser's default action is suppressed or not. It is suppressed for keys the program can observe:

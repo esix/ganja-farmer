@@ -1,16 +1,10 @@
 // PMODE/W v1.31 DOS-extender services used by GANJAFRM.EXE, plus the real-mode (conventional)
 // memory they expose. See re/HARDWARE.md §4 for the full inventory.
 //
-// Protected-mode INT 21h functions (PMODE/W handles them itself, in protected mode):
-//   AH=35h get PM interrupt vector -> ES:EBX   _dos_getvect 0x24ccb (int at 0x24cf1), called by
-//                                              Keyboard_Install_Driver 0x22c1e with AL=9.
+// Protected-mode INT 21h functions PMODE/W answers itself:
 //   AX=FF00h DOS/4G check (DX=78h) -> AL=FFh, GS  Watcom cstart 0x238e4.
-//   AH=25h set PM interrupt vector <- DS:EDX   _dos_setvect 0x24cfb (int at 0x24d17/0x24d21), called by
-//                                              Keyboard_Install_Driver 0x22c4a (9 -> CS:0x22b04) and
-//                                              Keyboard_Remove_Driver 0x22c87 (9 -> saved 0x64efc:0x64ef8).
-//   (_dos_getvect/_dos_setvect use the Phar Lap AX=2502h/2504h forms only when the extender byte 0x3113a
-//    is 2..8; Watcom cstart 0x23935 stores 1 (DOS/4G-compatible, INT 21h AX=FF00h at 0x238e4) or 0
-//    there, so the AH=35h/25h forms are the ones executed.)
+// (Stage 1 also had AH=35h/25h get/set PM interrupt vector for Keyboard_Install/Remove_Driver; since
+// stage 2 the keyboard driver is connected directly, platform/kbd.js.)
 // INT 31h (DPMI 0.9): 0006h get segment base, 0100h/0101h allocate/free DOS memory, 0300h simulate a
 // real-mode interrupt. (Stage 1 also served the DiamondWare STK client stubs: 0002h, 0200h, 0600h/0601h
 // and many 0100h/0101h calls; that client is gone since stage 2, lib/stk_client.js.)
@@ -19,11 +13,7 @@
 // 21h AX=6300h (0x2ebfb). The CRT's other INT 21h/INT 31h use (file I/O, malloc's DOS memory,
 // signal/Ctrl-Break hooks) is implemented by the CRT layer in JS and does not come through here.
 //
-// Hardware IRQs in protected mode: PMODE/W delivers IRQ n to the protected-mode vector (IRQ0 -> INT 8,
-// IRQ1 -> INT 9); a vector still at its default reflects the interrupt to the real-mode handler
-// (BIOS, or a TSR that hooked it in real mode, i.e. STKRUN's INT 8).
 import { u8 } from '../runtime/mem.js';
-import { callPtr } from '../runtime/registry.js';
 import { loadRegs, outRegs, lo16, set16 } from './regs.js';
 
 // ---- descriptors ---------------------------------------------------------------------------------
@@ -164,56 +154,13 @@ export function dosFree(seg) {
   return true;
 }
 
-// ---- protected-mode interrupt vectors -----------------------------------------------------------
-// Default vectors point into PMODE/W's INT redirector matrix (256 one-byte entries at `intrmatrix`, filled
-// with CCh at init; v1.31 0xa5f..0xa67: mov di,392h / rep stosb) in the kernel code segment SELCODE 08h:
-// 0204h returns 08h:intrmatrix+n — for n <= 0Eh from the table `exceptionivect` (v1.31 at 0x1a0: 15 entries
-// {392h+n, 0, 08h}), otherwise from the IDT, which vxr_init fills with SELCODE:intrmatrix+n (IRQs at their
-// default mapping 08h..0Fh / 70h..77h, pmodewk.asm @@vxr_initl0). The program reads only vector 9 (saved
-// at 0x64ef8/0x64efc by Keyboard_Install_Driver). Not modelled: the extender's own hooks of INT 1Bh,
-// 21h, 31h and 33h (pmodewe.asm _initdosext / INT 31h 0A00h handler) — never read by the program.
-const INTRMATRIX = 0x392;
-const defaultVector = (n) => ({ sel: SEL_PMW, off: INTRMATRIX + n });
-const pmVectors = [];
-for (let n = 0; n < 256; n++) pmVectors[n] = defaultVector(n);
-const isDefault = (v, n) => v.sel === SEL_PMW && v.off === INTRMATRIX + n;
-export const getPmVector = (n) => ({ ...pmVectors[n & 0xff] });
-export function setPmVector(n, sel, off) { pmVectors[n & 0xff] = { sel: sel & 0xffff, off: off >>> 0 }; }
-
-// Real-mode handlers for hardware interrupts (emulated firmware / TSR code), vector -> function().
-const rmHandlers = [];
-export function setRmHandler(n, fn) { const prev = rmHandlers[n]; rmHandlers[n] = fn; return prev; }
-export const getRmHandler = (n) => rmHandlers[n];
-
-// Deliver hardware interrupt vector n (called by the PIC dispatcher).
-export function hardwareInterrupt(n) {
-  const v = pmVectors[n];
-  if (isDefault(v, n)) {
-    const h = rmHandlers[n];
-    if (!h) throw new Error('dpmi: no real-mode handler for INT 0x' + n.toString(16));
-    h();
-  } else {
-    // A protected-mode ISR installed by the program: a ported function registered at its code address.
-    callPtr(v.off);
-  }
-}
-
-// ---- INT 21h (only the vector functions are extender/DOS services owned here) -------------------
+// ---- INT 21h (the extender's own answers; everything else goes to the DOS layer) ------------------
 let dosHandler = null; // other INT 21h functions: the CRT/DOS layer may register a handler
 export function setDosHandler(fn) { dosHandler = fn; }
 
 export function int21(regs) {
   const s = loadRegs(regs);
   const ah = (s.eax >>> 8) & 0xff, al = s.eax & 0xff;
-  if (ah === 0x35) {
-    const v = pmVectors[al];
-    s.ebx = v.off >>> 0; s.es = v.sel;
-    return outRegs(s);
-  }
-  if (ah === 0x25) {
-    setPmVector(al, s.ds, s.edx);
-    return outRegs(s);
-  }
   // AX=FF00h DX=78h: the DOS/4G presence check answered by the extender (pmodewe.asm _int21FF: GS =
   // _int21lowbufsel, EAX = 4734FFFFh; v1.31 0x3be9..0x3bf3). Asked by Watcom cstart 0x238e4. Any other
   // AH=FFh goes on to DOS.
@@ -315,5 +262,4 @@ export function resetDpmi() {
   u8[DOS_DBCS_TABLE] = 0; u8[DOS_DBCS_TABLE + 1] = 0;
   resetDosMemory();
   resetDescriptors();
-  for (let n = 0; n < 256; n++) pmVectors[n] = defaultVector(n);
 }

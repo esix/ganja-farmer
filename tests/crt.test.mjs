@@ -329,7 +329,7 @@ test('cin >> buf (0x2231a): words from the console line, EOF/fail bits', async (
   assert.equal(con.outputText(), ' JAH  Bob\r\n'); // DOS echo of the cooked line
 });
 
-test('int386 / _dos_getvect / _dos_setvect / outp / inp through runtime/io.js (platform pc.js)', async () => {
+test('int386 / outp / inp through runtime/io.js (platform pc.js)', async () => {
   const pc = await import('../src/platform/pc.js');
   const { setIoBackend } = await import('../src/runtime/io.js');
   boot();
@@ -343,12 +343,6 @@ test('int386 / _dos_getvect / _dos_setvect / outp / inp through runtime/io.js (p
     assert.equal(F.int386_23d5d(0x10, inr, outr), 0x13);
     assert.equal(R32(outr), 0x13);
     assert.equal(R32(outr + 0x18), 0);
-    // vector get/set as Keyboard_Install_Driver / Remove do
-    const old = F._dos_getvect_24ccb(9);
-    F._dos_setvect_24cfb(9, 0x22b04, 0x0008);
-    assert.deepEqual(F._dos_getvect_24ccb(9), { eax: 0x22b04, edx: 0x0008 });
-    F._dos_setvect_24cfb(9, old.eax, old.edx);
-    assert.deepEqual(F._dos_getvect_24ccb(9), old);
     // outp/inp are byte accesses (DAC write then read back)
     F.outp_23d99(0x3c8, 7); F.outp_23d99(0x3c9, 1); F.outp_23d99(0x3c9, 2); F.outp_23d99(0x3c9, 0x103);
     F.outp_23d99(0x3c7, 7);

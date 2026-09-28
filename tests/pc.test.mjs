@@ -149,27 +149,20 @@ test('scancode mapping (set 1, E0 keys, fake shifts, Pause)', () => {
 // A stand-in for the ported Keyboard_Driver (0x22b04): what matters here is the port protocol.
 const isrLog = [];
 let isrHook = null;
-register(0x22b04, 'Keyboard_Driver_test_stub_22b04', function () {
-  if (isrHook) isrHook();
-  const raw = inb(0x60);
-  const v = inb(0x61) | 0x82; outb(0x61, v); outb(0x61, v & 0x7f);
-  outb(0x20, 0x20);
-  isrLog.push(raw);
-});
+const logHandler = (b) => { if (isrHook) isrHook(); isrLog.push(b); }; // stands in for Keyboard_Driver
 
-test('IRQ1 -> installed PM INT 9 handler (INT 21h 25h/35h), one byte per interrupt', () => {
+test('game handler installed: every byte goes to it, none to the BIOS buffer; removed: BIOS again', () => {
   fresh();
   const bios = [];
   pc.kbd.setOnBiosKey((s, a) => bios.push([s, a]));
-  const old = int86(0x21, { ah: 0x35, al: 9 });
-  int86(0x21, { ah: 0x25, al: 9, ds: pc.SEL_CODE, edx: 0x22b04 });
+  pc.kbd.setGameHandler(logHandler);
   isrLog.length = 0;
   pc.kbd.sendBytes(keyBytes('ArrowRight', true));
   pc.kbd.sendBytes(keyBytes('ArrowRight', false));
   assert.deepEqual(isrLog, [0xe0, 0x4d, 0xe0, 0xcd]);
   assert.deepEqual(bios, [], 'the game ISR does not chain: nothing reaches the BIOS buffer');
-  // Keyboard_Remove_Driver restores the saved vector -> BIOS INT 9 is active again
-  int86(0x21, { ah: 0x25, al: 9, ds: old.es, edx: old.ebx });
+  // Keyboard_Remove_Driver -> BIOS INT 9 is active again
+  pc.kbd.setGameHandler(null);
   pc.kbd.sendBytes(keyBytes('KeyA', true)); pc.kbd.sendBytes(keyBytes('KeyA', false));
   pc.kbd.sendBytes(keyBytes('ShiftLeft', true));
   pc.kbd.sendBytes(keyBytes('KeyA', true)); pc.kbd.sendBytes(keyBytes('KeyA', false));
@@ -179,14 +172,12 @@ test('IRQ1 -> installed PM INT 9 handler (INT 21h 25h/35h), one byte per interru
   pc.kbd.sendBytes(keyBytes('F1', true));
   pc.kbd.sendBytes(keyBytes('ArrowUp', true));
   assert.deepEqual(bios, [[0x1e, 0x61], [0x1e, 0x41], [0x1c, 0x0d], [0x0e, 0x08], [0x3b, 0x00], [0x48, 0xe0]]);
-  assert.equal(pc.pic.inService(1), 0);
   pc.kbd.setOnBiosKey(null);
 });
 
-test('key delivery first brings the PIT up to date: an overdue IRQ0 is serviced before IRQ1', () => {
+test('key delivery first brings the PIT up to date: an overdue IRQ0 is serviced before the key', () => {
   fresh();
-  const old = int86(0x21, { ah: 0x35, al: 9 });
-  int86(0x21, { ah: 0x25, al: 9, ds: pc.SEL_CODE, edx: 0x22b04 });
+  pc.kbd.setGameHandler(logHandler);
   const tick0 = R32(0x46c);
   const seen = [];
   isrHook = () => seen.push(R32(0x46c) - tick0);
@@ -195,7 +186,7 @@ test('key delivery first brings the PIT up to date: an overdue IRQ0 is serviced 
   pc.kbd.sendBytes(keyBytes('KeyA', false));
   isrHook = null;
   assert.deepEqual(seen, [1, 1], 'the BIOS tick was counted before the keyboard ISR ran');
-  int86(0x21, { ah: 0x25, al: 9, ds: old.es, edx: old.ebx });
+  pc.kbd.setGameHandler(null);
 });
 
 // ---------------- mouse ----------------
@@ -257,10 +248,9 @@ function domEvent(type, props = {}) {
   return e;
 }
 
-test('keys held when the page loses focus / is hidden get their break codes through IRQ1', () => {
+test('keys held when the page loses focus / is hidden get their break codes', () => {
   fresh();
-  const old = int86(0x21, { ah: 0x35, al: 9 });
-  int86(0x21, { ah: 0x25, al: 9, ds: pc.SEL_CODE, edx: 0x22b04 });
+  pc.kbd.setGameHandler(logHandler);
   const win = new EventTarget();
   win.document = new EventTarget(); win.document.hidden = false;
   const off = pc.kbd.attach(win);
@@ -293,7 +283,7 @@ test('keys held when the page loses focus / is hidden get their break codes thro
   win.dispatchEvent(domEvent('blur'));
   assert.deepEqual(isrLog, [0xe0, 0xcd, 0xe0, 0x2a, 0xaa]);
   off();
-  int86(0x21, { ah: 0x25, al: 9, ds: old.es, edx: old.ebx });
+  pc.kbd.setGameHandler(null);
 });
 
 test('preventDefault only for keys the program can observe; Ctrl/Cmd combos and F1/F5..F12 pass', () => {
@@ -422,9 +412,6 @@ test('DPMI selectors: PMODE/W GDT, 0000h top-down (TI=0, RPL=0), 0101h frees', (
   int86(0x31, { ax: 0x101, dx: p2.dx });
   const e = int86(0x31, { ax: 6, bx: p2.dx, cx: 0x1234 });
   assert.equal(e.cflag, 1); assert.equal(e.ax, 6); assert.equal(e.cx, 0x1234);
-  // default PM vector 9: PMODE/W SELCODE:intrmatrix+9
-  const v = int86(0x21, { ah: 0x35, al: 9 });
-  assert.deepEqual([v.es, v.ebx], [0x08, 0x392 + 9]);
 });
 
 test('unused ports/interrupts are rejected', () => {
