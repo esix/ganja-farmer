@@ -3,7 +3,6 @@
 //
 // Usage: node tests/run-headless.mjs [options]
 //   --out DIR          snapshot directory (default: $TMPDIR/ganja-headless)
-//   --no-sound         register logged no-op STK functions (for when the sound layer is not available)
 //   --script NAME|FILE built-in script name ("tour", "idle") or a JSON file of events (see SCRIPTS)
 //   --max S            stop after S virtual seconds (default 600)
 //   --every S          additionally snapshot every S virtual seconds
@@ -12,7 +11,10 @@
 //   --trace FILE       every 32 yields write "yield memHash dacHash oplHash": FNV-1a of game memory (data
 //                      0x30000.., VGA 0xA0000.., heap 0x100000..+2 MB) and running hashes of the sound
 //                      card's DAC bytes and the music driver's OPL writes. Two runs of the same code give
-//                      identical files; refactors that keep behaviour must too (see docs).
+//                      identical files; refactors that keep behaviour must too (see docs). The dead part
+//                      of the emulated stack (below the stack pointer) is not hashed.
+//   --trace-skip A-B,… hex address ranges [A, B) left out of the memory hash (state the game never reads,
+//                      e.g. a removed layer's private variables)
 //
 // Virtual clock: the PIT scheduler (pit.setClock) and the VGA retrace (vga.setVgaClock) read a virtual
 // millisecond counter. Every yieldCpu() (the game's busy-wait loops, runtime/cpu.js) advances it by
@@ -29,11 +31,11 @@ import { join } from 'node:path';
 import { powerOn, runProgram, pc, con } from '../src/machine.js';
 import { setYieldHook, hostYield } from '../src/runtime/cpu.js';
 import { R32u, u8, DATA_BASE, DATA_END, VGA_BASE, HEAP_BASE } from '../src/runtime/mem.js';
+import { stackPointer, STACK_LIMIT } from '../src/runtime/stack.js';
 import { F } from '../src/runtime/registry.js';
 import * as vfs from '../src/platform/vfs.js';
 import * as display from '../src/platform/display.js';
 import * as vga from '../src/platform/vga.js';
-import { registerStkFunction } from '../src/platform/stk.js';
 
 const root = new URL('../', import.meta.url).pathname;
 const args = process.argv.slice(2);
@@ -44,8 +46,8 @@ const maxS = +opt('--max', 600);
 const everyS = opt('--every', null);
 const stepMs = +opt('--step', 1);
 const traceFile = opt('--trace', null);
+const traceSkip = (opt('--trace-skip', '') || '').split(',').filter(Boolean).map((r) => r.split('-').map((x) => parseInt(x, 16)));
 const realtime = flag('--realtime');
-const noSound = flag('--no-sound');
 mkdirSync(outDir, { recursive: true });
 
 // ---- scripts ------------------------------------------------------------------------------------
@@ -122,29 +124,11 @@ powerOn({
   msSinceMidnight: realtime ? undefined : 12 * 3600 * 1000, // fixed BIOS time of day for reproducible runs
 });
 
-// ---- STK ----------------------------------------------------------------------------------------
-const stkLog = new Map();
-if (noSound) {
-  // --no-sound: every STK function is a logged no-op returning 0, except what the TSR interface itself
-  // requires for the client to proceed: the handshake (fn 5 with AX=6969h returns 0Bh, stk.js /
-  // re/HARDWARE.md §6) and the timer install/kill (fn 0x17/0x18 program the PIT and hook INT 8,
-  // pit.stkTimerInstall/Kill), which are hardware-visible (IRQ0 rate) rather than sound.
-  for (let fn = 0; fn <= 0x1b; fn++) {
-    registerStkFunction(fn, (words) => {
-      const k = '0x' + fn.toString(16);
-      stkLog.set(k, (stkLog.get(k) || 0) + 1);
-      if (fn === 5 && words[0] === 0x6969) return 0x0b;
-      if (fn === 0x17) { pc.stkTimerInstall(words[0]); return 1; }
-      if (fn === 0x18) { pc.stkTimerKill(); return 1; }
-      return 0;
-    });
-  }
-} else {
-  // SINGLE CALL SITE for the sound layer (platform/sound/index.js), as in boot.js. No host audio output
-  // (attachBrowserAudio) headless.
-  const sound = await import('../src/platform/sound/index.js');
-  sound.install();
-}
+// ---- sound --------------------------------------------------------------------------------------
+// SINGLE CALL SITE for the sound layer (platform/sound/index.js), as in boot.js. No host audio output
+// (attachBrowserAudio) headless.
+const sound = await import('../src/platform/sound/index.js');
+sound.install();
 
 // ---- events, snapshots ----------------------------------------------------------------------------
 const tick = () => R32u(0x46c);
@@ -181,9 +165,13 @@ const fnv = (h, b) => Math.imul(h ^ b, 0x01000193);
 let dacHash = 0x811c9dc5 | 0, oplHash = 0x811c9dc5 | 0;
 function memHash() {
   let h = 0x811c9dc5 | 0;
-  const w = new Uint32Array(u8.buffer);
+  const skip = [[STACK_LIMIT, stackPointer()], ...traceSkip].sort((p, q) => p[0] - q[0]);
   for (const [a, b] of [[DATA_BASE, DATA_END], [VGA_BASE, VGA_BASE + 64000], [HEAP_BASE, HEAP_BASE + 0x200000]]) {
-    for (let i = a >>> 2, e = b >>> 2; i < e; i++) h = Math.imul(h ^ w[i], 0x01000193);
+    let x = a;
+    for (const [p, q] of [...skip.filter(([p, q]) => q > a && p < b), [b, b]]) {
+      for (const e = Math.min(p, b); x < e; x++) h = Math.imul(h ^ u8[x], 0x01000193);
+      x = Math.max(x, q);
+    }
   }
   return h >>> 0;
 }
@@ -235,7 +223,6 @@ if (crash && !(crash instanceof Stop)) {
 console.log(`time: ${elapsed.toFixed(2)} s ${realtime ? 'wall' : 'virtual'} (${((performance.now() - wall0) / 1000).toFixed(2)} s wall), ` +
   `BIOS ticks: ${ticks} -> ${(ticks / elapsed).toFixed(4)} ticks/s (PIT: 1193182/65536 = 18.2065), yields: ${yields}`);
 console.log('STK timer counter:', pc.pit.stkTimerCounter?.());
-if (stkLog.size) console.log('STK calls (no-op stubs):', Object.fromEntries(stkLog));
 console.log('console output:', JSON.stringify(con.outputText()));
 pc.pit.stop();
 process.exit(crash && !(crash instanceof Stop) ? 1 : 0);

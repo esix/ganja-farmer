@@ -11,7 +11,6 @@
 //          21h AH=25h/35h       PMODE/W vectors  dpmi.js (other AH: setDosHandler)
 //          31h                  DPMI             dpmi.js
 //          33h AX=0/2/3         mouse driver     mouse.js
-//          60h (STK vector)     STKRUN           stk.js
 import { setIoBackend } from '../runtime/io.js';
 import { setYieldHook } from '../runtime/cpu.js';
 import * as pic from './pic.js';
@@ -20,7 +19,6 @@ import * as kbd from './kbd.js';
 import * as vga from './vga.js';
 import * as mouse from './mouse.js';
 import * as dpmi from './dpmi.js';
-import * as stkmod from './stk.js';
 
 const hex = (n) => '0x' + (n >>> 0).toString(16);
 
@@ -52,15 +50,12 @@ export const backend = {
       case 0x31: return dpmi.int31(regs);
       case 0x33: return mouse.int33(regs);
     }
-    if (num === stkmod.stkVector() && num !== 0) return stkmod.stkInterrupt(regs);
-    // An INT 60h..66h with no STK installed: the real-mode vector is 0000:0000 (never called by the
-    // client, which only uses the vector it discovered).
     throw new Error('pc: INT ' + hex(num) + ' not emulated');
   },
 };
 
-// Power-on state: BIOS tick from the time of day, BIOS INT 8/INT 9 handlers, STKRUN resident
-// (GANJA.BAT runs `stkrun ganjafrm`). The DAC (display.dac) is not touched: it starts all zero, as the
+// Power-on state: BIOS tick from the time of day, BIOS INT 8/INT 9 handlers. (The STK driver is called
+// directly by lib/stk_client.js; nothing of STKRUN is resident in memory any more.) The DAC (display.dac) is not touched: it starts all zero, as the
 // VGA BIOS leaves entries it does not load after POST ("The last 8 colors of the palette are only
 // initialized to 0 at BIOS init", DOSBox-X int10_modes.cpp). The program's first video access is the
 // mode 13h set at 0x1aa2b, which loads entries 0..247; entries 248..255 stay 0 until PCX_Load writes
@@ -74,7 +69,6 @@ export function reset({ msSinceMidnight } = {}) {
     msSinceMidnight = ((d.getHours() * 60 + d.getMinutes()) * 60 + d.getSeconds()) * 1000 + d.getMilliseconds();
   }
   pit.setBiosTicksFromTime(msSinceMidnight);
-  stkmod.installResident();
 }
 
 // Install as the io.js backend. Options:
@@ -152,8 +146,6 @@ export function attachBrowser(canvas) {
 }
 
 export { pic, pit, kbd, vga, mouse, dpmi };
-export const stk = stkmod.stk;
-export const { registerStkFunction } = stkmod;
 export const { setOnStkTick, stkTimerInstall, stkTimerKill } = pit;
 export const { setOnBiosKey } = kbd;
 export const { selBase, rmLinear, SEL_CODE, SEL_DATA } = dpmi;

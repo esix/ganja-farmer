@@ -64,17 +64,13 @@ async function gameInit() {
   await F.dws_Init_1ebe4(0x61000, 0x61040);
   await F.dwt_Init_1ff4f(2);
 }
-const clientErr = () => R32(0x30c7f); // STK client last-error dword (0x1e3c0 stores fn 0's result)
 const dwdHdr = (b) => ({ rate: b[0x20] | (b[0x21] << 8), len: b[0x26] | (b[0x27] << 8), off: b[0x2e] | (b[0x2f] << 8) });
 
-test('handshake, detect results, init state', async () => {
+test('detect results, init state', async () => {
   boot();
   await gameInit();
-  assert.equal(R8(0x31087), 0x60, 'client found the STK vector');
-  assert.equal(clientErr(), 0);
   const s = stkrun.state();
-  // errno 0xDE: left by the client's handshake XMaster(6969h) (0380:0b5c); no later call failed
-  assert.deepEqual([s.errno, s.initted, s.initBusy, s.mixerInit, s.fmOn, s.digOn], [0xde, 1, 0, 1, 1, 1]);
+  assert.deepEqual([s.errno, s.initted, s.initBusy, s.mixerInit, s.fmOn, s.digOn], [0, 1, 0, 1, 1, 1]);
   // dws_DETECTRESULTS as written by 0380:13e6 for the assumed setup (stkrun.js SETUP)
   const w = (o) => R16(0x61000 + o);
   assert.deepEqual([w(0), w(2), w(4), w(6), w(8), w(0xa), w(0xc), w(0xe), w(0x10), w(0x12)],
@@ -96,23 +92,24 @@ test('handshake, detect results, init state', async () => {
   assert.equal(card.digitalRunning(), false);
 });
 
-test('errors reach the client through fn 0 (dws_ErrNo)', async () => {
+test('driver errno for refused calls', async () => {
   boot();
+  const errno = () => stkrun.state().errno;
   W32(0x61280, loadFile('explo.dwd')); W16(0x61284, 1); W16(0x61286, 0x320); W16(0x61288, 0);
   await F.dws_DPlay_1eff8(0x61280);         // before dws_Init: 0380:1043 -> errno 1
-  assert.equal(clientErr(), 1);
+  assert.equal(errno(), 1);
   const res = F.malloc_23dab(2);
   await F.dws_MSongStatus_1fc3f(res);
-  assert.equal(clientErr(), 1);
+  assert.equal(errno(), 1);
   // DGetRateFromDWD has no initted check (0380:0fb8)
   W16(0x61044, 0);
   await F.dws_DGetRateFromDWD_1f5b3(R32(0x61280), 0x61044);
   assert.equal(R16(0x61044), 10989);
   await gameInit();
   await F.dws_XDig_1ef64(256);              // 0380:0c27 -> 9
-  assert.equal(clientErr(), 9);
+  assert.equal(errno(), 9);
   await F.dws_DSetRate_1f3c3(3000);         // 0380:0ee3 -> 0xE
-  assert.equal(clientErr(), 0xe);
+  assert.equal(errno(), 0xe);
 });
 
 test('DPlay: EXPLO.DWD through the DOS copy, DAC bytes = 0x80 + samples from block 2 on', async () => {
@@ -126,7 +123,6 @@ test('DPlay: EXPLO.DWD through the DOS copy, DAC bytes = 0x80 + samples from blo
   await F.dws_DGetRateFromDWD_1f5b3(R32(0x61280), 0x61044);
   assert.equal(R16(0x61044), 10989);
   await F.dws_DPlay_1eff8(0x61280);
-  assert.equal(clientErr(), 0);
   assert.equal(R16(0x6128a), 11, 'soundnum');
   const st = F.malloc_23dab(2);
   await F.dws_DSoundStatus_1f348(11, st);
@@ -182,7 +178,6 @@ test('DPlay/DDiscard/DSoundStatus/DPause sequence equals the reference mixer at 
   }
   runMs(1000);
   refRun(dig.length);
-  assert.equal(clientErr(), 0);
   assert.ok(dig.some((x) => x !== 0x80));
   assert.deepEqual(statuses.slice(0, 1), [1]);
   assert.equal(dig.length, out.length);
@@ -204,7 +199,6 @@ test('MPlay: OPL register writes equal re/music player output for the same file 
   for (const [name, ticks] of [['F1.DWM', 402], ['F6.DWM', 146]]) {
     W32(mp, loadFile(name.toLowerCase())); W16(mp + 4, 1);
     await F.dws_MPlay_1faa2(mp);            // client: fn 0x14 (MClear, 0x1fd9b) then fn 0x12
-    assert.equal(clientErr(), 0);
     const buf = new Uint8Array(readFileSync(GANJA + name));
     drv.clear(); drv.play(buf, 1);
     await F.dws_MSongStatus_1fc3f(st);

@@ -1,10 +1,11 @@
-// DiamondWare STK 2.22 TSR (STKRUN.EXE): the functions behind the software-interrupt entry of
-// ../stk.js, i.e. the API layer of segment 0380 (and the DWT timer, segment 0530) of STKRUN, on top
+// DiamondWare STK 2.22 TSR (STKRUN.EXE), reimplemented: the API layer of segment 0380 (and the DWT timer,
+// segment 0530) of STKRUN, on top
 // of the verified reimplementations of its digitized mixer and DWM/OPL2 player:
 //   re/digi/digi-mixer.js  (DIGI.md; verified FAITHFUL for game-reachable behaviour)
 //   re/music/dwm-player.js (PLAYER.md, DWM_FORMAT.md; verified 0 diffs)
-// They are imported unchanged from re/ (single source of truth); this file is the adapter: argument
-// words -> their methods, the API layer's own state and checks, and the hardware (soundcard.js).
+// This file is the adapter: the API layer's own state and checks, and the hardware (soundcard.js).
+// Stage 2: the game calls it directly (export `stk`, used by lib/stk_client.js) with flat pointers. The
+// original path, client stubs marshalling arguments into a DOS buffer and INT 60h into the TSR, is gone.
 //
 // Addresses: seg:off in the STKRUN.EXE load image (re/digi/stkrun.asm). Dispatch table DS(07FE):0874
 // (read from the image): 00 0380:0af4, 01 0380:1af2, 02 0380:13e6, 03 0380:0864, 04 0380:0aaa,
@@ -12,13 +13,6 @@
 // 0C 0380:0ffa, 0D 0380:1172, 0E 0380:120c, 0F 0380:12f0, 10 0380:134c, 11 0380:13a8, 12 0380:0cf6,
 // 13 0380:0d6a, 14 0380:0dd2, 15 0380:0e30, 16 0380:0e8e, 17 0530:009e, 18 0530:0069, 19 0530:013f,
 // 1A 0530:0147, 1B 0530:0125.
-//
-// Argument words (stk.js): the handler 07f0:007f pushes the block words in memory order, so for a
-// Pascal callee word 0 is the first parameter; a far pointer is seg at word i, off at word i+1
-// (farArg). Result: the handler returns DX:AX in ECX (07f0:0095..00a0). Only AX is modelled; the
-// high word is returned as 0. DX is a leftover in most workers, and every client call site masks the
-// result with 0xFFFF (0x1e3c0 callers, 0x1e94e) or ignores it (dwt_Init/dwt_Kill), so DX is not
-// observable.
 //
 // API-layer state, DS(0A0F): [0x290] errno, [0x292] initted, [0x294] init in progress, [0x296]
 // mixer initialised, [0x298] FM active, [0x29a] digital active.
@@ -33,14 +27,9 @@
 //  - The licence/tamper checks 0380:0006 (Init) and 02f1:0004/0503 (DIGI.md §5): assumed to pass.
 //  - TSR-internal memory: DMA buffer allocation 0380:0706 and its release in Kill ([0x5f0], 0380:0a08..0a5f).
 //
-// Functions the game calls (client stubs src/lib, callers src/game): 0 (0x1e3c0), 2, 3, 4,
-// 5 (also the handshake 0x1e941), 6, 7, 8, 9 (also via 0x1e5f6 -> 0x1f1fb), 0xA, 0xC, 0xD, 0x10, 0x11,
-// 0x12, 0x13, 0x14 (0x1fd9b, from dws_MPlay), 0x15, 0x16, 0x17, 0x18.
-// Not called: 1 (Update; client 0x1ea19 has no caller), 0xB, 0xE, 0xF, 0x19, 0x1A, 0x1B -> left
-// unregistered, so stk.call throws "not implemented".
-import { u8, R16, W16 } from '../../runtime/mem.js';
-import { registerStkFunction, farArg } from '../stk.js';
-import { rmLinear } from '../dpmi.js';
+// Functions the game uses: 2, 3, 4, 5, 6, 7, 8, 9, 0xA, 0xC, 0xD, 0x10, 0x11, 0x12, 0x13, 0x14 (from
+// dws_MPlay), 0x15, 0x16, 0x17, 0x18. Not implemented: 1, 0xB, 0xE, 0xF, 0x19, 0x1A, 0x1B.
+import { u8, R16, R32, W16 } from '../../runtime/mem.js';
 import * as pit from '../pit.js';
 import * as card from './soundcard.js';
 import { DigiMixer, BLOCK_SIZE_BY_ENV } from './digi-mixer.js';
@@ -69,23 +58,20 @@ const S = { errno: 0, initted: 0, initBusy: 0, mixerInit: 0, fmOn: 0, digOn: 0 }
 let digi = null;   // DigiMixer: the digitized half (segments 02f1/0750)
 let music = null;  // STKMusic: sequencer 068a + OPL driver 05c1 (+ software mixer 07ac)
 let everInit = false;
-let memBuf = null; // real-mode memory registered with the mixer (see dwdView)
 const dwdViews = new Map();
 
 export const state = () => ({ ...S, digi, music });
 
-// Real-mode memory as the mixer sees it. DigiMixer reads sample bytes by linear address from the
-// buffers registered with registerBuffer() and identifies a DWD by its object (bufInfo). The first
-// registered buffer is all of real-mode memory at 0000:0000, so every sample read is the live
-// emulated byte at seg*16+off (as the TSR reads it); each DWD (far pointer) gets one cached view
-// registered at its own seg:off, used only for identity and its header fields.
-function dwdView(seg, off) {
-  const k = ((seg & 0xffff) << 16) | (off & 0xffff);
-  let v = dwdViews.get(k);
+// A DWD as the mixer sees it (stage 2): the game's buffer in the heap, addressed directly by its flat
+// address (the client used to copy it to DOS memory for every play). One live view per address, registered
+// with the mixer under its own buffer number (digi-mixer.js registerBuffer); the mixer identifies a sound
+// by that number (DDiscard's AO matching compares it).
+function dwdView(addr) {
+  let v = dwdViews.get(addr);
   if (!v) {
-    v = u8.subarray(rmLinear(seg, off));
-    digi.registerBuffer(v, seg & 0xffff, off & 0xffff);
-    dwdViews.set(k, v);
+    v = u8.subarray(addr);
+    digi.registerBuffer(v);
+    dwdViews.set(addr, v);
   }
   return v;
 }
@@ -98,8 +84,7 @@ function fnErrNo() { return S.errno; }
 
 // ---- 02 dws_DetectHardWare (0380:13e6, retf 8): [bp+6] = dr, [bp+0xa] = dov -----------------------
 // Block (client 0x1ea27): word 0/1 = far ptr to the dov copy, word 2/3 = far ptr to the results area.
-function fnDetectHardWare(w) {
-  const dov = farArg(w, 0), dr = farArg(w, 2);
+function fnDetectHardWare(dov, dr) {
   if (S.initted !== 0 || S.initBusy !== 0) return fail(2);            // 0380:13f1..13ff -> 1ac0
   // Overrides (dov +0 port, +2 DMA, +4 IRQ; 0xFFFF = autodetect). The game passes 0xFFFF for all three
   // (0x1aa49..0x1aa5b); the override paths (0380:1447, 16e6, 1712) are not implemented.
@@ -144,8 +129,7 @@ function fnDetectHardWare(w) {
 // ---- 03 dws_Init (0380:0864, retf 8): [bp+6] = ideal, [bp+0xa] = dr --------------------------------
 // Block (client 0x1ebe4): word 0/1 = far ptr to the dr copy, word 2/3 = far ptr to the ideal copy.
 // ideal is not written (the client copies it back unchanged).
-function fnInit(w) {
-  const dr = farArg(w, 0), ideal = farArg(w, 2);
+function fnInit(dr, ideal) {
   if (S.initted !== 0 || S.initBusy !== 0) return fail(2);            // 0380:086f..087d -> 09d2
   // UNCERTAIN: a second Init after Kill would keep the TSR's data (e.g. the soundnum counter, OPL
   // driver state); rebuilding the mixer/player would not. The game calls dws_Init once (0x1aab1).
@@ -173,8 +157,6 @@ function fnInit(w) {
       rate: R16(ideal + 4), nvoices: R16(ideal + 6), blockSize: BLOCK_SIZE_BY_ENV[env],
       mixerType: mt === 1 ? 'software' : mt === 3 ? 'sbpro' : 'sb16',
     });
-    memBuf = u8.subarray(0, 0x110000);
-    digi.registerBuffer(memBuf, 0, 0);
     dwdViews.clear();
     card.startDigital(digi);
     S.digOn = 1;                                                       // 0380:0986
@@ -216,23 +198,23 @@ function xCheck(v) {
   if (v > 0xff) return fail(9);
   return 1;
 }
-function fnXMaster(w) {
-  const v = w[0];
+function fnXMaster(v) {
+  v &= 0xffff;
   if (v === 0x6969) { S.errno = 0xde; return 0x0b; }                 // 0380:0b56..0b62 (client handshake)
   if (!xCheck(v)) return 0;
   if (music) { music.setMasterVolume(v); musicOut.setMusVol(music.musVol); }
   if (digi) digi.XMaster(v);
   return 1;                                                            // 0380:0b27
 }
-function fnXMusic(w) {
-  const v = w[0];
+function fnXMusic(v) {
+  v &= 0xffff;
   if (!xCheck(v)) return 0;
   if (music) { music.setMusicVolume(v); musicOut.setMusVol(music.musVol); }
   if (digi) digi.XMusic(v);
   return 1;                                                            // 0380:0bb7
 }
-function fnXDig(w) {
-  const v = w[0];
+function fnXDig(v) {
+  v &= 0xffff;
   if (!xCheck(v)) return 0;
   if (digi) digi.XDig(v);
   return 1;                                                            // 0380:0c33
@@ -246,11 +228,10 @@ function digCheck() {
 }
 // 08 dws_DPlay (0380:1100 -> 1038, retf 4): far ptr to dws_DPLAY {snd far ptr (off +0, seg +2),
 // count +4, priority +6, presnd +8, soundnum +0xA}. soundnum always receives the worker's raw result.
-function fnDPlay(w) {
+function fnDPlay(dp) {
   if (!digCheck()) return 0;
-  const dp = farArg(w, 0);
   const req = {
-    snd: dwdView(R16(dp + 2), R16(dp)), count: R16(dp + 4), priority: R16(dp + 6), presnd: R16(dp + 8),
+    snd: dwdView(R32(dp) >>> 0), count: R16(dp + 4), priority: R16(dp + 6), presnd: R16(dp + 8),
   };
   const r = digi.DPlay(req);
   W16(dp + 0x0a, req.soundnum);                                        // 0380:107f / 10a2
@@ -259,24 +240,23 @@ function fnDPlay(w) {
 }
 // 09 dws_DSoundStatus (0380:1284 -> 1244, retf 6): [bp+0xa] = soundnum (word 0), [bp+6] = far ptr
 // to the result (words 1/2).
-function fnDSoundStatus(w) {
+function fnDSoundStatus(sn, result) {
   if (!digCheck()) return 0;
-  W16(farArg(w, 1), digi.DSoundStatus(w[0]).status);                   // 02f1:06af -> 0380:1267
+  W16(result, digi.DSoundStatus(sn & 0xffff).status);                   // 02f1:06af -> 0380:1267
   return 1;
 }
 // 0A dws_DSetRate (0380:0f10 -> 0eba): > 0x5DC0 -> 0xF, < 0xF44 -> 0xE, else 02f1:06dc.
-function fnDSetRate(w) {
+function fnDSetRate(rate) {
   if (!digCheck()) return 0;
-  const r = digi.DSetRate(w[0]);
+  const r = digi.DSetRate(rate & 0xffff);
   if (!r) S.errno = digi.errno;
   return r;
 }
 // 0C dws_DGetRateFromDWD (0380:0ffa -> 0fb8, retf 8): [bp+0xa] = far ptr to the DWD (words 0/1),
 // [bp+6] = far ptr to the result (words 2/3). No initted/digital checks in 0fb8. *result is written
 // before the check (0380:0fce).
-function fnDGetRateFromDWD(w) {
-  const snd = u8.subarray(farArg(w, 0));
-  const res = farArg(w, 2);
+function fnDGetRateFromDWD(sndAddr, res) {
+  const snd = u8.subarray(sndAddr);
   // The worker (02f1:06b4 -> 0750:03e5) needs no mixer state; DigiMixer.DGetRateFromDWD only sets
   // errno on its object, so it can run on a scratch object when the digital side is not initialised.
   const obj = digi ?? { errno: 0 };
@@ -286,9 +266,9 @@ function fnDGetRateFromDWD(w) {
   return r.ok;
 }
 // 0D dws_DDiscard (0380:1172 -> 1138): 02f1:06a5, always 1.
-function fnDDiscard(w) {
+function fnDDiscard(sn) {
   if (!digCheck()) return 0;
-  digi.DDiscard(w[0]);
+  digi.DDiscard(sn & 0xffff);
   return 1;                                                            // 0380:1158
 }
 // 10/11 dws_DPause / dws_DUnPause (0380:134c -> 131c / 0380:13a8 -> 1378): 02f1:06be / 06cd.
@@ -304,18 +284,17 @@ function fmCheck() {
 // 12 dws_MPlay (0380:0cf6 -> 0c88, retf 4): far ptr to dws_MPLAY {track far ptr (off +0, seg +2),
 // count +4}; 068a:02e8(track, count): 0 -> 1; 1 -> errno 3; 2 -> 0x10; 3 -> 0x11; other -> 0x12.
 // The player reads the song through a live view of real-mode memory at the far pointer.
-function fnMPlay(w) {
+function fnMPlay(mp) {
   if (!fmCheck()) return 0;
-  const mp = farArg(w, 0);
-  const track = u8.subarray(rmLinear(R16(mp + 2), R16(mp)));
+  const track = u8.subarray(R32(mp) >>> 0);
   const r = music.play(track, R16(mp + 4));
   if (r === 0) { musicSong = musicOut.songName(track); musicOut.start(musicSong); return 1; } // 0380:0ccc
   return fail(r === 1 ? 3 : r === 2 ? 0x10 : r === 3 ? 0x11 : 0x12);  // 0380:0cd1..0cef
 }
 // 13 dws_MSongStatus (0380:0d6a -> 0d2e, retf 4): *result = 068a:03e1.
-function fnMSongStatus(w) {
+function fnMSongStatus(result) {
   if (!fmCheck()) return 0;
-  W16(farArg(w, 0), music.status());                                   // 0380:0d4e
+  W16(result, music.status());                                   // 0380:0d4e
   return 1;
 }
 // 14 dws_MClear (0380:0dd2 -> 0da2): 068a:02ca.
@@ -328,7 +307,7 @@ function fnMUnPause() { if (!fmCheck()) return 0; music.unpause(); musicOut.resu
 // 17 dwt_Init (0530:009e, retf 2): pit.stkTimerInstall reproduces it (PIT 36h + divisor table
 // 0530:0022, chain count 0530:001a, INT 8 hook; see pit.js). AX is pushed/popped around the body
 // (0530:00a1 / 0120), so AX = its value at the call = the argument word (07f0:006e).
-function fnDwtInit(w) { pit.stkTimerInstall(w[0]); return w[0]; }
+function fnDwtInit(rate) { pit.stkTimerInstall(rate & 0xffff); return rate & 0xffff; }
 // 18 dwt_Kill (0530:0069, retf): pit.stkTimerKill. AX pushed/popped (0530:0069 / 009c): AX at the
 // call = the client's EAX = 0 (0x1e319 `xor eax, eax`).
 function fnDwtKill() { pit.stkTimerKill(); return 0; }
@@ -349,20 +328,22 @@ function stkUpdate() {
 // ---- installation ----------------------------------------------------------------------------------
 // Registers the functions with stk.js, the update with the STK timer (pit.setOnStkTick) and the sound
 // card with the emulated clock (pit.setOnAdvance). Call after pc.install(); resets the TSR state.
+// The driver API, called directly by the game's dws_* / dwt_* functions (lib/stk_client.js). Pointer
+// arguments are flat addresses; each returns the driver's AX (1 ok / 0 error, see errno()).
+export const stk = {
+  errno: fnErrNo, DetectHardWare: fnDetectHardWare, Init: fnInit, Kill: fnKill,
+  XMaster: fnXMaster, XMusic: fnXMusic, XDig: fnXDig,
+  DPlay: fnDPlay, DSoundStatus: fnDSoundStatus, DSetRate: fnDSetRate, DGetRateFromDWD: fnDGetRateFromDWD,
+  DDiscard: fnDDiscard, DPause: fnDPause, DUnPause: fnDUnPause,
+  MPlay: fnMPlay, MSongStatus: fnMSongStatus, MClear: fnMClear, MPause: fnMPause, MUnPause: fnMUnPause,
+  dwtInit: fnDwtInit, dwtKill: fnDwtKill,
+};
+
 export function install() {
   S.errno = 0; S.initted = 0; S.initBusy = 0; S.mixerInit = 0; S.fmOn = 0; S.digOn = 0;
-  digi = null; music = null; everInit = false; memBuf = null; dwdViews.clear();
+  digi = null; music = null; everInit = false; dwdViews.clear();
   musicSong = null; musicOut.reset();
   card.reset();
-  const fns = {
-    0x00: fnErrNo, 0x02: fnDetectHardWare, 0x03: fnInit, 0x04: fnKill,
-    0x05: fnXMaster, 0x06: fnXMusic, 0x07: fnXDig,
-    0x08: fnDPlay, 0x09: fnDSoundStatus, 0x0a: fnDSetRate, 0x0c: fnDGetRateFromDWD, 0x0d: fnDDiscard,
-    0x10: fnDPause, 0x11: fnDUnPause,
-    0x12: fnMPlay, 0x13: fnMSongStatus, 0x14: fnMClear, 0x15: fnMPause, 0x16: fnMUnPause,
-    0x17: fnDwtInit, 0x18: fnDwtKill,
-  };
-  for (let fn = 0; fn <= 0x1b; fn++) registerStkFunction(fn, fns[fn]);
   pit.setOnStkTick(stkUpdate);
   pit.setOnAdvance(card.advance);
 }

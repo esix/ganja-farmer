@@ -8,7 +8,6 @@ import { dac } from '../src/platform/display.js';
 import { VGA_PALETTE_248, TEXT_PALETTE_64 } from '../src/platform/vga_palettes.js';
 import * as pc from '../src/platform/pc.js';
 import { keyBytes } from '../src/platform/kbd.js';
-import { registerStkFunction } from '../src/platform/stk.js';
 import * as con from '../src/platform/console.js';
 
 let fakeMs = 0;
@@ -380,37 +379,11 @@ test('mouse reset: centre until the host pointer is seen; a known host position 
 });
 
 // ---------------- DPMI / STK ----------------
-test('STK vector discovery through DPMI 0200h/0002h, and the 6969h calling convention', () => {
+test('DPMI 0100h/0101h: DOS block at linear seg<<4; a double free fails', () => {
   fresh();
-  let found = 0;
-  for (let v = 0x60; v <= 0x66 && !found; v++) { // mirrors 0x1e859
-    const r = int86(0x31, { eax: 0x200, ebx: v, ecx: 0, edx: 0 });
-    if (((r.cx << 4) + r.dx) === 0) continue;
-    const s = int86(0x31, { eax: 2, bx: r.cx });
-    assert.equal(s.cflag, 0);
-    const base = pc.selBase(s.ax) + r.dx;
-    if (u8[base + 2] === 0x53 && u8[base + 3] === 0x54 && u8[base + 4] === 0x4b) found = v;
-  }
-  assert.equal(found, 0x60);
-  const calls = [];
-  registerStkFunction(5, (w) => { calls.push(w); return w[0] === 0x6969 ? 0x0b : 1; });
-  // 0x1e342 handshake: EBX = 5<<16|6969h, EAX = 6969h, ECX = 2
-  let r = int86(0x60, { eax: 0x6969, ebx: (5 << 16) | 0x6969, ecx: 2, edx: 0x1234 });
-  assert.equal(r.ecx & 0xffff, 0x0b); assert.equal(r.edx, 0x1234); assert.equal(r.eax, 0x6969);
-  // 0x1e37f block call: args in DOS memory
   const a = int86(0x31, { ax: 0x100, bx: 0x101 });
   assert.equal(a.cflag, 0);
-  const lin = pc.selBase(a.dx);
-  assert.equal(lin, a.ax << 4);
-  u8[lin] = 0x34; u8[lin + 1] = 0x12; u8[lin + 2] = 0x78; u8[lin + 3] = 0x56;
-  registerStkFunction(8, (w) => { calls.push(w); return 0x00010001; });
-  r = int86(0x60, { eax: (a.ax << 16) >>> 0, ebx: (8 << 16) | 0x6969, ecx: 4 });
-  assert.equal(r.ecx, 0x00010001);
-  assert.deepEqual(calls[1], [0x1234, 0x5678]);
-  // wrong magic: handler returns registers unchanged
-  r = int86(0x60, { ebx: (8 << 16) | 0x1111, ecx: 77 });
-  assert.equal(r.ecx, 77);
-  assert.throws(() => int86(0x60, { ebx: (0x13 << 16) | 0x6969, ecx: 0 }), /not implemented/);
+  assert.equal(pc.selBase(a.dx), a.ax << 4);
   assert.equal(int86(0x31, { ax: 0x101, dx: a.dx }).cflag, 0);
   assert.equal(int86(0x31, { ax: 0x101, dx: a.dx }).cflag, 1, 'double free fails');
 });
