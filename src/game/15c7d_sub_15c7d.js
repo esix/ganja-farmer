@@ -61,7 +61,7 @@ register(0x15c7d, 'sub_15c7d', async function sub_15c7d() {
       }
     }
     if (R32(0x30bf0) < -0x21c) {                                              // 0x15dd6..0x15de0 (0xfffffde4, jge: signed)
-      await F.sub_1a825();                                                    // 0x15de2
+      F.sub_1a825();                                                    // 0x15de2
     }
     if (flag !== 0) {                                                         // 0x15de7..0x15deb
       await F.sub_15e15();                                                    // 0x15ded

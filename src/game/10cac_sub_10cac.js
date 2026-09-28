@@ -41,13 +41,13 @@ register(0x10cac, 'sub_10cac', async function sub_10cac() {
 
   done = 0;                                                            // 10cc4
   latch = 0;                                                           // 10ccb
-  await F.Behind_Sprite_Clip_2106f(0x33aa4, R32(0x64e7c));             // 10cd2..10cdd
-  await F.Behind_Sprite_Clip_2106f(0x45be8, R32(0x64e7c));             // 10ce2..10ced
-  await F.Erase_Sprite_Clip_211fc(0x33aa4, R32(0x64e7c));              // 10cf2..10cfd
-  await F.Behind_Sprite_Clip_2106f(0x33aa4, R32(0x64e7c));             // 10d02..10d0d
-  await F.Behind_Sprite_Clip_2106f(0x45744, R32(0x64e7c));             // 10d12..10d1d
-  await F.Behind_Sprite_Clip_2106f(0x458d0, R32(0x64e7c));             // 10d22..10d2d
-  await F.Behind_Sprite_Clip_2106f(0x45a5c, R32(0x64e7c));             // 10d32..10d3d
+  F.Behind_Sprite_Clip_2106f(0x33aa4, R32(0x64e7c));             // 10cd2..10cdd
+  F.Behind_Sprite_Clip_2106f(0x45be8, R32(0x64e7c));             // 10ce2..10ced
+  F.Erase_Sprite_Clip_211fc(0x33aa4, R32(0x64e7c));              // 10cf2..10cfd
+  F.Behind_Sprite_Clip_2106f(0x33aa4, R32(0x64e7c));             // 10d02..10d0d
+  F.Behind_Sprite_Clip_2106f(0x45744, R32(0x64e7c));             // 10d12..10d1d
+  F.Behind_Sprite_Clip_2106f(0x458d0, R32(0x64e7c));             // 10d22..10d2d
+  F.Behind_Sprite_Clip_2106f(0x45a5c, R32(0x64e7c));             // 10d32..10d3d
   W32(0x33c0c, 1);                                                     // 10d42
 
   // 10d4c: cmp [ebp-8], 1; je 0x1121b. Busy-wait: the exit also depends on keyboard_state [0x64f08] /
@@ -60,8 +60,8 @@ register(0x10cac, 'sub_10cac', async function sub_10cac() {
     } else {
       W32(0x45d50, 1);                                                 // 10d6b
     }
-    await F.sub_14fba();                                               // 10d75
-    await F.Squeeze_Mouse_230df(3, 0x60b48, 0x60b4c, 0x60b50);         // 10d7a..10d8e (result not read)
+    F.sub_14fba();                                               // 10d75
+    F.Squeeze_Mouse_230df(3, 0x60b48, 0x60b4c, 0x60b50);         // 10d7a..10d8e (result not read)
     W32(0x33aa4, ((R32(0x60b48) >> 1) - 0x10) | 0);                    // 10d93..10d9d: sar eax,1; sub eax,0x10
     W32(0x33aa8, R32(0x60b4c));                                        // 10da2..10da7
 
@@ -82,7 +82,7 @@ register(0x10cac, 'sub_10cac', async function sub_10cac() {
       } else {
         W32(0x30c20, 1);                                               // 10e67
       }
-      await F.dws_DPlay_1eff8(0x61180);                                // 10e71..10e7c (cdecl)
+      F.dws_DPlay_1eff8(0x61180);                                // 10e71..10e7c (cdecl)
       latch = 1;                                                       // 10e7f
     }
     if (R32(0x60b50) !== 1) {                                          // 10e86: cmp; je 10e96
@@ -130,37 +130,37 @@ register(0x10cac, 'sub_10cac', async function sub_10cac() {
     if (R32(0x45a5c) < 0x5a) W16(0x60f12, 0);                          // 11089..11092
     if (R32(0x45a5c) > 0xaa) W16(0x60f12, 0xff);                       // 1109b..110a7
 
-    await F.dws_XDig_1ef64(R16(0x60f0e));                              // 110b0..110be (cdecl)
-    await F.dws_XMusic_1eed0(R16(0x60f10));                            // 110c1..110cf (cdecl)
-    await F.dws_XMaster_1ee3c(R16(0x60f12));                           // 110d2..110e0 (cdecl)
-    await F.dws_DSoundStatus_1f348(R16(0x611ca), 0x60f14);             // 110e3..110f7 (cdecl)
+    F.dws_XDig_1ef64(R16(0x60f0e));                              // 110b0..110be (cdecl)
+    F.dws_XMusic_1eed0(R16(0x60f10));                            // 110c1..110cf (cdecl)
+    F.dws_XMaster_1ee3c(R16(0x60f12));                           // 110d2..110e0 (cdecl)
+    F.dws_DSoundStatus_1f348(R16(0x611ca), 0x60f14);             // 110e3..110f7 (cdecl)
     if (R16(0x60f14) === 0) {                                          // 110fa: cmp word; jne 11112
-      await F.dws_DPlay_1eff8(0x611c0);                                // 11104..1110f (cdecl)
+      F.dws_DPlay_1eff8(0x611c0);                                // 11104..1110f (cdecl)
     }
 
-    await F.Erase_Sprite_Clip_211fc(0x33aa4, R32(0x64e7c));            // 11112..1111d
-    await F.Erase_Sprite_Clip_211fc(0x45744, R32(0x64e7c));            // 11122..1112d
-    await F.Erase_Sprite_Clip_211fc(0x458d0, R32(0x64e7c));            // 11132..1113d
-    await F.Erase_Sprite_Clip_211fc(0x45a5c, R32(0x64e7c));            // 11142..1114d
-    await F.Behind_Sprite_Clip_2106f(0x33aa4, R32(0x64e7c));           // 11152..1115d
-    await F.Behind_Sprite_Clip_2106f(0x45744, R32(0x64e7c));           // 11162..1116d
-    await F.Behind_Sprite_Clip_2106f(0x458d0, R32(0x64e7c));           // 11172..1117d
-    await F.Behind_Sprite_Clip_2106f(0x45a5c, R32(0x64e7c));           // 11182..1118d
-    await F.Draw_Sprite_Clip_212c0(0x45be8, R32(0x64e7c), 1);          // 11192..111a2
-    await F.Draw_Sprite_Clip_212c0(0x45744, R32(0x64e7c), 1);          // 111a7..111b7
-    await F.Draw_Sprite_Clip_212c0(0x458d0, R32(0x64e7c), 1);          // 111bc..111cc
-    await F.Draw_Sprite_Clip_212c0(0x45a5c, R32(0x64e7c), 1);          // 111d1..111e1
-    await F.Draw_Sprite_Clip_212c0(0x33aa4, R32(0x64e7c), 1);          // 111e6..111f6
-    await F.Show_Double_Buffer_21531(R32(0x64e7c), 0);                 // 111fb..11202
-    await F.sub_10050();                                               // 11207
+    F.Erase_Sprite_Clip_211fc(0x33aa4, R32(0x64e7c));            // 11112..1111d
+    F.Erase_Sprite_Clip_211fc(0x45744, R32(0x64e7c));            // 11122..1112d
+    F.Erase_Sprite_Clip_211fc(0x458d0, R32(0x64e7c));            // 11132..1113d
+    F.Erase_Sprite_Clip_211fc(0x45a5c, R32(0x64e7c));            // 11142..1114d
+    F.Behind_Sprite_Clip_2106f(0x33aa4, R32(0x64e7c));           // 11152..1115d
+    F.Behind_Sprite_Clip_2106f(0x45744, R32(0x64e7c));           // 11162..1116d
+    F.Behind_Sprite_Clip_2106f(0x458d0, R32(0x64e7c));           // 11172..1117d
+    F.Behind_Sprite_Clip_2106f(0x45a5c, R32(0x64e7c));           // 11182..1118d
+    F.Draw_Sprite_Clip_212c0(0x45be8, R32(0x64e7c), 1);          // 11192..111a2
+    F.Draw_Sprite_Clip_212c0(0x45744, R32(0x64e7c), 1);          // 111a7..111b7
+    F.Draw_Sprite_Clip_212c0(0x458d0, R32(0x64e7c), 1);          // 111bc..111cc
+    F.Draw_Sprite_Clip_212c0(0x45a5c, R32(0x64e7c), 1);          // 111d1..111e1
+    F.Draw_Sprite_Clip_212c0(0x33aa4, R32(0x64e7c), 1);          // 111e6..111f6
+    F.Show_Double_Buffer_21531(R32(0x64e7c), 0);                 // 111fb..11202
+    F.sub_10050();                                               // 11207
     await F.Time_Delay_20404(1);                                       // 1120c..11211
   }                                                                    // 11216: jmp 0x10d4c
 
   W32(0x33c0c, 0);                                                     // 1121b
-  await F.Erase_Sprite_Clip_211fc(0x33aa4, R32(0x64e7c));              // 11225..11230
-  await F.Erase_Sprite_Clip_211fc(0x45744, R32(0x64e7c));              // 11235..11240
-  await F.Erase_Sprite_Clip_211fc(0x458d0, R32(0x64e7c));              // 11245..11250
-  await F.Erase_Sprite_Clip_211fc(0x45a5c, R32(0x64e7c));              // 11255..11260
-  await F.Erase_Sprite_Clip_211fc(0x45be8, R32(0x64e7c));              // 11265..11270
-  await F.Behind_Sprite_Clip_2106f(0x33aa4, R32(0x64e7c));             // 11275..11280
+  F.Erase_Sprite_Clip_211fc(0x33aa4, R32(0x64e7c));              // 11225..11230
+  F.Erase_Sprite_Clip_211fc(0x45744, R32(0x64e7c));              // 11235..11240
+  F.Erase_Sprite_Clip_211fc(0x458d0, R32(0x64e7c));              // 11245..11250
+  F.Erase_Sprite_Clip_211fc(0x45a5c, R32(0x64e7c));              // 11255..11260
+  F.Erase_Sprite_Clip_211fc(0x45be8, R32(0x64e7c));              // 11265..11270
+  F.Behind_Sprite_Clip_2106f(0x33aa4, R32(0x64e7c));             // 11275..11280
 });

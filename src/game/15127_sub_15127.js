@@ -23,7 +23,7 @@ import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
 
-register(0x15127, 'sub_15127', async function sub_15127() {
+register(0x15127, 'sub_15127', function sub_15127() {
   let i; // [ebp-4]
   let o; // i * 0x18c (imul eax/edx, [ebp-4], 0x18c — recomputed from [ebp-4] each time in the original)
   let k; // [0x60bac] * 0x18c, recomputed from memory at each use as the binary does (15471, 15495, 154b5)
@@ -46,14 +46,14 @@ register(0x15127, 'sub_15127', async function sub_15127() {
     if (R32(0x3d9dc + o) !== 0) {                                   // 151c6: cmp ..,0; je 15328
       W32(0x3d86c + o, (R32(0x3d86c + o) + R32(0x3d87c + o)) | 0);  // 151e1..151e7: add
       if (R32(0x3d86c + o) < -200 && R32(0x3d87c + o) < 0) {        // 151f4: jge ->skip; 15207: jl 15215
-        if (imod(await F.rand_232c7(), 3) === 1) {                  // 15215..1522b
-          W32(0x3d86c + o, (imod(await F.rand_232c7(), 500) + 0x190) | 0);   // 1522d..1524d
-          W32(0x3d87c + o, (-2 - imod(await F.rand_232c7(), 2)) | 0);         // 15253..15276
+        if (imod(F.rand_232c7(), 3) === 1) {                  // 15215..1522b
+          W32(0x3d86c + o, (imod(F.rand_232c7(), 500) + 0x190) | 0);   // 1522d..1524d
+          W32(0x3d87c + o, (-2 - imod(F.rand_232c7(), 2)) | 0);         // 15253..15276
           W32(0x3d880 + o, 4);                                                // 15283
         } else {
-          W32(0x3d87c + o, (imod(await F.rand_232c7(), 2) + 2) | 0);          // 1528f..152ac
+          W32(0x3d87c + o, (imod(F.rand_232c7(), 2) + 2) | 0);          // 1528f..152ac
           W32(0x3d9d4 + o, 2);                                                // 152b9
-          W32(0x3d86c + o, (-100 - imod(await F.rand_232c7(), 500)) | 0);     // 152c3..152e6
+          W32(0x3d86c + o, (-100 - imod(F.rand_232c7(), 500)) | 0);     // 152c3..152e6
           W32(0x3d880 + o, 4);                                                // 152f3
         }
         if (R32(0x60bbc) !== 0) {                                   // 152fd: cmp [0x60bbc],0; je 15328
@@ -69,12 +69,12 @@ register(0x15127, 'sub_15127', async function sub_15127() {
         W32(0x3d9dc + o, 1);                                        // 1535d
       }
       W32(0x3d880 + o, 4);                                          // 1536e
-      if (imod(await F.rand_232c7(), 3) === 1) {                    // 15378..1538e
-        W32(0x3d86c + o, (imod(await F.rand_232c7(), 500) + 0x190) | 0);     // 15390..153b1
-        W32(0x3d87c + o, (-2 - imod(await F.rand_232c7(), 2)) | 0);           // 153b7..153da
+      if (imod(F.rand_232c7(), 3) === 1) {                    // 15378..1538e
+        W32(0x3d86c + o, (imod(F.rand_232c7(), 500) + 0x190) | 0);     // 15390..153b1
+        W32(0x3d87c + o, (-2 - imod(F.rand_232c7(), 2)) | 0);           // 153b7..153da
       } else {
-        W32(0x3d86c + o, (-100 - imod(await F.rand_232c7(), 500)) | 0);       // 153e2..15403
-        W32(0x3d87c + o, (imod(await F.rand_232c7(), 2) + 2) | 0);            // 15409..15428
+        W32(0x3d86c + o, (-100 - imod(F.rand_232c7(), 500)) | 0);       // 153e2..15403
+        W32(0x3d87c + o, (imod(F.rand_232c7(), 2) + 2) | 0);            // 15409..15428
       }
     }
 
@@ -98,11 +98,11 @@ register(0x15127, 'sub_15127', async function sub_15127() {
 
     // 154df..15525: short-circuit chain; rand() is called only when state == 1.
     if (R32(0x3d9dc + o) === 1 &&
-        imod(await F.rand_232c7(), 0x4b) === 4 &&                   // 154e8..154fe
+        imod(F.rand_232c7(), 0x4b) === 4 &&                   // 154e8..154fe
         R32(0x3d86c + o) > -0x14 &&                                 // 15509: cmp ..,-0x14; jg
         R32(0x3d86c + o) < 0x140) {                                 // 1551b: cmp ..,0x140; jl
       W32(0x3d9dc + o, 0x2d);                                       // 15530
-      W32(0x3d884 + o, imod(await F.rand_232c7(), 0x3f));           // 1553a..15556
+      W32(0x3d884 + o, imod(F.rand_232c7(), 0x3f));           // 1553a..15556
     }
   }
 });

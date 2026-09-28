@@ -9,7 +9,7 @@
 import { register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 
-register(0x1352c, 'sub_1352c', async function sub_1352c() {
+register(0x1352c, 'sub_1352c', function sub_1352c() {
   // 0x13544 inc dword [0x60b8c]; cmp ...,0xc; jle (signed)
   W32(0x60b8c, (R32(0x60b8c) + 1) | 0);
   if (R32(0x60b8c) > 0xc) {

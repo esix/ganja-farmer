@@ -19,7 +19,7 @@ import { R32, W32 } from '../runtime/mem.js';
 import { idiv } from '../runtime/cpu.js';
 import { stackAlloc, stackFree } from '../runtime/stack.js';
 
-register(0x15788, 'sub_15788', async function sub_15788() {
+register(0x15788, 'sub_15788', function sub_15788() {
   let i;    // [ebp-4]
   let d;    // [ebp-8]: divisor
   let quot; // [ebp-0x10]: div_t.quot copy
@@ -29,22 +29,22 @@ register(0x15788, 'sub_15788', async function sub_15788() {
 
   i = 0;       // 0x157a0
   d = 1000;    // 0x157a7 (overwritten below before being read)
-  await F.div_23744(R32(0x60a68), 1000000, T(0x18));                // 0x157bb
+  F.div_23744(R32(0x60a68), 1000000, T(0x18));                // 0x157bb
   quot = R32(T(0x18)); rem = R32(T(0x18) + 4);                       // 0x157c6 movsd x2
   W32(0x44178, quot);
-  await F.div_23744(rem, 100000, T(0x20));                           // 0x157db
+  F.div_23744(rem, 100000, T(0x20));                           // 0x157db
   quot = R32(T(0x20)); rem = R32(T(0x20) + 4);
   W32(0x44304, quot);
-  await F.div_23744(rem, 10000, T(0x28));                            // 0x157fb
+  F.div_23744(rem, 10000, T(0x28));                            // 0x157fb
   quot = R32(T(0x28)); rem = R32(T(0x28) + 4);
   W32(0x44490, quot);
-  await F.div_23744(rem, 1000, T(0x30));                             // 0x1581b
+  F.div_23744(rem, 1000, T(0x30));                             // 0x1581b
   quot = R32(T(0x30)); rem = R32(T(0x30) + 4);
   W32(0x4461c, quot);
-  await F.div_23744(rem, 100, T(0x38));                              // 0x1583b
+  F.div_23744(rem, 100, T(0x38));                              // 0x1583b
   quot = R32(T(0x38)); rem = R32(T(0x38) + 4);
   W32(0x447a8, quot);
-  await F.div_23744(rem, 10, T(0x40));                               // 0x1585b
+  F.div_23744(rem, 10, T(0x40));                               // 0x1585b
   quot = R32(T(0x40)); rem = R32(T(0x40) + 4);
   W32(0x44934, quot);
   W32(0x44ac0, rem);                                                 // 0x15873
@@ -52,7 +52,7 @@ register(0x15788, 'sub_15788', async function sub_15788() {
   d = 1000;                                                          // 0x15878
   rem = R32(0x60a6c);                                                // 0x15884 -> [ebp-0xc]
   for (i = 0; i < 4; i++) {
-    await F.div_23744(rem, d, T(0x48));                              // 0x158a5
+    F.div_23744(rem, d, T(0x48));                              // 0x158a5
     quot = R32(T(0x48)); rem = R32(T(0x48) + 4);
     W32(0x44c4c + i * 0x18c, quot);
     d = idiv(d, 10);                                                 // 0x158d0 cdq-style sar; idiv
@@ -61,7 +61,7 @@ register(0x15788, 'sub_15788', async function sub_15788() {
   d = 100;                                                           // 0x158d7
   rem = R32(0x30bec);                                                // 0x158e3 -> [ebp-0xc]
   for (i = 0; i < 3; i++) {
-    await F.div_23744(rem, d, T(0x50));                              // 0x15904
+    F.div_23744(rem, d, T(0x50));                              // 0x15904
     quot = R32(T(0x50)); rem = R32(T(0x50) + 4);
     W32(0x45408 + i * 0x18c, quot);
     d = idiv(d, 10);                                                 // 0x1592f

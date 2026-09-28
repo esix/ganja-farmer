@@ -14,21 +14,21 @@ import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 
 register(0x10c0b, 'sub_10c0b', async function sub_10c0b() {
-  await F.dws_DPause_1f98a();                                        // 10c23
-  await F.dws_MPause_1fe37();                                        // 10c28
-  await F.Print_String_202cd(0xa, 0x3c, 0xfc, 0x3009d /* "Are you sure you want to quit Mon ?" */, 0); // 10c2d..10c43
-  await F.Print_String_202cd(0x7d, 0x46, 0xfb, 0x300c1 /* " (y or n) " */, 0); // 10c48..10c5e
+  F.dws_DPause_1f98a();                                        // 10c23
+  F.dws_MPause_1fe37();                                        // 10c28
+  F.Print_String_202cd(0xa, 0x3c, 0xfc, 0x3009d /* "Are you sure you want to quit Mon ?" */, 0); // 10c2d..10c43
+  F.Print_String_202cd(0x7d, 0x46, 0xfb, 0x300c1 /* " (y or n) " */, 0); // 10c48..10c5e
   // 10c63..10c75: exit to 10c9b when [0x64f58] != 0 or [0x64fc8] != 0. Busy-wait: both are keyboard_state
   // entries written by the keyboard ISR Keyboard_Driver 0x22b04 (LIBRARY.md); no extra yieldCpu is added:
   // the body awaits Time_Delay(1), which always yields at least once while waiting for the BIOS tick
   // (20404_Time_Delay.js; same reasoning as 1098f_sub_1098f.js / 1128e_sub_1128e.js).
   while (R32(0x64f58) === 0 && R32(0x64fc8) === 0) {
-    await F.sub_14fba();                                             // 10c77
+    F.sub_14fba();                                             // 10c77
     await F.Time_Delay_20404(1);                                     // 10c7c/10c81
     if (R32(0x64f58) !== 0) {                                        // 10c86: cmp [0x64f58],0; je 10c99
       W32(0x30be4, 0x1c);                                            // 10c8f
     }
   }                                                                  // 10c99: jmp 10c63
-  await F.dws_DUnPause_1fa16();                                      // 10c9b
-  await F.dws_MUnPause_1fec3();                                      // 10ca0
+  F.dws_DUnPause_1fa16();                                      // 10c9b
+  F.dws_MUnPause_1fec3();                                      // 10ca0
 });

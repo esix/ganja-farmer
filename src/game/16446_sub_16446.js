@@ -24,7 +24,7 @@ import { F, register } from '../runtime/registry.js';
 import { R32, R32u, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
 
-register(0x16446, 'sub_16446', async function sub_16446() {
+register(0x16446, 'sub_16446', function sub_16446() {
   let sel; // [ebp-4]
   let sel2; // [ebp-8]
 
@@ -73,12 +73,12 @@ register(0x16446, 'sub_16446', async function sub_16446() {
 
   if (R32(0x45ee4) === 0x20 && R32(0x45d98) === 0x41) {                   // 165a8..165b8
     W32(0x45d78, 0x14);                                                   // 165bc
-    if (imod(await F.rand_232c7(), 2) === 0) {                            // 165c6..165db
+    if (imod(F.rand_232c7(), 2) === 0) {                            // 165c6..165db
       W32(0x45ee4, 0x1c);                                                 // 165dd
-      W32(0x45d74, imod(-(await F.rand_232c7()) | 0, 0x12c));             // 165e7..165fc (neg; cdq; idiv)
+      W32(0x45d74, imod(-(F.rand_232c7()) | 0, 0x12c));             // 165e7..165fc (neg; cdq; idiv)
     } else {
       W32(0x45ee4, 0x1b);                                                 // 16604
-      W32(0x45d74, (imod(await F.rand_232c7(), 0x12c) + 0x140) | 0);      // 1660e..16627
+      W32(0x45d74, (imod(F.rand_232c7(), 0x12c) + 0x140) | 0);      // 1660e..16627
     }
   }
 
@@ -120,18 +120,18 @@ register(0x16446, 'sub_16446', async function sub_16446() {
           W32(0x60ee8, 0x37);
           W32(0x33f2c, 1);
           W32(0x33f24, 0);
-          await F.dws_DPlay_1eff8(0x61440);                               // 16798..167a3 (cdecl, 1 stack arg)
+          F.dws_DPlay_1eff8(0x61440);                               // 16798..167a3 (cdecl, 1 stack arg)
           break;
         case 1:                                                           // 167ab
           W32(0x60bb4, 1);
           W32(0x60ee8, 0x35);
-          await F.dws_DPlay_1eff8(0x61460);                               // 167bf..167ca
+          F.dws_DPlay_1eff8(0x61460);                               // 167bf..167ca
           break;
         case 2:                                                           // 167cf
           W32(0x60bb8, 1);
           W32(0x60ee8, 0x38);
           W32(0x60ef4, 0x39);
-          await F.dws_DPlay_1eff8(0x61480);                               // 167ed..167f8
+          F.dws_DPlay_1eff8(0x61480);                               // 167ed..167f8
           break;
         case 3:                                                           // 167fd
           W32(0x60a68, (R32(0x60a68) + 0xa410) | 0);

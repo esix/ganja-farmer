@@ -16,7 +16,7 @@
 import { F, register } from '../runtime/registry.js';
 import { R16, R32, W32 } from '../runtime/mem.js';
 
-register(0x14425, 'sub_14425', async function sub_14425() {
+register(0x14425, 'sub_14425', function sub_14425() {
   let i; // [ebp-8]
 
   // 0x1443d..0x14450: for (i = 0; i < 0x1a; i++)  (signed jge)
@@ -53,9 +53,9 @@ register(0x14425, 'sub_14425', async function sub_14425() {
         W32(0x3a888 + Math.imul(i, 0x18c), 0xb4); // 0x1454b: counter_1 = 180
         W32(0x3a9e0 + Math.imul(i, 0x18c), 2);    // 0x1455c: curr_frame = 2
         // 0x14566..0x14574: xor eax,eax; mov ax,[0x6128a]; push eax; call dws_DDiscard; add esp,4
-        await F.dws_DDiscard_1f770(R16(0x6128a));
+        F.dws_DDiscard_1f770(R16(0x6128a));
         // 0x14577..0x14582: push 0x61280; call dws_DPlay; add esp,4
-        await F.dws_DPlay_1eff8(0x61280);
+        F.dws_DPlay_1eff8(0x61280);
       }
     }
   }

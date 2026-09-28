@@ -22,7 +22,7 @@ import { R16, R32, W32 } from '../runtime/mem.js';
 
 const S = (k) => Math.imul(k, 0x18c);
 
-register(0x14c6a, 'sub_14c6a', async function sub_14c6a() {
+register(0x14c6a, 'sub_14c6a', function sub_14c6a() {
   let i; // [ebp-8]
   let j; // [ebp-4]
   let t; // ECX at 0x14d83 / 0x14db3
@@ -64,9 +64,9 @@ register(0x14c6a, 'sub_14c6a', async function sub_14c6a() {
       W32(0x60b90, (R32(0x3d23c + S(i)) - 0xc) | 0);                     // 0x14e0a..0x14e13
       W32(0x60b94, (R32(0x3d240 + S(i)) - 0x16) | 0);                    // 0x14e1f..0x14e28
       W32((R32(0x60b8c) << 2) + 0x60b58, 0x33);                          // 0x14e2d..0x14e35
-      await F.sub_1352c();                                               // 0x14e3f
-      await F.dws_DDiscard_1f770(R16(0x6128a));                          // 0x14e44..0x14e52 cdecl, zero-extended word
-      await F.dws_DPlay_1eff8(0x61280);                                  // 0x14e55..0x14e60 cdecl
+      F.sub_1352c();                                               // 0x14e3f
+      F.dws_DDiscard_1f770(R16(0x6128a));                          // 0x14e44..0x14e52 cdecl, zero-extended word
+      F.dws_DPlay_1eff8(0x61280);                                  // 0x14e55..0x14e60 cdecl
     }
     for (j = 0; j < 0x1a; j++) {                                         // 0x14e63..0x14e76 (jge, signed)
       if (R32(0x3d3ac + S(i)) !== 0) continue;                           // 0x14e83 jne 0x14f4e -> next j

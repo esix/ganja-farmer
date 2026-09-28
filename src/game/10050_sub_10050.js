@@ -17,10 +17,10 @@
 import { F, register } from '../runtime/registry.js';
 import { R8, R32, W32 } from '../runtime/mem.js';
 
-register(0x10050, 'sub_10050', async function sub_10050() {
+register(0x10050, 'sub_10050', function sub_10050() {
   let idx; // [ebp-4]
 
-  await F.dws_MSongStatus_1fc3f(0x60f16); // 1006e
+  F.dws_MSongStatus_1fc3f(0x60f16); // 1006e
   if ((R8(0x60f16) & 1) !== 0) return; // 10076 test byte; jne 0x102c8 (epilogue)
   W32(0x30c1c, (R32(0x30c1c) + 1) | 0); // 10083 inc dword
   if (!((R32(0x30c1c) | 0) <= 0xb)) { // 10089 cmp 0xb; jle (signed)
@@ -30,75 +30,75 @@ register(0x10050, 'sub_10050', async function sub_10050() {
   // 102a8: cmp [ebp-4], 0xb; ja 0x10276 (unsigned) -> default; else jmp [idx*4 + 0x10278]
   switch ((idx >>> 0) > 0xb ? -1 : idx) {
     case 0: // 100a9
-      await F.dws_MPlay_1faa2(0x610a0);
+      F.dws_MPlay_1faa2(0x610a0);
       break;
     case 1: // 100bc
-      await F.dws_MPlay_1faa2(0x61070);
+      F.dws_MPlay_1faa2(0x61070);
       if (R32(0x30c20) !== 0) {
-        await F.dws_DPlay_1eff8(0x614c0);
+        F.dws_DPlay_1eff8(0x614c0);
       }
       break;
     case 2: // 100e6
-      await F.dws_MPlay_1faa2(0x61080);
+      F.dws_MPlay_1faa2(0x61080);
       if (R32(0x30c20) !== 0) {
-        await F.dws_DPlay_1eff8(0x614e0);
+        F.dws_DPlay_1eff8(0x614e0);
       }
       break;
     case 3: // 10110
-      await F.dws_MPlay_1faa2(0x61090);
+      F.dws_MPlay_1faa2(0x61090);
       if (R32(0x30c20) !== 0) {
-        await F.dws_DPlay_1eff8(0x61500);
+        F.dws_DPlay_1eff8(0x61500);
       }
       break;
     case 4: // 1013a
-      await F.dws_MPlay_1faa2(0x610b0);
+      F.dws_MPlay_1faa2(0x610b0);
       if (R32(0x30c20) !== 0) {
-        await F.dws_DPlay_1eff8(0x61520);
+        F.dws_DPlay_1eff8(0x61520);
       }
       break;
     case 5: // 10164
-      await F.dws_MPlay_1faa2(0x610c0);
+      F.dws_MPlay_1faa2(0x610c0);
       if (R32(0x30c20) !== 0) {
-        await F.dws_DPlay_1eff8(0x61540);
+        F.dws_DPlay_1eff8(0x61540);
       }
       break;
     case 6: // 1018e
-      await F.dws_MPlay_1faa2(0x610d0);
+      F.dws_MPlay_1faa2(0x610d0);
       if (R32(0x30c20) !== 0) {
-        await F.dws_DPlay_1eff8(0x61560);
+        F.dws_DPlay_1eff8(0x61560);
       }
       break;
     case 7: // 101b8
-      await F.dws_MPlay_1faa2(0x610e0);
+      F.dws_MPlay_1faa2(0x610e0);
       if (R32(0x30c20) !== 0) {
-        await F.dws_DPlay_1eff8(0x61580);
+        F.dws_DPlay_1eff8(0x61580);
       }
       break;
     case 8: // 101e2
-      await F.dws_MPlay_1faa2(0x610f0);
+      F.dws_MPlay_1faa2(0x610f0);
       if (R32(0x30c20) !== 0) {
-        await F.dws_DPlay_1eff8(0x615a0);
+        F.dws_DPlay_1eff8(0x615a0);
       }
       break;
     case 9: // 1020c
-      await F.dws_MPlay_1faa2(0x61100);
+      F.dws_MPlay_1faa2(0x61100);
       if (R32(0x30c20) !== 0) {
-        await F.dws_DPlay_1eff8(0x615c0);
+        F.dws_DPlay_1eff8(0x615c0);
       }
       break;
     case 10: // 10236
-      await F.dws_MPlay_1faa2(0x61110);
+      F.dws_MPlay_1faa2(0x61110);
       if (R32(0x30c20) !== 0) {
-        await F.dws_DPlay_1eff8(0x615e0);
+        F.dws_DPlay_1eff8(0x615e0);
       }
       break;
     case 11: // 1025d (no MPlay)
       if (R32(0x30c20) !== 0) {
-        await F.dws_DPlay_1eff8(0x61600);
+        F.dws_DPlay_1eff8(0x61600);
       }
       break;
     default: // 10276: jmp 0x102ba
       break;
   }
-  await F.dws_MSongStatus_1fc3f(0x60f16); // 102ba..102c0
+  F.dws_MSongStatus_1fc3f(0x60f16); // 102ba..102c0
 });

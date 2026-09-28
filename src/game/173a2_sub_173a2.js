@@ -37,7 +37,7 @@ import { F, register } from '../runtime/registry.js';
 import { R16, R32, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
 
-register(0x173a2, 'sub_173a2', async function sub_173a2() {
+register(0x173a2, 'sub_173a2', function sub_173a2() {
   let k; // [ebp-4]
   let i; // [ebp-8]
   let j; // [ebp-0xc]
@@ -55,9 +55,9 @@ register(0x173a2, 'sub_173a2', async function sub_173a2() {
     W32(0x60b90, (R32(0x4608c) - 0xc) | 0);                               // 173d6
     W32(0x60b94, (R32(0x46090) - 0x16) | 0);                              // 173e3
     W32(0x60b58 + (R32(0x60b8c) << 2), 0x33);                             // 173f0..173f8
-    await F.sub_1352c();                                                  // 17402
-    await F.dws_DDiscard_1f770(R16(0x6128a));                             // 17407..17415 (cdecl)
-    await F.dws_DPlay_1eff8(0x61280);                                     // 17418..17423 (cdecl)
+    F.sub_1352c();                                                  // 17402
+    F.dws_DDiscard_1f770(R16(0x6128a));                             // 17407..17415 (cdecl)
+    F.dws_DPlay_1eff8(0x61280);                                     // 17418..17423 (cdecl)
     W32(0x46070, 0);                                                      // 17426
     W32(0x461fc, 0);                                                      // 17430
   }
@@ -172,9 +172,9 @@ register(0x173a2, 'sub_173a2', async function sub_173a2() {
     W32(0x60b90, (R32(0x4608c) - 0xc) | 0);                               // 177ea
     W32(0x60b94, (R32(0x46090) - 0x16) | 0);                              // 177f7
     W32(0x60b58 + (R32(0x60b8c) << 2), 0x33);                             // 17804..1780c
-    await F.sub_1352c();                                                  // 17816
-    await F.dws_DDiscard_1f770(R16(0x6128a));                             // 1781b..17829 (cdecl)
-    await F.dws_DPlay_1eff8(0x61280);                                     // 1782c..17837 (cdecl)
+    F.sub_1352c();                                                  // 17816
+    F.dws_DDiscard_1f770(R16(0x6128a));                             // 1781b..17829 (cdecl)
+    F.dws_DPlay_1eff8(0x61280);                                     // 1782c..17837 (cdecl)
     W32(0x46070, 0);                                                      // 1783a
     W32(0x461fc, 0);                                                      // 17844
 
@@ -185,21 +185,21 @@ register(0x173a2, 'sub_173a2', async function sub_173a2() {
           ((R32(0x46090) + 0x16) | 0) > R32(0x35b24 + i * 0x18c) &&
           ((R32(0x35b20 + i * 0x18c) + R32(0x35b28 + i * 0x18c)) | 0) > ((R32(0x4608c) - 0x11) | 0) &&
           ((R32(0x4608c) + 0x1e) | 0) > R32(0x35b20 + i * 0x18c)) {
-        r = await F.rand_232c7();                                         // 178e0
+        r = F.rand_232c7();                                         // 178e0
         if (imod(r, 0xa) === 1) {                                         // 178e5..178f6
           if (R32(0x35b20 + i * 0x18c) > 0xa0) {                          // 178f8
             W32(0x35c90 + i * 0x18c, 2);                                  // 1790b state
           } else {
             W32(0x35c90 + i * 0x18c, 3);                                  // 1791e state
           }
-          r = await F.rand_232c7();                                       // 1792f
+          r = F.rand_232c7();                                       // 1792f
           W32(0x35c88 + i * 0x18c, (imod(r, 3) + 0x13) | 0);              // 17934..1794c curr_frame
         } else {
           W32(0x35c90 + i * 0x18c, 4);                                    // 17954 state
           W32(0x35c88 + i * 0x18c, 0x15);                                 // 17965 curr_frame
         }
-        await F.dws_DDiscard_1f770(R16(0x6132a));                         // 17976..17984 (cdecl)
-        await F.dws_DPlay_1eff8(0x61320);                                 // 17987..17992 (cdecl)
+        F.dws_DDiscard_1f770(R16(0x6132a));                         // 17976..17984 (cdecl)
+        F.dws_DPlay_1eff8(0x61320);                                 // 17987..17992 (cdecl)
       }
     }
   }
@@ -213,15 +213,15 @@ register(0x173a2, 'sub_173a2', async function sub_173a2() {
         ((R32(0x33f4c + j * 0x18c) + 5) | 0) < R32(0x45f04)) {
       W32(0x33f5c + j * 0x18c, -5);                                       // 17a36 counter_2
       o = Math.imul(j, 0x18c);                                            // 17a47 ecx
-      r = await F.rand_232c7();                                           // 17a4e
+      r = F.rand_232c7();                                           // 17a4e
       d = imod(r, 3);                                                     // 17a53..17a61 ebx
-      r = await F.rand_232c7();                                           // 17a63
+      r = F.rand_232c7();                                           // 17a63
       d = (d - imod(r, 3)) | 0;                                           // 17a68..17a76 sub ebx, edx
       W32(0x33f48 + o, (R32(0x33f48 + o) + d) | 0);                       // 17a78 x
       o = Math.imul(j, 0x18c);                                            // 17a7e ecx
-      r = await F.rand_232c7();                                           // 17a85
+      r = F.rand_232c7();                                           // 17a85
       d = imod(r, 3);                                                     // 17a8a..17a98
-      r = await F.rand_232c7();                                           // 17a9a
+      r = F.rand_232c7();                                           // 17a9a
       d = (d - imod(r, 3)) | 0;                                           // 17a9f..17aad
       W32(0x33f4c + o, (R32(0x33f4c + o) + d) | 0);                       // 17aaf y
       W32(0x46070, 0);                                                    // 17ab5
@@ -229,9 +229,9 @@ register(0x173a2, 'sub_173a2', async function sub_173a2() {
       W32(0x60b90, (R32(0x45f00) - 0xc) | 0);                             // 17ac9
       W32(0x60b94, (R32(0x45f04) - 0x16) | 0);                            // 17ad8
       W32(0x60b58 + (R32(0x60b8c) << 2), 0x33);                           // 17ae7..17af0
-      await F.sub_1352c();                                                // 17afa
-      await F.dws_DDiscard_1f770(R16(0x6128a));                           // 17aff..17b0e (cdecl)
-      await F.dws_DPlay_1eff8(0x61280);                                   // 17b11..17b1c (cdecl)
+      F.sub_1352c();                                                // 17afa
+      F.dws_DDiscard_1f770(R16(0x6128a));                           // 17aff..17b0e (cdecl)
+      F.dws_DPlay_1eff8(0x61280);                                   // 17b11..17b1c (cdecl)
       W32(0x60a68, (R32(0x60a68) + 0x64) | 0);                            // 17b1f
       W32(0x60a6c, (R32(0x60a6c) + 1) | 0);                               // 17b26
     }
@@ -248,9 +248,9 @@ register(0x173a2, 'sub_173a2', async function sub_173a2() {
     W32(0x60b90, (R32(0x45f00) - 0xc) | 0);                               // 17ba4
     W32(0x60b94, (R32(0x45f04) - 0x16) | 0);                              // 17bb1
     W32(0x60b58 + (R32(0x60b8c) << 2), 0x33);                             // 17bbe..17bc6
-    await F.sub_1352c();                                                  // 17bd0
-    await F.dws_DDiscard_1f770(R16(0x6128a));                             // 17bd5..17be3 (cdecl)
-    await F.dws_DPlay_1eff8(0x61280);                                     // 17be6..17bf1 (cdecl)
+    F.sub_1352c();                                                  // 17bd0
+    F.dws_DDiscard_1f770(R16(0x6128a));                             // 17bd5..17be3 (cdecl)
+    F.dws_DPlay_1eff8(0x61280);                                     // 17be6..17bf1 (cdecl)
     W32(0x60a6c, (R32(0x60a6c) + 1) | 0);                                 // 17bf4
     W32(0x60a68, (R32(0x60a68) + 0x7d1) | 0);                             // 17bfa
   }
@@ -266,19 +266,19 @@ register(0x173a2, 'sub_173a2', async function sub_173a2() {
       W32(0x35c90 + i * 0x18c, 0x21);                                     // 17cb5 state
       W32(0x35b34 + i * 0x18c, 0);                                        // 17cc6 counter_2
       W32(0x35c88 + i * 0x18c, 5);                                        // 17cd7 curr_frame
-      r = await F.rand_232c7();                                           // 17ce8
+      r = F.rand_232c7();                                           // 17ce8
       W32(0x60ee0, imod(r, 3));                                           // 17ced..17cfb
-      await F.dws_DDiscard_1f770(R16(0x612aa));                           // 17d01..17d10 (cdecl)
-      await F.dws_DDiscard_1f770(R16(0x612ca));                           // 17d13..17d22 (cdecl)
-      await F.dws_DDiscard_1f770(R16(0x612ea));                           // 17d25..17d34 (cdecl)
+      F.dws_DDiscard_1f770(R16(0x612aa));                           // 17d01..17d10 (cdecl)
+      F.dws_DDiscard_1f770(R16(0x612ca));                           // 17d13..17d22 (cdecl)
+      F.dws_DDiscard_1f770(R16(0x612ea));                           // 17d25..17d34 (cdecl)
       if (R32(0x60ee0) === 0) {                                           // 17d37
-        await F.dws_DPlay_1eff8(0x612a0);                                 // 17d40..17d4b (cdecl)
+        F.dws_DPlay_1eff8(0x612a0);                                 // 17d40..17d4b (cdecl)
       }
       if (R32(0x60ee0) === 1) {                                           // 17d4e
-        await F.dws_DPlay_1eff8(0x612c0);                                 // 17d57..17d62 (cdecl)
+        F.dws_DPlay_1eff8(0x612c0);                                 // 17d57..17d62 (cdecl)
       }
       if (R32(0x60ee0) === 2) {                                           // 17d65
-        await F.dws_DPlay_1eff8(0x612e0);                                 // 17d6e..17d79 (cdecl)
+        F.dws_DPlay_1eff8(0x612e0);                                 // 17d6e..17d79 (cdecl)
       }
       W32(0x60a68, (R32(0x60a68) + 0xf) | 0);                             // 17d7c
       W32(0x60a6c, (R32(0x60a6c) + 1) | 0);                               // 17d83
@@ -289,21 +289,21 @@ register(0x173a2, 'sub_173a2', async function sub_173a2() {
         ((R32(0x35b24 + i * 0x18c) + 0x11) | 0) < R32(0x45f04) &&
         ((R32(0x35b24 + i * 0x18c) + R32(0x35b2c + i * 0x18c)) | 0) > R32(0x45f04) &&
         (R32(0x35c90 + i * 0x18c) === 0x1c || R32(0x35c90 + i * 0x18c) === 0x1b)) {
-      r = await F.rand_232c7();                                           // 17e2e
+      r = F.rand_232c7();                                           // 17e2e
       if (imod(r, 0xa) === 1) {                                           // 17e33..17e44
         if (R32(0x35b20 + i * 0x18c) > 0xa0) {                            // 17e46
           W32(0x35c90 + i * 0x18c, 2);                                    // 17e59 state
         } else {
           W32(0x35c90 + i * 0x18c, 3);                                    // 17e6c state
         }
-        r = await F.rand_232c7();                                         // 17e7d
+        r = F.rand_232c7();                                         // 17e7d
         W32(0x35c88 + i * 0x18c, (imod(r, 3) + 0x13) | 0);                // 17e82..17e9a curr_frame
       } else {
         W32(0x35c90 + i * 0x18c, 4);                                      // 17ea2 state
         W32(0x35c88 + i * 0x18c, 0x15);                                   // 17eb3 curr_frame
       }
-      await F.dws_DDiscard_1f770(R16(0x6132a));                           // 17ec4..17ed2 (cdecl)
-      await F.dws_DPlay_1eff8(0x61320);                                   // 17ed5..17ee0 (cdecl)
+      F.dws_DDiscard_1f770(R16(0x6132a));                           // 17ec4..17ed2 (cdecl)
+      F.dws_DPlay_1eff8(0x61320);                                   // 17ed5..17ee0 (cdecl)
       W32(0x60a68, (R32(0x60a68) + 0xb) | 0);                             // 17ee3
       W32(0x60a6c, (R32(0x60a6c) + 1) | 0);                               // 17eea
     }
@@ -321,17 +321,17 @@ register(0x173a2, 'sub_173a2', async function sub_173a2() {
       W32(0x60b90, (R32(0x3d23c + j * 0x18c) - 0xc) | 0);                 // 17faf
       W32(0x60b94, (R32(0x3d240 + j * 0x18c) - 0x16) | 0);                // 17fc4
       W32(0x60b58 + (R32(0x60b8c) << 2), 0x33);                           // 17fd9..17fe1
-      await F.sub_1352c();                                                // 17feb
-      await F.dws_DDiscard_1f770(R16(0x6128a));                           // 17ff0..17ffe (cdecl)
-      await F.dws_DPlay_1eff8(0x61280);                                   // 18001..1800c (cdecl)
+      F.sub_1352c();                                                // 17feb
+      F.dws_DDiscard_1f770(R16(0x6128a));                           // 17ff0..17ffe (cdecl)
+      F.dws_DPlay_1eff8(0x61280);                                   // 18001..1800c (cdecl)
       W32(0x46070, 0);                                                    // 1800f
       W32(0x461fc, 0);                                                    // 18019
       W32(0x60b90, (R32(0x45f00) - 0xc) | 0);                             // 18023
       W32(0x60b94, (R32(0x45f04) - 0x16) | 0);                            // 18030
       W32(0x60b58 + (R32(0x60b8c) << 2), 0x33);                           // 1803d..18045
-      await F.sub_1352c();                                                // 1804f
-      await F.dws_DDiscard_1f770(R16(0x6128a));                           // 18054..18062 (cdecl)
-      await F.dws_DPlay_1eff8(0x61280);                                   // 18065..18070 (cdecl)
+      F.sub_1352c();                                                // 1804f
+      F.dws_DDiscard_1f770(R16(0x6128a));                           // 18054..18062 (cdecl)
+      F.dws_DPlay_1eff8(0x61280);                                   // 18065..18070 (cdecl)
       W32(0x60a68, (R32(0x60a68) + 0x1f5) | 0);                           // 18073
       W32(0x60a6c, (R32(0x60a6c) + 1) | 0);                               // 1807d
     }
@@ -349,17 +349,17 @@ register(0x173a2, 'sub_173a2', async function sub_173a2() {
       // 18142..181e8: j < 4
       for (j = 0; j < 4; j++) {
         o = Math.imul(k, 0x18c);                                          // 1815b ecx
-        r = await F.rand_232c7();                                         // 18162
+        r = F.rand_232c7();                                         // 18162
         d = imod(r, 0x1e);                                                // 18167..18173 edx
         W32(0x60b90, (d + R32(0x3d0b0 + o)) | 0);                         // 18175..1817d s.x + rand%30
         o = Math.imul(k, 0x18c);                                          // 18183 ecx
-        r = await F.rand_232c7();                                         // 1818a
+        r = F.rand_232c7();                                         // 1818a
         d = imod(r, 0x14);                                                // 1818f..1819b
         W32(0x60b94, (d + R32(0x3d0b4 + o)) | 0);                         // 1819d..181a5 s.y + rand%20
         W32(0x60b58 + (R32(0x60b8c) << 2), 0x33);                         // 181ab..181b4
-        await F.sub_1352c();                                              // 181be
-        await F.dws_DDiscard_1f770(R16(0x6128a));                         // 181c3..181d2 (cdecl)
-        await F.dws_DPlay_1eff8(0x61280);                                 // 181d5..181e0 (cdecl)
+        F.sub_1352c();                                              // 181be
+        F.dws_DDiscard_1f770(R16(0x6128a));                         // 181c3..181d2 (cdecl)
+        F.dws_DPlay_1eff8(0x61280);                                 // 181d5..181e0 (cdecl)
       }
       W32(0x60a68, (R32(0x60a68) + 0x12c) | 0);                           // 181e8
       W32(0x60a6c, (R32(0x60a6c) + 1) | 0);                               // 181f2
@@ -370,9 +370,9 @@ register(0x173a2, 'sub_173a2', async function sub_173a2() {
       W32(0x60b90, (R32(0x45f00) - 0xc) | 0);                             // 18220
       W32(0x60b94, (R32(0x45f04) - 0x16) | 0);                            // 1822d
       W32(0x60b58 + (R32(0x60b8c) << 2), 0x33);                           // 1823a..18242
-      await F.sub_1352c();                                                // 1824c
-      await F.dws_DDiscard_1f770(R16(0x6128a));                           // 18251..1825f (cdecl)
-      await F.dws_DPlay_1eff8(0x61280);                                   // 18262..1826d (cdecl)
+      F.sub_1352c();                                                // 1824c
+      F.dws_DDiscard_1f770(R16(0x6128a));                           // 18251..1825f (cdecl)
+      F.dws_DPlay_1eff8(0x61280);                                   // 18262..1826d (cdecl)
     }
   }
 
@@ -388,9 +388,9 @@ register(0x173a2, 'sub_173a2', async function sub_173a2() {
       W32(0x60b90, (R32(0x3d86c + j * 0x18c) - 0xc) | 0);                 // 1832f
       W32(0x60b94, (R32(0x3d870 + j * 0x18c) - 0x16) | 0);                // 18344
       W32(0x60b58 + (R32(0x60b8c) << 2), 0x33);                           // 18359..18361
-      await F.sub_1352c();                                                // 1836b
-      await F.dws_DDiscard_1f770(R16(0x6128a));                           // 18370..1837e (cdecl)
-      await F.dws_DPlay_1eff8(0x61280);                                   // 18381..1838c (cdecl)
+      F.sub_1352c();                                                // 1836b
+      F.dws_DDiscard_1f770(R16(0x6128a));                           // 18370..1837e (cdecl)
+      F.dws_DPlay_1eff8(0x61280);                                   // 18381..1838c (cdecl)
       W32(0x60a68, (R32(0x60a68) + 0x64) | 0);                            // 1838f
       W32(0x60a6c, (R32(0x60a6c) + 1) | 0);                               // 18396
       W32(0x46070, 0);                                                    // 1839c
@@ -398,9 +398,9 @@ register(0x173a2, 'sub_173a2', async function sub_173a2() {
       W32(0x60b90, (R32(0x45f00) - 0xc) | 0);                             // 183b0
       W32(0x60b94, (R32(0x45f04) - 0x16) | 0);                            // 183bd
       W32(0x60b58 + (R32(0x60b8c) << 2), 0x33);                           // 183ca..183d2
-      await F.sub_1352c();                                                // 183dc
-      await F.dws_DDiscard_1f770(R16(0x6128a));                           // 183e1..183ef (cdecl)
-      await F.dws_DPlay_1eff8(0x61280);                                   // 183f2..183fd (cdecl)
+      F.sub_1352c();                                                // 183dc
+      F.dws_DDiscard_1f770(R16(0x6128a));                           // 183e1..183ef (cdecl)
+      F.dws_DPlay_1eff8(0x61280);                                   // 183f2..183fd (cdecl)
     }
   }
 
@@ -412,16 +412,16 @@ register(0x173a2, 'sub_173a2', async function sub_173a2() {
       R32(0x4c4fc) !== 0) {
     W32(0x4c3ac, (R32(0x4c3ac) - 0xf) | 0);                               // 1845f threshold_2 -= 15
     W32(0x4c3a0, Math.imul(R32(0x4c3a0), -1));                            // 18466..1846d counter_2 *= -1
-    await F.dws_DDiscard_1f770(R16(0x6126a));                             // 18472..18480 (cdecl)
-    await F.dws_DPlay_1eff8(0x61260);                                     // 18483..1848e (cdecl)
+    F.dws_DDiscard_1f770(R16(0x6126a));                             // 18472..18480 (cdecl)
+    F.dws_DPlay_1eff8(0x61260);                                     // 18483..1848e (cdecl)
     W32(0x46070, 0);                                                      // 18491
     W32(0x461fc, 0);                                                      // 1849b
     W32(0x60b90, (R32(0x45f00) - 0xc) | 0);                               // 184a5
     W32(0x60b94, (R32(0x45f04) - 0x16) | 0);                              // 184b2
     W32(0x60b58 + (R32(0x60b8c) << 2), 0x33);                             // 184bf..184c7
-    await F.sub_1352c();                                                  // 184d1
-    await F.dws_DDiscard_1f770(R16(0x6128a));                             // 184d6..184e4 (cdecl)
-    await F.dws_DPlay_1eff8(0x61280);                                     // 184e7..184f2 (cdecl)
+    F.sub_1352c();                                                  // 184d1
+    F.dws_DDiscard_1f770(R16(0x6128a));                             // 184d6..184e4 (cdecl)
+    F.dws_DPlay_1eff8(0x61280);                                     // 184e7..184f2 (cdecl)
   }
 
   // 184f5: [0x4c3ac] > 0 (jg) -> end; [0x4c4fc] == 0 -> end
@@ -429,16 +429,16 @@ register(0x173a2, 'sub_173a2', async function sub_173a2() {
     W32(0x4c4fc, 0);                                                      // 1850c state
     // 18516..185a6: j < 4
     for (j = 0; j < 4; j++) {
-      r = await F.rand_232c7();                                           // 1852b
+      r = F.rand_232c7();                                           // 1852b
       d = imod(r, 0x1e);                                                  // 18530..1853c edx
       W32(0x60b90, (R32(0x4c38c) + d) | 0);                               // 1853e..18545
-      r = await F.rand_232c7();                                           // 1854a
+      r = F.rand_232c7();                                           // 1854a
       d = imod(r, 0x14);                                                  // 1854f..1855b
       W32(0x60b94, (d + R32(0x4c390)) | 0);                               // 1855d..18564
       W32(0x60b58 + (R32(0x60b8c) << 2), 0x33);                           // 1856a..18573
-      await F.sub_1352c();                                                // 1857d
-      await F.dws_DDiscard_1f770(R16(0x6128a));                           // 18582..18590 (cdecl)
-      await F.dws_DPlay_1eff8(0x61280);                                   // 18593..1859e (cdecl)
+      F.sub_1352c();                                                // 1857d
+      F.dws_DDiscard_1f770(R16(0x6128a));                           // 18582..18590 (cdecl)
+      F.dws_DPlay_1eff8(0x61280);                                   // 18593..1859e (cdecl)
     }
     W32(0x60a68, (R32(0x60a68) + 0x3e8) | 0);                             // 185a6
     W32(0x60a6c, (R32(0x60a6c) + 1) | 0);                                 // 185b0

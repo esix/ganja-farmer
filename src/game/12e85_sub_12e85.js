@@ -25,7 +25,7 @@ import { F, register } from '../runtime/registry.js';
 import { R16, R32, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
 
-register(0x12e85, 'sub_12e85', async function sub_12e85() {
+register(0x12e85, 'sub_12e85', function sub_12e85() {
   let i; // [ebp-8]
   let j; // [ebp-4]
   let r;
@@ -33,12 +33,12 @@ register(0x12e85, 'sub_12e85', async function sub_12e85() {
 
   for (i = 0; i < 5; i++) {
     // 0x12eb6: cdecl dws_DSoundStatus(zero-extended word [0x6124a], 0x60f04 + i*2)
-    await F.dws_DSoundStatus_1f348(R16(0x6124a), 0x60f04 + i * 2);
+    F.dws_DSoundStatus_1f348(R16(0x6124a), 0x60f04 + i * 2);
     // 0x12ed4: word [0x60f04+i*2] == 0 && x < 0x140 && x > -0x96 (signed jl / jg) -> dws_DPlay(0x61240)
     if (R16(0x60f04 + i * 2) === 0 &&
         R32(0x33f48 + Math.imul(i, 0x18c)) < 0x140 &&
         R32(0x33f48 + Math.imul(i, 0x18c)) > -0x96) {
-      await F.dws_DPlay_1eff8(0x61240);
+      F.dws_DPlay_1eff8(0x61240);
     }
 
     // 0x12f1b: state == 0x1c
@@ -47,19 +47,19 @@ register(0x12e85, 'sub_12e85', async function sub_12e85() {
       W32(0x33f48 + Math.imul(i, 0x18c), (R32(0x33f48 + Math.imul(i, 0x18c)) + R32(0x33f58 + Math.imul(i, 0x18c))) | 0);
       // 0x12f49: x > 0x154 (jle skips)
       if (R32(0x33f48 + Math.imul(i, 0x18c)) > 0x154) {
-        r = await F.rand_232c7();
+        r = F.rand_232c7();
         if (imod(r, 2) === 1) {
           // 0x12f78
           W32(0x340b8 + Math.imul(i, 0x18c), 0x1b);
-          r = await F.rand_232c7();
+          r = F.rand_232c7();
           W32(0x33f4c + Math.imul(i, 0x18c), imod(r, 0x2d));
-          r = await F.rand_232c7();
+          r = F.rand_232c7();
           W32(0x33f58 + Math.imul(i, 0x18c), (-1 - imod(r, 7)) | 0);
         } else {
           // 0x12fd6
-          r = await F.rand_232c7();
+          r = F.rand_232c7();
           W32(0x33f48 + Math.imul(i, 0x18c), (-200 - imod(r, 0x12c)) | 0);
-          r = await F.rand_232c7();
+          r = F.rand_232c7();
           W32(0x33f58 + Math.imul(i, 0x18c), (imod(r, 7) + 1) | 0);
         }
       }
@@ -76,19 +76,19 @@ register(0x12e85, 'sub_12e85', async function sub_12e85() {
       W32(0x33f48 + Math.imul(i, 0x18c), (R32(0x33f48 + Math.imul(i, 0x18c)) + R32(0x33f58 + Math.imul(i, 0x18c))) | 0);
       // 0x13075: x < -0x82 (jge skips)
       if (R32(0x33f48 + Math.imul(i, 0x18c)) < -0x82) {
-        r = await F.rand_232c7();
+        r = F.rand_232c7();
         if (imod(r, 2) === 1) {
           // 0x130a4
           W32(0x340b8 + Math.imul(i, 0x18c), 0x1c);
-          r = await F.rand_232c7();
+          r = F.rand_232c7();
           W32(0x33f4c + Math.imul(i, 0x18c), imod(r, 0x2d));
-          r = await F.rand_232c7();
+          r = F.rand_232c7();
           W32(0x33f58 + Math.imul(i, 0x18c), (imod(r, 7) + 1) | 0);
         } else {
           // 0x130fa
-          r = await F.rand_232c7();
+          r = F.rand_232c7();
           W32(0x33f48 + Math.imul(i, 0x18c), (imod(r, 0x12c) + 0x140) | 0);
-          r = await F.rand_232c7();
+          r = F.rand_232c7();
           W32(0x33f58 + Math.imul(i, 0x18c), (-1 - imod(r, 7)) | 0);
         }
       }
@@ -111,7 +111,7 @@ register(0x12e85, 'sub_12e85', async function sub_12e85() {
     // 0x35b20 array (address 0x35c90 + 25*0x18c = 0x3833c = state (+0x170) of entry 0 of the 0x381cc sprite array,
     // decompiled.c:4348).
     if ((R32(0x340b8 + Math.imul(i, 0x18c)) === 0x1c || R32(0x340b8 + Math.imul(i, 0x18c)) === 0x1b) &&
-        imod(await F.rand_232c7(), 0xf) === 5 &&
+        imod(F.rand_232c7(), 0xf) === 5 &&
         R32(0x33f48 + Math.imul(i, 0x18c)) > -0x28 &&
         R32(0x33f48 + Math.imul(i, 0x18c)) < 0xeb &&
         R32(0x35c90 + Math.imul((R32(0x60b98) + 1) | 0, 0x18c)) === 0 &&
@@ -164,20 +164,20 @@ register(0x12e85, 'sub_12e85', async function sub_12e85() {
       for (j = 0; j < 4; j++) {
         // 0x133b3: ecx = x + 0xf (read before rand); [0x60b90] = ecx + rand() % 0x28
         v = (R32(0x33f48 + Math.imul(i, 0x18c)) + 0xf) | 0;
-        r = await F.rand_232c7();
+        r = F.rand_232c7();
         W32(0x60b90, (v + imod(r, 0x28)) | 0);
         // 0x133de: ebx = y - 0xa (read before rand); [0x60b94] = ebx + rand() % 0xf
         v = (R32(0x33f4c + Math.imul(i, 0x18c)) - 0xa) | 0;
-        r = await F.rand_232c7();
+        r = F.rand_232c7();
         W32(0x60b94, (v + imod(r, 0xf)) | 0);
         // 0x13409: [0x60b58 + [0x60b8c]*4] = rand() % 7 + 0x30 ([0x60b8c] read after rand)
-        r = await F.rand_232c7();
+        r = F.rand_232c7();
         W32(0x60b58 + (R32(0x60b8c) << 2), (imod(r, 7) + 0x30) | 0);
         // 0x1342d
-        await F.sub_1352c();
+        F.sub_1352c();
         // 0x13432: cdecl dws_DDiscard(zero-extended word [0x6128a]); 0x13443: dws_DPlay(0x61280)
-        await F.dws_DDiscard_1f770(R16(0x6128a));
-        await F.dws_DPlay_1eff8(0x61280);
+        F.dws_DDiscard_1f770(R16(0x6128a));
+        F.dws_DPlay_1eff8(0x61280);
       }
       // 0x13456: state = 0x1a; counter_3 = 0xa
       W32(0x340b8 + Math.imul(i, 0x18c), 0x1a);
@@ -186,7 +186,7 @@ register(0x12e85, 'sub_12e85', async function sub_12e85() {
 
     // 0x13478: state == 0
     if (R32(0x340b8 + Math.imul(i, 0x18c)) === 0) {
-      r = await F.rand_232c7();
+      r = F.rand_232c7();
       if (imod(r, 2) === 1) {
         // 0x134a4: x = 0x1cc; counter_2 = 10; if [0x60bbc] == 0: state = 0x1c
         W32(0x33f48 + Math.imul(i, 0x18c), 0x1cc);

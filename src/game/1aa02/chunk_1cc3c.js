@@ -10,14 +10,14 @@
 import { F } from '../../runtime/registry.js';
 import { R32, W32 } from '../../runtime/mem.js';
 
-export async function chunk_1cc3c() {
+export function chunk_1cc3c() {
   let i; // [ebp-8]
 
   // pcx_picture 0x31ee4 (LIBRARY.md), "back.pcx" (0x3048a: 62 61 63 6b 2e 70 63 78 00)
-  await F.PCX_Init_207a0(0x31ee4);                                            // 0x1cc3c..0x1cc41
-  await F.PCX_Load_20806(0x3048a /* "back.pcx" */, 0x31ee4, 1);               // 0x1cc46..0x1cc55
-  await F.PCX_Copy_To_Buffer_20bd7(0x31ee4, R32(0x64e7c));                    // 0x1cc5a..0x1cc65
-  await F.PCX_Delete_20b69(0x31ee4);                                          // 0x1cc6a..0x1cc6f
+  F.PCX_Init_207a0(0x31ee4);                                            // 0x1cc3c..0x1cc41
+  F.PCX_Load_20806(0x3048a /* "back.pcx" */, 0x31ee4, 1);               // 0x1cc46..0x1cc55
+  F.PCX_Copy_To_Buffer_20bd7(0x31ee4, R32(0x64e7c));                    // 0x1cc5a..0x1cc65
+  F.PCX_Delete_20b69(0x31ee4);                                          // 0x1cc6a..0x1cc6f
 
   // Table at 0x5ff20, stride 0x30: +0 (x arg), +4 (y arg), +8 <- Read_Pixel_DB result.
   for (i = 0; i < 0x3c; i++) {                                                // 0x1cc74..0x1cc87, 0x1ccf0
@@ -27,14 +27,14 @@ export async function chunk_1cc3c() {
     if (!(R32(0x5ff20 + i * 0x30) <= 0x140)) continue;                        // 0x1ccbb..0x1ccc9 jle, else 0x1cccb
     const y = R32(0x5ff24 + i * 0x30);                                        // 0x1cccd..0x1ccd1 edx
     const x = R32(0x5ff20 + i * 0x30);                                        // 0x1ccd7..0x1ccdb eax
-    const r = await F.Read_Pixel_DB_2225c(x, y);                              // 0x1cce1
+    const r = F.Read_Pixel_DB_2225c(x, y);                              // 0x1cce1
     W32(0x5ff28 + i * 0x30, r);                                               // 0x1cce6..0x1ccea
   }
 
-  await F.Behind_Sprite_Clip_2106f(0x33aa4, R32(0x64e7c));                    // 0x1ccf2..0x1ccfd
-  await F.Behind_Sprite_Clip_2106f(0x45d74, R32(0x64e7c));                    // 0x1cd02..0x1cd0d
-  await F.Squeeze_Mouse_230df(0, 0, 0, 0x60b50);                              // 0x1cd12..0x1cd1d
-  await F.Squeeze_Mouse_230df(2, 0, 0, 0);                                    // 0x1cd22..0x1cd2d
+  F.Behind_Sprite_Clip_2106f(0x33aa4, R32(0x64e7c));                    // 0x1ccf2..0x1ccfd
+  F.Behind_Sprite_Clip_2106f(0x45d74, R32(0x64e7c));                    // 0x1cd02..0x1cd0d
+  F.Squeeze_Mouse_230df(0, 0, 0, 0x60b50);                              // 0x1cd12..0x1cd1d
+  F.Squeeze_Mouse_230df(2, 0, 0, 0);                                    // 0x1cd22..0x1cd2d
 
   W32(0x33c0c, 0);                                                            // 0x1cd32
   W32(0x60b54, 0);                                                            // 0x1cd3c
@@ -87,17 +87,17 @@ export async function chunk_1cc3c() {
   }
   for (i = 0; i < 7; i++) {                                                   // 0x1cf8e..0x1cfa1, 0x1cfe3
     W32(0x44010 + i * 0x18c, ((i << 2) + 0x30) | 0);                          // 0x1cfa3..0x1cfb3 (shl edx,2; add edx,0x30)
-    await F.Behind_Sprite_Clip_2106f(0x44010 + i * 0x18c, R32(0x64e7c));      // 0x1cfb9..0x1cfcd (ecx=0x44010; add eax,ecx)
+    F.Behind_Sprite_Clip_2106f(0x44010 + i * 0x18c, R32(0x64e7c));      // 0x1cfb9..0x1cfcd (ecx=0x44010; add eax,ecx)
     W32(0x44014 + i * 0x18c, 3);                                              // 0x1cfd2..0x1cfd9
   }
   for (i = 0; i < 5; i++) {                                                   // 0x1cfe5..0x1cff8, 0x1d03a
     W32(0x44ae4 + i * 0x18c, ((i << 2) + 0x65) | 0);                          // 0x1cffa..0x1d00a (shl edx,2; add edx,0x65)
-    await F.Behind_Sprite_Clip_2106f(0x44ae4 + i * 0x18c, R32(0x64e7c));      // 0x1d010..0x1d024 (ecx=0x44ae4; add eax,ecx)
+    F.Behind_Sprite_Clip_2106f(0x44ae4 + i * 0x18c, R32(0x64e7c));      // 0x1d010..0x1d024 (ecx=0x44ae4; add eax,ecx)
     W32(0x44ae8 + i * 0x18c, 3);                                              // 0x1d029..0x1d030
   }
   for (i = 0; i < 3; i++) {                                                   // 0x1d03c..0x1d04f, 0x1d094
     W32(0x452a0 + i * 0x18c, ((i << 2) + 0xa7) | 0);                          // 0x1d051..0x1d064 (shl edx,2; add edx,0xa7)
-    await F.Behind_Sprite_Clip_2106f(0x452a0 + i * 0x18c, R32(0x64e7c));      // 0x1d06a..0x1d07e (ecx=0x452a0; add eax,ecx)
+    F.Behind_Sprite_Clip_2106f(0x452a0 + i * 0x18c, R32(0x64e7c));      // 0x1d06a..0x1d07e (ecx=0x452a0; add eax,ecx)
     W32(0x452a4 + i * 0x18c, 3);                                              // 0x1d083..0x1d08a
   }
 

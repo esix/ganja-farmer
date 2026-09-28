@@ -18,13 +18,13 @@
 import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 
-register(0x16837, 'sub_16837', async function sub_16837() {
+register(0x16837, 'sub_16837', function sub_16837() {
   let i; // [ebp-4]
 
   if (R32(0x45ee4) === 0x20) {                                                         // 1684f
     W32(0x45d78, (R32(0x45d78) - 2) | 0);                                              // 16858
     if (((R32(0x45d78) + R32(0x45d80)) | 0) > R32(0x3dd14) && R32(0x3de78) !== 3) {    // 1685f..16879 (jle / jne)
-      await F.dws_DPlay_1eff8(0x61380);                                                // 1687d..16888 (cdecl, 1 stack arg)
+      F.dws_DPlay_1eff8(0x61380);                                                // 1687d..16888 (cdecl, 1 stack arg)
       W32(0x3de78, 3);                                                                 // 1688b
     }
     if (((R32(0x45d78) + R32(0x45d80)) | 0) < 0) {                                     // 16895..168a2 (test; jge)
@@ -41,7 +41,7 @@ register(0x16837, 'sub_16837', async function sub_16837() {
     }
     if (R32(0x45d78) > R32(0x3dd14) && R32(0x3de78) !== 1) {                           // 168fb..1690f (jle / jne)
       W32(0x3de78, 1);                                                                 // 16913
-      await F.dws_DPlay_1eff8(0x61200);                                                // 1691d..16928 (cdecl, 1 stack arg)
+      F.dws_DPlay_1eff8(0x61200);                                                // 1691d..16928 (cdecl, 1 stack arg)
     }
     if (R32(0x45d74) < R32(0x60bcc)) {                                                 // 1692b..16936 (jge)
       W32(0x45d74, (R32(0x45d74) + 2) | 0);                                            // 16938

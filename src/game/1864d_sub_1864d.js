@@ -18,7 +18,7 @@
 import { register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 
-register(0x1864d, 'sub_1864d', async function sub_1864d() {
+register(0x1864d, 'sub_1864d', function sub_1864d() {
   let i; // [ebp-4]
   let sw; // [ebp-8]: switch operand
 

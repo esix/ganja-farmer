@@ -45,19 +45,19 @@ register(0x15e15, 'sub_15e15', async function sub_15e15() {
   k = 0;                                                                      // 0x15e2d
   run = 0;                                                                    // 0x15e34
   best = 0;                                                                   // 0x15e3b
-  await F.sub_16c37();                                                        // 0x15e42
-  await F.Draw_Sprite_Clip_212c0(0x33918, R32(0x64e7c), 1);                   // 0x15e47..0x15e57
+  F.sub_16c37();                                                        // 0x15e42
+  F.Draw_Sprite_Clip_212c0(0x33918, R32(0x64e7c), 1);                   // 0x15e47..0x15e57
   // 0x15e5c..0x15e8f (mov eax,[ebp-0x10] at 0x15e65 is a dead load, same in every loop below)
   for (i = 0; i < 7; i++) {
-    await F.Draw_Sprite_Clip_212c0((0x44010 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
+    F.Draw_Sprite_Clip_212c0((0x44010 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
   }
   for (i = 0; i < 4; i++) {                                                   // 0x15e91..0x15ec4
-    await F.Draw_Sprite_Clip_212c0((0x44ae4 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
+    F.Draw_Sprite_Clip_212c0((0x44ae4 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
   }
   for (i = 0; i < 3; i++) {                                                   // 0x15ec6..0x15ef9
-    await F.Draw_Sprite_Clip_212c0((0x452a0 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
+    F.Draw_Sprite_Clip_212c0((0x452a0 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
   }
-  await F.Draw_Sprite_Clip_212c0(0x33c30, R32(0x64e7c), 1);                   // 0x15efb..0x15f0b
+  F.Draw_Sprite_Clip_212c0(0x33c30, R32(0x64e7c), 1);                   // 0x15efb..0x15f0b
   W32(0x33f2c, 0x2b);                                                         // 0x15f10
   W32(0x33f24, 0xa);                                                          // 0x15f1a
   W32(0x60ee4, 0);                                                            // 0x15f24
@@ -97,76 +97,76 @@ register(0x15e15, 'sub_15e15', async function sub_15e15() {
 
   // 0x16035: cmp dword [0x30bf4], 0x22; jne 0x16429
   while (R32(0x30bf4) === 0x22) {
-    W32(0x60a64, await F.Timer_Query_235f9());                                // 0x16042..0x16047
-    await F.sub_14fba();                                                      // 0x1604c
-    await F.Erase_Sprite_Clip_211fc(0x33c30, R32(0x64e7c));                   // 0x16051..0x1605c
-    await F.Erase_Sprite_Clip_211fc(0x33dbc, R32(0x64e7c));                   // 0x16061..0x1606c
-    await F.Erase_Sprite_Clip_211fc(0x33918, R32(0x64e7c));                   // 0x16071..0x1607c
-    await F.Erase_Sprite_Clip_211fc(0x3dd10, R32(0x64e7c));                   // 0x16081..0x1608c
-    await F.Erase_Sprite_Clip_211fc(0x33aa4, R32(0x64e7c));                   // 0x16091..0x1609c
-    await F.Erase_Sprite_Clip_211fc(0x45d74, R32(0x64e7c));                   // 0x160a1..0x160ac
+    W32(0x60a64, F.Timer_Query_235f9());                                // 0x16042..0x16047
+    F.sub_14fba();                                                      // 0x1604c
+    F.Erase_Sprite_Clip_211fc(0x33c30, R32(0x64e7c));                   // 0x16051..0x1605c
+    F.Erase_Sprite_Clip_211fc(0x33dbc, R32(0x64e7c));                   // 0x16061..0x1606c
+    F.Erase_Sprite_Clip_211fc(0x33918, R32(0x64e7c));                   // 0x16071..0x1607c
+    F.Erase_Sprite_Clip_211fc(0x3dd10, R32(0x64e7c));                   // 0x16081..0x1608c
+    F.Erase_Sprite_Clip_211fc(0x33aa4, R32(0x64e7c));                   // 0x16091..0x1609c
+    F.Erase_Sprite_Clip_211fc(0x45d74, R32(0x64e7c));                   // 0x160a1..0x160ac
     for (i = 0; i < 0x1a; i++) {                                              // 0x160b1..0x160df
-      await F.Erase_Sprite_Clip_211fc((Math.imul(i, 0x18c) + 0x3a878) | 0, R32(0x64e7c));
+      F.Erase_Sprite_Clip_211fc((Math.imul(i, 0x18c) + 0x3a878) | 0, R32(0x64e7c));
     }
     for (i = 0; i < 7; i++) {                                                 // 0x160e1..0x1610f
-      await F.Erase_Sprite_Clip_211fc((Math.imul(i, 0x18c) + 0x44010) | 0, R32(0x64e7c));
+      F.Erase_Sprite_Clip_211fc((Math.imul(i, 0x18c) + 0x44010) | 0, R32(0x64e7c));
     }
     for (i = 0; i < 5; i++) {                                                 // 0x16111..0x1613f
-      await F.Erase_Sprite_Clip_211fc((Math.imul(i, 0x18c) + 0x44ae4) | 0, R32(0x64e7c));
+      F.Erase_Sprite_Clip_211fc((Math.imul(i, 0x18c) + 0x44ae4) | 0, R32(0x64e7c));
     }
     for (i = 0; i < 3; i++) {                                                 // 0x16141..0x1616f
-      await F.Erase_Sprite_Clip_211fc((Math.imul(i, 0x18c) + 0x452a0) | 0, R32(0x64e7c));
+      F.Erase_Sprite_Clip_211fc((Math.imul(i, 0x18c) + 0x452a0) | 0, R32(0x64e7c));
     }
     W32(0x60bc4, 1);                                                          // 0x16171
-    await F.sub_18f27();                                                      // 0x1617b
-    await F.sub_15788();                                                      // 0x16180
-    await F.sub_16837();                                                      // 0x16185
-    await F.sub_14425();                                                      // 0x1618a
-    await F.Behind_Sprite_Clip_2106f(0x33c30, R32(0x64e7c));                  // 0x1618f..0x1619a
-    await F.Behind_Sprite_Clip_2106f(0x33dbc, R32(0x64e7c));                  // 0x1619f..0x161aa
-    await F.Behind_Sprite_Clip_2106f(0x33918, R32(0x64e7c));                  // 0x161af..0x161ba
-    await F.Behind_Sprite_Clip_2106f(0x3dd10, R32(0x64e7c));                  // 0x161bf..0x161ca
-    await F.Behind_Sprite_Clip_2106f(0x45d74, R32(0x64e7c));                  // 0x161cf..0x161da
-    await F.Behind_Sprite_Clip_2106f(0x33aa4, R32(0x64e7c));                  // 0x161df..0x161ea
+    F.sub_18f27();                                                      // 0x1617b
+    F.sub_15788();                                                      // 0x16180
+    F.sub_16837();                                                      // 0x16185
+    F.sub_14425();                                                      // 0x1618a
+    F.Behind_Sprite_Clip_2106f(0x33c30, R32(0x64e7c));                  // 0x1618f..0x1619a
+    F.Behind_Sprite_Clip_2106f(0x33dbc, R32(0x64e7c));                  // 0x1619f..0x161aa
+    F.Behind_Sprite_Clip_2106f(0x33918, R32(0x64e7c));                  // 0x161af..0x161ba
+    F.Behind_Sprite_Clip_2106f(0x3dd10, R32(0x64e7c));                  // 0x161bf..0x161ca
+    F.Behind_Sprite_Clip_2106f(0x45d74, R32(0x64e7c));                  // 0x161cf..0x161da
+    F.Behind_Sprite_Clip_2106f(0x33aa4, R32(0x64e7c));                  // 0x161df..0x161ea
     for (i = 0; i < 0x1a; i++) {                                              // 0x161ef..0x1621d
-      await F.Behind_Sprite_Clip_2106f((Math.imul(i, 0x18c) + 0x3a878) | 0, R32(0x64e7c));
+      F.Behind_Sprite_Clip_2106f((Math.imul(i, 0x18c) + 0x3a878) | 0, R32(0x64e7c));
     }
     for (i = 0; i < 7; i++) {                                                 // 0x1621f..0x1624d
-      await F.Behind_Sprite_Clip_2106f((Math.imul(i, 0x18c) + 0x44010) | 0, R32(0x64e7c));
+      F.Behind_Sprite_Clip_2106f((Math.imul(i, 0x18c) + 0x44010) | 0, R32(0x64e7c));
     }
     for (i = 0; i < 5; i++) {                                                 // 0x1624f..0x1627d
-      await F.Behind_Sprite_Clip_2106f((Math.imul(i, 0x18c) + 0x44ae4) | 0, R32(0x64e7c));
+      F.Behind_Sprite_Clip_2106f((Math.imul(i, 0x18c) + 0x44ae4) | 0, R32(0x64e7c));
     }
     for (i = 0; i < 3; i++) {                                                 // 0x1627f..0x162ad
-      await F.Behind_Sprite_Clip_2106f((Math.imul(i, 0x18c) + 0x452a0) | 0, R32(0x64e7c));
+      F.Behind_Sprite_Clip_2106f((Math.imul(i, 0x18c) + 0x452a0) | 0, R32(0x64e7c));
     }
     for (i = 0; i < 0x1a; i++) {                                              // 0x162af..0x162e2
-      await F.Draw_Sprite_Clip_212c0((0x3a878 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
+      F.Draw_Sprite_Clip_212c0((0x3a878 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
     }
-    await F.Draw_Sprite_Clip_212c0(0x3dd10, R32(0x64e7c), 1);                 // 0x162e4..0x162f4
-    await F.Draw_Sprite_Clip_212c0(0x45d74, R32(0x64e7c), 1);                 // 0x162f9..0x16309
-    await F.Draw_Sprite_Clip_212c0(0x33c30, R32(0x64e7c), 1);                 // 0x1630e..0x1631e
-    await F.Draw_Sprite_Clip_212c0(0x33dbc, R32(0x64e7c), 1);                 // 0x16323..0x16333
-    await F.Draw_Sprite_Clip_212c0(0x33918, R32(0x64e7c), 1);                 // 0x16338..0x16348
+    F.Draw_Sprite_Clip_212c0(0x3dd10, R32(0x64e7c), 1);                 // 0x162e4..0x162f4
+    F.Draw_Sprite_Clip_212c0(0x45d74, R32(0x64e7c), 1);                 // 0x162f9..0x16309
+    F.Draw_Sprite_Clip_212c0(0x33c30, R32(0x64e7c), 1);                 // 0x1630e..0x1631e
+    F.Draw_Sprite_Clip_212c0(0x33dbc, R32(0x64e7c), 1);                 // 0x16323..0x16333
+    F.Draw_Sprite_Clip_212c0(0x33918, R32(0x64e7c), 1);                 // 0x16338..0x16348
     for (i = 0; i < 7; i++) {                                                 // 0x1634d..0x16380
-      await F.Draw_Sprite_Clip_212c0((0x44010 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
+      F.Draw_Sprite_Clip_212c0((0x44010 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
     }
     for (i = 0; i < 4; i++) {                                                 // 0x16382..0x163b5
-      await F.Draw_Sprite_Clip_212c0((0x44ae4 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
+      F.Draw_Sprite_Clip_212c0((0x44ae4 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
     }
     for (i = 0; i < 3; i++) {                                                 // 0x163b7..0x163ea
-      await F.Draw_Sprite_Clip_212c0((0x452a0 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
+      F.Draw_Sprite_Clip_212c0((0x452a0 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
     }
-    await F.Draw_Sprite_Clip_212c0(0x33aa4, R32(0x64e7c), 1);                 // 0x163ec..0x163fc
-    await F.Show_Double_Buffer_21531(R32(0x64e7c), 0);                        // 0x16401..0x16408
+    F.Draw_Sprite_Clip_212c0(0x33aa4, R32(0x64e7c), 1);                 // 0x163ec..0x163fc
+    F.Show_Double_Buffer_21531(R32(0x64e7c), 0);                        // 0x16401..0x16408
     // 0x1640d..0x16422: while (Timer_Query() - [0x60a64] < 1) sub_10050();  (cmp eax,1; jge: signed)
     // Busy-wait on the clock; sub_10050 does not yield (see header), so the loop yields.
-    while ((((await F.Timer_Query_235f9()) - R32(0x60a64)) | 0) < 1) {
-      await F.sub_10050();                                                    // 0x1641d
+    while ((((F.Timer_Query_235f9()) - R32(0x60a64)) | 0) < 1) {
+      F.sub_10050();                                                    // 0x1641d
       await yieldCpu();
     }
   }                                                                           // 0x16424 jmp 0x16035
-  await F.sub_15c34();                                                        // 0x16429
+  F.sub_15c34();                                                        // 0x16429
   W32(0x60bc4, 0);                                                            // 0x1642e
-  await F.sub_1a825();                                                        // 0x16438
+  F.sub_1a825();                                                        // 0x16438
 });

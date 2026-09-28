@@ -39,7 +39,7 @@ register(0x1098f, 'sub_1098f', async function sub_1098f() {
   const KEY = L(4);                            // [ebp-4]: byte, getch result (uninitialized at first test)
 
   W32(POS, 0);                                                            // 0x109a7
-  await F.sub_10767();                                                     // 0x109ae
+  F.sub_10767();                                                     // 0x109ae
   // 0x109b3..0x109c6: for (i = 0; i < 9; i++) (jge: signed); 0x109bc mov eax,[ebp-0x10] is a dead load
   for (W32(I, 0); (R32(I) | 0) < 9; W32(I, R32(I) + 1)) {
     // 0x109cc..0x109dc: cmp [0x60a68], [i*0x18 + 0x60a70]; jle 0x10b6f (next i)
@@ -48,12 +48,12 @@ register(0x1098f, 'sub_1098f', async function sub_1098f() {
     await F.Time_Delay_20404(1);                                          // 0x109e2
     W32((Math.imul(R32(I), 0x18) + 0x60a70) | 0, R32(0x60a68));            // 0x109ec..0x109f6
     W32((Math.imul(R32(I), 0x18) + 0x60a74) | 0, R32(0x30bec));            // 0x109fc..0x10a06
-    await F.Print_String_DB_221aa(0x55, 0x50, 0xfa, 0x30033 /* " !!!New Top Score!!! " */, 0);  // 0x10a0c..0x10a22
-    await F.Print_String_DB_221aa(5, 0x5a, 0xfb,
+    F.Print_String_DB_221aa(0x55, 0x50, 0xfa, 0x30033 /* " !!!New Top Score!!! " */, 0);  // 0x10a0c..0x10a22
+    F.Print_String_DB_221aa(5, 0x5a, 0xfb,
       0x30049 /* "Please type your name then press enter" */, 0);                             // 0x10a27..0x10a3d
-    await F.Show_Double_Buffer_21531(R32(0x64e7c) /* double_buffer, LIBRARY.md */, 0);        // 0x10a42..0x10a49
+    F.Show_Double_Buffer_21531(R32(0x64e7c) /* double_buffer, LIBRARY.md */, 0);        // 0x10a42..0x10a49
     await F.Time_Delay_20404(1);                                          // 0x10a4e
-    await F.Keyboard_Remove_Driver_22c58();                               // 0x10a58
+    F.Keyboard_Remove_Driver_22c58();                               // 0x10a58
     // 0x10a5d..0x10a80: for (j = 0; j < 15; j++) byte [i*0x18 + j + 0x60a78] = 0x20 (jge: signed);
     // 0x10a66 mov eax,[ebp-8] is a dead load
     for (W32(J, 0); (R32(J) | 0) < 0xf; W32(J, R32(J) + 1)) {
@@ -63,10 +63,10 @@ register(0x1098f, 'sub_1098f', async function sub_1098f() {
     // 0x10a82..0x10a8c: loop while pos < 15 (signed) and key byte != 0x0d
     while ((R32(POS) | 0) < 0xf && R8(KEY) !== 0x0d) {
       // 0x10a93..0x10ab0: while (kbhit() == 0) { Time_Delay(1); sub_14fba(); sub_10050(); }
-      while ((await F.kbhit_2328d()) === 0) {
+      while ((F.kbhit_2328d()) === 0) {
         await F.Time_Delay_20404(1);
-        await F.sub_14fba();
-        await F.sub_10050();
+        F.sub_14fba();
+        F.sub_10050();
       }
       W8(KEY, (await F.getch_232a4()) & 0xff);                            // 0x10ab2..0x10ab7 mov [ebp-4], al
       if (R8(KEY) === 0x0d) break;                                         // 0x10aba..0x10ac0 jmp 0x10b55
@@ -76,19 +76,19 @@ register(0x1098f, 'sub_1098f', async function sub_1098f() {
         W32(POS, R32(POS) - 2);                                            // 0x10ae1 add [ebp-0xc], -2
       } else if (R8(KEY) !== 0x08) {                                       // 0x10ae7..0x10aeb
         W8((Math.imul(R32(I), 0x18) + R32(POS) + 0x60a78) | 0, R8(KEY));  // 0x10aed..0x10af7
-        await F.dws_DPlay_1eff8(0x61160);                                  // 0x10afd..0x10b08 (cdecl, add esp,4)
+        F.dws_DPlay_1eff8(0x61160);                                  // 0x10afd..0x10b08 (cdecl, add esp,4)
       }
-      await F.Show_Double_Buffer_21531(R32(0x64e7c), 0);                   // 0x10b0b..0x10b12
+      F.Show_Double_Buffer_21531(R32(0x64e7c), 0);                   // 0x10b0b..0x10b12
       // 0x10b17..0x10b36: push 0; ecx = i*0x18 + 0x60a70 + 8; ebx = 0xfc; edx = 0x64; eax = 0x6c
-      await F.Print_String_202cd(0x6c, 0x64, 0xfc, (Math.imul(R32(I), 0x18) + 0x60a70 + 8) | 0, 0);
+      F.Print_String_202cd(0x6c, 0x64, 0xfc, (Math.imul(R32(I), 0x18) + 0x60a70 + 8) | 0, 0);
       W32(POS, R32(POS) + 1);                                              // 0x10b3b..0x10b3e (eax load is dead)
       await F.Time_Delay_20404(1);                                         // 0x10b41
-      await F.sub_14fba();                                                 // 0x10b4b
+      F.sub_14fba();                                                 // 0x10b4b
     }
     // 0x10b55
-    await F.Keyboard_Install_Driver_22bd7();                               // 0x10b55
+    F.Keyboard_Install_Driver_22bd7();                               // 0x10b55
     await F.sub_10676();                                                   // 0x10b5a
-    await F.dws_DPlay_1eff8(0x611c0);                                      // 0x10b5f..0x10b6a (cdecl, add esp,4)
+    F.dws_DPlay_1eff8(0x611c0);                                      // 0x10b5f..0x10b6a (cdecl, add esp,4)
     break;                                                                 // 0x10b6d jmp 0x10b74
   }
   stackFree(0x10);                                                         // 0x10b74 epilogue

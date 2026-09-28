@@ -6,7 +6,7 @@
 import { register } from '../runtime/registry.js';
 import { W32 } from '../runtime/mem.js';
 
-register(0x15c34, 'sub_15c34', async function sub_15c34() {
+register(0x15c34, 'sub_15c34', function sub_15c34() {
   let i; // [ebp-4]
   // 15c4c..15c72; the `mov eax,[ebp-4]` at 15c55 before `inc` is overwritten by imul on a continuing pass and
   // is the leftover EAX on the exiting pass (unobservable)

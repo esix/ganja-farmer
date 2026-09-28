@@ -34,7 +34,7 @@ import { imod } from '../runtime/cpu.js';
 
 const S = (k) => Math.imul(k, 0x18c);
 
-register(0x14690, 'sub_14690', async function sub_14690() {
+register(0x14690, 'sub_14690', function sub_14690() {
   let i; // [ebp-4]
   let r; // EDX after `idiv ecx` (remainder of rand())
 
@@ -52,7 +52,7 @@ register(0x14690, 'sub_14690', async function sub_14690() {
       W32(0x3d0b0 + S(i), (R32(0x3d0b0 + S(i)) + R32(0x3d0c0 + S(i))) | 0); // 0x14744..0x14758
     }
     if (R32(0x3d220 + S(i)) === 1) {                                     // 0x14765 jne 0x14786 -> 0x147a3
-      r = imod(await F.rand_232c7(), 0x12);                              // 0x1476e..0x1477f
+      r = imod(F.rand_232c7(), 0x12);                              // 0x1476e..0x1477f
       if (r === 0xf &&                                                   // 0x14781 je
           R32(0x3d850) === 0 &&                                          // 0x14788 je
           R32(0x3d0b0 + S(i)) > -0x32 &&                                 // 0x1479a jg
@@ -95,7 +95,7 @@ register(0x14690, 'sub_14690', async function sub_14690() {
       W32(0x3d0c4 + S(i), 0);                                            // 0x149a8
       W32(0x3d220 + S(i), 1);                                            // 0x149b9
       W32(0x3d0cc + S(i), 4);                                            // 0x149ca threshold_1
-      r = imod(await F.rand_232c7(), 3);                                 // 0x149d4..0x149e5
+      r = imod(F.rand_232c7(), 3);                                 // 0x149d4..0x149e5
       if (r === 1) {                                                     // 0x149e7 jne 0x14a53
         W32(0x3d0b0 + S(i), (0x528 - Math.imul(R32(0x30bec), 0x32)) | 0); // 0x149ec..0x14a01
         if (R32(0x3d0b0 + S(i)) < 0x140) {                               // 0x14a0e jge
@@ -125,7 +125,7 @@ register(0x14690, 'sub_14690', async function sub_14690() {
       if (R32(0x60bbc) !== 0) {                                          // 0x14b4a je
         W32(0x3d220 + S(i), 0);                                          // 0x14b5a
       }
-      r = imod(await F.rand_232c7(), 3);                                 // 0x14b64..0x14b75
+      r = imod(F.rand_232c7(), 3);                                 // 0x14b64..0x14b75
       if (r === 1) {                                                     // 0x14b77 jne 0x14bca
         W32(0x3d0b0 + S(i), (Math.imul(R32(0x30bec), 0x32) - 0x3e8) | 0); // 0x14b7c..0x14b90
         if (R32(0x3d0b0 + S(i)) > 0) {                                   // 0x14b9d jle

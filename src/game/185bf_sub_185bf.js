@@ -7,16 +7,16 @@ import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
 
-register(0x185bf, 'sub_185bf', async function sub_185bf() {
+register(0x185bf, 'sub_185bf', function sub_185bf() {
   let i; // [ebp-4]
 
   // 185d7: mov [ebp-4], 0 ; 185e6: cmp [ebp-4], 0x3f ; jge end ; 185e0: inc [ebp-4]
   for (i = 0; i < 0x3f; i++) {
     // 185ec..18609: ecx = i*0x18c; rand; edx = rand % 4 (idiv, signed) - 2; add [ecx+0x46218] (x), edx
-    const r = await F.rand_232c7();
+    const r = F.rand_232c7();
     W32(0x46218 + i * 0x18c, (R32(0x46218 + i * 0x18c) + (imod(r, 4) - 2)) | 0);
     // 1860f..18616: second rand, EAX discarded (EDX = i*0x18c is dead)
-    await F.rand_232c7();
+    F.rand_232c7();
     // 1861b..1862f: dec [eax+0x46228] (counter_1); cmp 0; jge (signed)
     W32(0x46228 + i * 0x18c, (R32(0x46228 + i * 0x18c) - 1) | 0);
     if ((R32(0x46228 + i * 0x18c) | 0) < 0) {

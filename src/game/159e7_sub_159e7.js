@@ -18,7 +18,7 @@ import { R32, W32 } from '../runtime/mem.js';
 
 const A = (base, i) => (base + Math.imul(i, 0x18c)) >>> 0; // `imul eax,[ebp-4],0x18c; mov [eax+base], 0`
 
-register(0x159e7, 'sub_159e7', async function sub_159e7() {
+register(0x159e7, 'sub_159e7', function sub_159e7() {
   let i; // [ebp-4]
 
   // 159ff: cmp [0x30bec],5; jge 15a85

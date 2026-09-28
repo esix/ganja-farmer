@@ -20,11 +20,11 @@ register(0x10676, 'sub_10676', async function sub_10676() {
       r = 0;
     }
   }
-  fp = await F.fopen_2264a(0x3000e /* "scores.dat" */, 0x3000c /* "w" */);
+  fp = F.fopen_2264a(0x3000e /* "scores.dat" */, 0x3000c /* "w" */);
   if (fp !== 0) {
     for (i = 0; i < 9; i++) {
-      r = await F.fwrite_2270d(0x60a70 + i * 0x18, 0x18, 1, fp);
+      r = F.fwrite_2270d(0x60a70 + i * 0x18, 0x18, 1, fp);
     }
-    await F.fclose_228ed(fp);
+    F.fclose_228ed(fp);
   }
 });

@@ -19,7 +19,7 @@ import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
 
-register(0x1556a, 'sub_1556a', async function sub_1556a() {
+register(0x1556a, 'sub_1556a', function sub_1556a() {
   let i; // [ebp-8]
   let j; // [ebp-4]
   let r1; // EBX at 0x155f8: first rand() % 4
@@ -37,9 +37,9 @@ register(0x1556a, 'sub_1556a', async function sub_1556a() {
     // 0x155ca: if (A[i].state == 1)
     if (R32(0x3e00c + Math.imul(i, 0x18c)) === 1) {
       // 0x155e5..0x155f6: rand(); cdq; idiv 4 -> remainder (EBX)
-      r1 = imod(await F.rand_232c7(), 4);
+      r1 = imod(F.rand_232c7(), 4);
       // 0x155fa..0x1560b: rand(); cdq; idiv 4 -> remainder (EDX)
-      r2 = imod(await F.rand_232c7(), 4);
+      r2 = imod(F.rand_232c7(), 4);
       // 0x1560d..0x1560f: sub ebx, edx; add [A[i].x], ebx
       W32(0x3de9c + Math.imul(i, 0x18c), (R32(0x3de9c + Math.imul(i, 0x18c)) + ((r1 - r2) | 0)) | 0);
       // 0x1561c..0x15622: old = A[i].y; A[i].y++

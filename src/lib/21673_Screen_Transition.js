@@ -29,7 +29,7 @@ register(0x21673, 'Screen_Transition_21673', async function Screen_Transition(ef
       for (i = 0; i < 0x14; i = (i + 1) | 0) {
         // 216b2..216c8: for (index = 1; index < 255; index++)  -- jge: signed
         for (index = 1; index < 0xff; index = (index + 1) | 0) {
-          await F.Read_Color_Reg_205a8(index, color);        // 216ca..216d0: EAX=index, EDX=&color
+          F.Read_Color_Reg_205a8(index, color);        // 216ca..216d0: EAX=index, EDX=&color
           // 216d5..216e5: movzx byte; cmp 4; jle -> 0, else add byte -3
           if (R8(color) > 4) W8(color, (R8(color) + 0xfd) & 0xff);
           else W8(color, 0);
@@ -39,7 +39,7 @@ register(0x21673, 'Screen_Transition_21673', async function Screen_Transition(ef
           // 216fd..2170d
           if (R8(color + 2) > 4) W8(color + 2, (R8(color + 2) + 0xfd) & 0xff);
           else W8(color + 2, 0);
-          await F.Write_Color_Reg_20541(index, color);       // 21711..21717: EAX=index, EDX=&color
+          F.Write_Color_Reg_20541(index, color);       // 21711..21717: EAX=index, EDX=&color
         }
         await F.Time_Delay_20404(1);                         // 2171e..21723
       }
@@ -49,7 +49,7 @@ register(0x21673, 'Screen_Transition_21673', async function Screen_Transition(ef
       for (i = 0; i < 0x14; i = (i + 1) | 0) {
         // 2174b..21761: for (index = 0; index < 255; index++)  -- jge: signed
         for (index = 0; index < 0xff; index = (index + 1) | 0) {
-          await F.Read_Color_Reg_205a8(index, color);        // 21763..21769
+          F.Read_Color_Reg_205a8(index, color);        // 21763..21769
           // 2176e..2177c: add byte +4 (wraps mod 256); movzx; cmp 0x3f; jle; else = 0x3f
           W8(color, (R8(color) + 4) & 0xff);
           if (R8(color) > 0x3f) W8(color, 0x3f);
@@ -59,7 +59,7 @@ register(0x21673, 'Screen_Transition_21673', async function Screen_Transition(ef
           // 21792..217a0
           W8(color + 2, (R8(color + 2) + 4) & 0xff);
           if (R8(color + 2) > 0x3f) W8(color + 2, 0x3f);
-          await F.Write_Color_Reg_20541(index, color);       // 217a4..217aa
+          F.Write_Color_Reg_20541(index, color);       // 217a4..217aa
         }
         await F.Time_Delay_20404(1);                         // 217b1..217b6
       }
@@ -70,29 +70,29 @@ register(0x21673, 'Screen_Transition_21673', async function Screen_Transition(ef
       // 217ca..217de: for (i = 0; i < 160; i += 2)  -- jge: signed
       for (i = 0; i < 0xa0; i = (i + 2) | 0) {
         await F.Wait_For_Vertical_Retrace_21937();           // 217e0
-        await F.V_Line_204b7(0, 0xc7, (0x13f - i) | 0, 0);   // 217e5..217f6: EAX=0, EDX=199, EBX=319-i, ECX=0
-        await F.V_Line_204b7(0, 0xc7, i, 0);                 // 217fb..21807
-        await F.V_Line_204b7(0, 0xc7, (0x13f - ((i + 1) | 0)) | 0, 0); // 2180c..21822
-        await F.V_Line_204b7(0, 0xc7, (i + 1) | 0, 0);       // 21827..21834
+        F.V_Line_204b7(0, 0xc7, (0x13f - i) | 0, 0);   // 217e5..217f6: EAX=0, EDX=199, EBX=319-i, ECX=0
+        F.V_Line_204b7(0, 0xc7, i, 0);                 // 217fb..21807
+        F.V_Line_204b7(0, 0xc7, (0x13f - ((i + 1) | 0)) | 0, 0); // 2180c..21822
+        F.V_Line_204b7(0, 0xc7, (i + 1) | 0, 0);       // 21827..21834
       }
       break;                                                 // 2183b
     case 4:
       // 21840..21851: for (i = 0; i < 100; i += 2)  -- jge: signed
       for (i = 0; i < 0x64; i = (i + 2) | 0) {
         await F.Wait_For_Vertical_Retrace_21937();           // 21853
-        await F.H_Line_2044b(0, 0x13f, (0xc7 - i) | 0, 0);   // 21858..21869: EAX=0, EDX=319, EBX=199-i, ECX=0
-        await F.H_Line_2044b(0, 0x13f, i, 0);                // 2186e..2187a
-        await F.H_Line_2044b(0, 0x13f, (0xc7 - ((i + 1) | 0)) | 0, 0); // 2187f..21895
-        await F.H_Line_2044b(0, 0x13f, (i + 1) | 0, 0);      // 2189a..218a7
+        F.H_Line_2044b(0, 0x13f, (0xc7 - i) | 0, 0);   // 21858..21869: EAX=0, EDX=319, EBX=199-i, ECX=0
+        F.H_Line_2044b(0, 0x13f, i, 0);                // 2186e..2187a
+        F.H_Line_2044b(0, 0x13f, (0xc7 - ((i + 1) | 0)) | 0, 0); // 2187f..21895
+        F.H_Line_2044b(0, 0x13f, (i + 1) | 0, 0);      // 2189a..218a7
       }
       break;                                                 // 218ae
     case 5: {
       // 218b3..218c9: for (i = 0; i <= 300000; i++)  -- jg: signed
       for (i = 0; i <= 0x493e0; i = (i + 1) | 0) {
         // 218cb: EBX = 0 (color for Write_Pixel, set before the rand calls)
-        const y = imod(await F.rand_232c7(), 0xc8);          // 218cd..218e0: cdq; idiv 200 -> remainder
-        const x = imod(await F.rand_232c7(), 0x140);         // 218e2..218f5: cdq; idiv 320 -> remainder
-        await F.Write_Pixel_2033c(x, y, 0);                  // 218f7..218f9: EAX=x, EDX=y, EBX=0
+        const y = imod(F.rand_232c7(), 0xc8);          // 218cd..218e0: cdq; idiv 200 -> remainder
+        const x = imod(F.rand_232c7(), 0x140);         // 218e2..218f5: cdq; idiv 320 -> remainder
+        F.Write_Pixel_2033c(x, y, 0);                  // 218f7..218f9: EAX=x, EDX=y, EBX=0
       }
       break;                                                 // 21900
     }

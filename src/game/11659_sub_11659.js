@@ -63,51 +63,51 @@ register(0x11659, 'sub_11659', async function sub_11659() {
   W32(V10, 0);                                                              // 0x1168d
   W32(V0C, 0x168);                                                          // 0x11694
   W32(V08, 0);                                                              // 0x1169b
-  await F.PCX_Init_207a0(0x329ac);                                          // 0x116a2..0x116a7
-  await F.PCX_Load_20806(0x300f4 /* "mainmnb.pcx" */, 0x329ac, 1);          // 0x116ac..0x116bb
-  await F.Read_Palette_20618(0, 0xff, PAL);                                 // 0x116c0..0x116cd
-  await F.PCX_Init_207a0(0x3227c);                                          // 0x116d2..0x116d7
-  await F.PCX_Load_20806(0x30100 /* "mainmnb2.pcx" */, 0x3227c, 1);         // 0x116dc..0x116eb
-  await F.PCX_Init_207a0(0x32614);                                          // 0x116f0..0x116f5
-  await F.PCX_Load_20806(0x3010d /* "mainmnb3.pcx" */, 0x32614, 1);         // 0x116fa..0x11709
-  await F.PCX_Init_207a0(0x32d44);                                          // 0x1170e..0x11713
-  await F.PCX_Load_20806(0x3011a /* "mainmnb4.pcx" */, 0x32d44, 1);         // 0x11718..0x11727
-  await F.PCX_Init_207a0(0x330dc);                                          // 0x1172c..0x11731
-  await F.PCX_Load_20806(0x30127 /* "mainmnb5.pcx" */, 0x330dc, 1);         // 0x11736..0x11745
-  await F.Squeeze_Mouse_230df(0, 0, 0, 0x60b50);                            // 0x1174a..0x11755
-  await F.Squeeze_Mouse_230df(2, 0, 0, 0);                                  // 0x1175a..0x11765
+  F.PCX_Init_207a0(0x329ac);                                          // 0x116a2..0x116a7
+  F.PCX_Load_20806(0x300f4 /* "mainmnb.pcx" */, 0x329ac, 1);          // 0x116ac..0x116bb
+  F.Read_Palette_20618(0, 0xff, PAL);                                 // 0x116c0..0x116cd
+  F.PCX_Init_207a0(0x3227c);                                          // 0x116d2..0x116d7
+  F.PCX_Load_20806(0x30100 /* "mainmnb2.pcx" */, 0x3227c, 1);         // 0x116dc..0x116eb
+  F.PCX_Init_207a0(0x32614);                                          // 0x116f0..0x116f5
+  F.PCX_Load_20806(0x3010d /* "mainmnb3.pcx" */, 0x32614, 1);         // 0x116fa..0x11709
+  F.PCX_Init_207a0(0x32d44);                                          // 0x1170e..0x11713
+  F.PCX_Load_20806(0x3011a /* "mainmnb4.pcx" */, 0x32d44, 1);         // 0x11718..0x11727
+  F.PCX_Init_207a0(0x330dc);                                          // 0x1172c..0x11731
+  F.PCX_Load_20806(0x30127 /* "mainmnb5.pcx" */, 0x330dc, 1);         // 0x11736..0x11745
+  F.Squeeze_Mouse_230df(0, 0, 0, 0x60b50);                            // 0x1174a..0x11755
+  F.Squeeze_Mouse_230df(2, 0, 0, 0);                                  // 0x1175a..0x11765
   W32(0x33c0c, 1);                                                          // 0x1176a
-  await F.Behind_Sprite_Clip_2106f(0x33aa4, R32(0x64e7c));                  // 0x11774..0x1177f
+  F.Behind_Sprite_Clip_2106f(0x33aa4, R32(0x64e7c));                  // 0x11774..0x1177f
 
   while ((R32(V1C) | 0) !== 0x22) {                                         // 0x11784 cmp [ebp-0x1c],0x22; je 0x11bef
-    W32(0x60a64, await F.Timer_Query_235f9());                              // 0x1178e..0x11793
+    W32(0x60a64, F.Timer_Query_235f9());                              // 0x1178e..0x11793
     W32(0x33c2c, 1);                                                        // 0x11798
     W32(V328, R32(V10));                                                    // 0x117a2..0x117a5
     // 0x11884: cmp [ebp-0x328],4; ja 0x1186d (unsigned) -> jmp 0x1189c; else jmp [eax*4 + 0x11870]
     // (table: 0x117b0, 0x117d2, 0x117fc, 0x11826, 0x1184d). `mov eax,[ebp-0x10]` before each inc/add is dead.
     switch (R32(V328) >>> 0) {
       case 0:                                                               // 0x117b0
-        await F.PCX_Copy_To_Buffer_20bd7(0x3227c, R32(0x64e7c));
+        F.PCX_Copy_To_Buffer_20bd7(0x3227c, R32(0x64e7c));
         W32(V14, 0);                                                        // 0x117c0
         W32(V10, R32(V10) + 1);                                             // 0x117ca inc
         break;
       case 1:                                                               // 0x117d2
-        await F.PCX_Copy_To_Buffer_20bd7(0x32614, R32(0x64e7c));
+        F.PCX_Copy_To_Buffer_20bd7(0x32614, R32(0x64e7c));
         if (R32(V14) === 0) W32(V10, R32(V10) + 1);                         // 0x117e2..0x117eb
         else W32(V10, R32(V10) - 1);                                        // 0x117f3 add -1
         break;
       case 2:                                                               // 0x117fc
-        await F.PCX_Copy_To_Buffer_20bd7(0x329ac, R32(0x64e7c));
+        F.PCX_Copy_To_Buffer_20bd7(0x329ac, R32(0x64e7c));
         if (R32(V14) === 0) W32(V10, R32(V10) + 1);                         // 0x1180c..0x11815
         else W32(V10, R32(V10) - 1);                                        // 0x1181d
         break;
       case 3:                                                               // 0x11826
-        await F.PCX_Copy_To_Buffer_20bd7(0x32d44, R32(0x64e7c));
+        F.PCX_Copy_To_Buffer_20bd7(0x32d44, R32(0x64e7c));
         if (R32(V14) === 0) W32(V10, R32(V10) + 1);                         // 0x11836..0x1183f
         else W32(V10, R32(V10) - 1);                                        // 0x11847
         break;
       case 4:                                                               // 0x1184d
-        await F.PCX_Copy_To_Buffer_20bd7(0x330dc, R32(0x64e7c));
+        F.PCX_Copy_To_Buffer_20bd7(0x330dc, R32(0x64e7c));
         W32(V14, 1);                                                        // 0x1185d
         W32(V10, R32(V10) - 1);                                             // 0x11867
         break;
@@ -115,13 +115,13 @@ register(0x11659, 'sub_11659', async function sub_11659() {
         break;
     }
 
-    await F.Squeeze_Mouse_230df(3, 0x60b48, 0x60b4c, 0x60b50);              // 0x1189c..0x118b0
+    F.Squeeze_Mouse_230df(3, 0x60b48, 0x60b4c, 0x60b50);              // 0x1189c..0x118b0
     W32(0x33aa4, ((R32(0x60b48) >> 1) - 0x10) | 0);                         // 0x118b5..0x118bf sar; sub
     W32(0x33aa8, R32(0x60b4c));                                             // 0x118c4..0x118c9
 
     // 0x118ce..0x118db: [ebp-4] == 0 && [0x60b50] == 1
     if (R32(V04) === 0 && R32(0x60b50) === 1) {
-      await F.dws_DPlay_1eff8(0x61160);                                     // 0x118df..0x118ea (cdecl)
+      F.dws_DPlay_1eff8(0x61160);                                     // 0x118df..0x118ea (cdecl)
       W32(V04, 1);                                                          // 0x118ed
     }
     // 0x118f4..0x11901: [ebp-4] == 1 && [0x60b50] != 1
@@ -134,28 +134,28 @@ register(0x11659, 'sub_11659', async function sub_11659() {
         (R32(0x33aa8) | 0) > 9 && (R32(0x33aa8) | 0) < 0x34 && R32(0x60b50) === 1) {
       W32(0x30be4, 0x22);                                                   // 0x11941
       W32(V1C, 0x22);                                                       // 0x1194b
-      await F.dws_DPlay_1eff8(0x61180);                                     // 0x11952..0x1195d
+      F.dws_DPlay_1eff8(0x61180);                                     // 0x11952..0x1195d
     }
     // 0x11960..0x1199d: 0xca < x < 0x132 && 0x93 < y < 0xb5 && [0x60b50] == 1
     if ((R32(0x33aa4) | 0) > 0xca && (R32(0x33aa4) | 0) < 0x132 &&
         (R32(0x33aa8) | 0) > 0x93 && (R32(0x33aa8) | 0) < 0xb5 && R32(0x60b50) === 1) {
       W32(0x30be4, 0x25);                                                   // 0x119a1
       W32(V1C, 0x22);                                                       // 0x119ab
-      await F.dws_DPlay_1eff8(0x61180);                                     // 0x119b2..0x119bd
+      F.dws_DPlay_1eff8(0x61180);                                     // 0x119b2..0x119bd
     }
     // 0x119c0..0x119f7: 0xca < x < 0x132 && 0xc < y < 0x2b && [0x60b50] == 1
     if ((R32(0x33aa4) | 0) > 0xca && (R32(0x33aa4) | 0) < 0x132 &&
         (R32(0x33aa8) | 0) > 0xc && (R32(0x33aa8) | 0) < 0x2b && R32(0x60b50) === 1) {
-      await F.Fill_Screen_20768(0);                                         // 0x119fb..0x119fd
-      await F.PCX_Init_207a0(0x31ee4);                                      // 0x11a02..0x11a07
-      await F.PCX_Load_20806(0x30134 /* "blank.pcx" */, 0x31ee4, 1);        // 0x11a0c..0x11a1b
-      await F.PCX_Copy_To_Buffer_20bd7(0x31ee4, R32(0x64e7c));              // 0x11a20..0x11a2b
-      await F.PCX_Delete_20b69(0x31ee4);                                    // 0x11a30..0x11a35
+      F.Fill_Screen_20768(0);                                         // 0x119fb..0x119fd
+      F.PCX_Init_207a0(0x31ee4);                                      // 0x11a02..0x11a07
+      F.PCX_Load_20806(0x30134 /* "blank.pcx" */, 0x31ee4, 1);        // 0x11a0c..0x11a1b
+      F.PCX_Copy_To_Buffer_20bd7(0x31ee4, R32(0x64e7c));              // 0x11a20..0x11a2b
+      F.PCX_Delete_20b69(0x31ee4);                                    // 0x11a30..0x11a35
       await F.sub_10cac();                                                  // 0x11a3a
-      await F.Fill_Screen_20768(0);                                         // 0x11a3f..0x11a41
-      await F.Write_Palette_2069f(0, 0xff, PAL);                            // 0x11a46..0x11a53
+      F.Fill_Screen_20768(0);                                         // 0x11a3f..0x11a41
+      F.Write_Palette_2069f(0, 0xff, PAL);                            // 0x11a46..0x11a53
       W32(0x33c0c, 1);                                                      // 0x11a58
-      await F.dws_DPlay_1eff8(0x61180);                                     // 0x11a62..0x11a6d
+      F.dws_DPlay_1eff8(0x61180);                                     // 0x11a62..0x11a6d
     }
 
     // 0x11a70..0x11a7d: [0x64fe8] == 0 && [ebp-8] == 1
@@ -165,53 +165,53 @@ register(0x11659, 'sub_11659', async function sub_11659() {
     W32(V0C, R32(V0C) - 1);                                                 // 0x11a88 add [ebp-0xc], -1
     // 0x11a8c..0x11a9f: [ebp-0xc] < 0 (jl) || ([0x64fe8] != 0 && [ebp-8] == 0)
     if ((R32(V0C) | 0) < 0 || (R32(0x64fe8) !== 0 && R32(V08) === 0)) {
-      await F.Fill_Screen_20768(0);                                         // 0x11aa3..0x11aa5
+      F.Fill_Screen_20768(0);                                         // 0x11aa3..0x11aa5
       await F.sub_1128e();                                                  // 0x11aaa
-      await F.Fill_Screen_20768(0);                                         // 0x11aaf..0x11ab1
+      F.Fill_Screen_20768(0);                                         // 0x11aaf..0x11ab1
       await F.Time_Delay_20404(1);                                          // 0x11ab6..0x11abb
-      await F.Write_Palette_2069f(0, 0xff, PAL);                            // 0x11ac0..0x11acd
+      F.Write_Palette_2069f(0, 0xff, PAL);                            // 0x11ac0..0x11acd
       W32(0x33c0c, 1);                                                      // 0x11ad2
-      await F.dws_DPlay_1eff8(0x61180);                                     // 0x11adc..0x11ae7
+      F.dws_DPlay_1eff8(0x61180);                                     // 0x11adc..0x11ae7
       W32(V0C, 0x168);                                                      // 0x11aea
       W32(V08, 1);                                                          // 0x11af1
     }
 
-    await F.sub_14fba();                                                    // 0x11af8
-    await F.Draw_Sprite_Clip_212c0(0x33aa4, R32(0x64e7c), 1);               // 0x11afd..0x11b0d
-    await F.Show_Double_Buffer_21531(R32(0x64e7c), 0);                      // 0x11b12..0x11b19
+    F.sub_14fba();                                                    // 0x11af8
+    F.Draw_Sprite_Clip_212c0(0x33aa4, R32(0x64e7c), 1);               // 0x11afd..0x11b0d
+    F.Show_Double_Buffer_21531(R32(0x64e7c), 0);                      // 0x11b12..0x11b19
 
     // 0x11b1e..0x11b33: while (Timer_Query() - [0x60a64] < 2 (jge exits)) sub_10050();
     // Busy-wait on the clock; sub_10050 does not yield (see header), so the loop yields.
-    while ((((await F.Timer_Query_235f9()) - R32(0x60a64)) | 0) < 2) {
-      await F.sub_10050();                                                  // 0x11b2e
+    while ((((F.Timer_Query_235f9()) - R32(0x60a64)) | 0) < 2) {
+      F.sub_10050();                                                  // 0x11b2e
       await yieldCpu();
     }
 
     // 0x11b35..0x11b6c: 0x17 < x < 0x78 && 0x93 < y < 0xb5 && [0x60b50] == 1
     if ((R32(0x33aa4) | 0) > 0x17 && (R32(0x33aa4) | 0) < 0x78 &&
         (R32(0x33aa8) | 0) > 0x93 && (R32(0x33aa8) | 0) < 0xb5 && R32(0x60b50) === 1) {
-      await F.dws_DPlay_1eff8(0x61180);                                     // 0x11b73..0x11b7e
-      await F.Fill_Screen_20768(0);                                         // 0x11b81..0x11b83
-      await F.PCX_Init_207a0(0x31ee4);                                      // 0x11b88..0x11b8d
-      await F.PCX_Load_20806(0x3013e /* "howto.pcx" */, 0x31ee4, 1);        // 0x11b92..0x11ba1
-      await F.PCX_Show_Buffer_20b9b(0x31ee4);                               // 0x11ba6..0x11bab
+      F.dws_DPlay_1eff8(0x61180);                                     // 0x11b73..0x11b7e
+      F.Fill_Screen_20768(0);                                         // 0x11b81..0x11b83
+      F.PCX_Init_207a0(0x31ee4);                                      // 0x11b88..0x11b8d
+      F.PCX_Load_20806(0x3013e /* "howto.pcx" */, 0x31ee4, 1);        // 0x11b92..0x11ba1
+      F.PCX_Show_Buffer_20b9b(0x31ee4);                               // 0x11ba6..0x11bab
       // 0x11bb0..0x11bbe: while ([0x64fe8] == 0) sub_10050();
       // Busy-wait on keyboard_state written by the ISR 0x22b04 (LIBRARY.md); sub_10050 does not yield.
       while (R32(0x64fe8) === 0) {
-        await F.sub_10050();                                                // 0x11bb9
+        F.sub_10050();                                                // 0x11bb9
         await yieldCpu();
       }
-      await F.PCX_Delete_20b69(0x31ee4);                                    // 0x11bc0..0x11bc5
-      await F.Fill_Screen_20768(0);                                         // 0x11bca..0x11bcc
+      F.PCX_Delete_20b69(0x31ee4);                                    // 0x11bc0..0x11bc5
+      F.Fill_Screen_20768(0);                                         // 0x11bca..0x11bcc
       W32(V08, 1);                                                          // 0x11bd1
-      await F.Write_Palette_2069f(0, 0xff, PAL);                            // 0x11bd8..0x11be5
+      F.Write_Palette_2069f(0, 0xff, PAL);                            // 0x11bd8..0x11be5
     }
   }                                                                         // 0x11bea jmp 0x11784
 
-  await F.PCX_Delete_20b69(0x329ac);                                        // 0x11bef..0x11bf4
-  await F.PCX_Delete_20b69(0x3227c);                                        // 0x11bf9..0x11bfe
-  await F.PCX_Delete_20b69(0x32614);                                        // 0x11c03..0x11c08
-  await F.PCX_Delete_20b69(0x32d44);                                        // 0x11c0d..0x11c12
-  await F.PCX_Delete_20b69(0x330dc);                                        // 0x11c17..0x11c1c
+  F.PCX_Delete_20b69(0x329ac);                                        // 0x11bef..0x11bf4
+  F.PCX_Delete_20b69(0x3227c);                                        // 0x11bf9..0x11bfe
+  F.PCX_Delete_20b69(0x32614);                                        // 0x11c03..0x11c08
+  F.PCX_Delete_20b69(0x32d44);                                        // 0x11c0d..0x11c12
+  F.PCX_Delete_20b69(0x330dc);                                        // 0x11c17..0x11c1c
   stackFree(0x328);                                                         // 0x11c21 epilogue
 });

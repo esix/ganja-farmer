@@ -19,7 +19,7 @@ import { R16, R32, W8, W32, R8 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
 import { stackAlloc, stackFree } from '../runtime/stack.js';
 
-register(0x18a58, 'sub_18a58', async function sub_18a58() {
+register(0x18a58, 'sub_18a58', function sub_18a58() {
   let best; // [ebp-8]
   let i;    // [ebp-0xc]
   let a, c;
@@ -28,10 +28,10 @@ register(0x18a58, 'sub_18a58', async function sub_18a58() {
   best = 0x17c;                                                        // 18a70
   // 18a77..18a81: movsw; movsb — copy 3 bytes from 0x64e78 into [ebp-4]
   W8(col, R8(0x64e78)); W8(col + 1, R8(0x64e79)); W8(col + 2, R8(0x64e7a));
-  W8(col, imod(await F.rand_232c7(), 0x3f) & 0xff);                    // 18a82..18a95: mov [ebp-4], dl
-  W8(col + 1, imod(await F.rand_232c7(), 0x3f) & 0xff);                // 18a98..18aab: mov [ebp-3], dl
-  W8(col + 2, imod(await F.rand_232c7(), 0x3f) & 0xff);                // 18aae..18ac1: mov [ebp-2], dl
-  await F.Write_Color_Reg_20541(0xa5, col);                            // 18ac4..18acc
+  W8(col, imod(F.rand_232c7(), 0x3f) & 0xff);                    // 18a82..18a95: mov [ebp-4], dl
+  W8(col + 1, imod(F.rand_232c7(), 0x3f) & 0xff);                // 18a98..18aab: mov [ebp-3], dl
+  W8(col + 2, imod(F.rand_232c7(), 0x3f) & 0xff);                // 18aae..18ac1: mov [ebp-2], dl
+  F.Write_Color_Reg_20541(0xa5, col);                            // 18ac4..18acc
   W32(0x4c398, 0x22);                                                  // 18ad1: height = 0x22
   W32(0x4c4f4, (R32(0x4c4f4) + 1) | 0);                                // 18adb: inc curr_frame
   if (R32(0x4c4f4) > 1) W32(0x4c4f4, 0);                               // 18ae1: jle (signed)
@@ -39,11 +39,11 @@ register(0x18a58, 'sub_18a58', async function sub_18a58() {
   if (R32(0x4c4fc) === 0x3d) W32(0x4c390, (R32(0x4c390) - 3) | 0);    // 18af4..18afd
 
   if (R32(0x4c4fc) === 0) {                                            // 18b04
-    W32(0x4c390, (-0x50 - imod(await F.rand_232c7(), 0xc8)) | 0);      // 18b0d..18b27: ecx=0xffffffb0; sub ecx,edx
+    W32(0x4c390, (-0x50 - imod(F.rand_232c7(), 0xc8)) | 0);      // 18b0d..18b27: ecx=0xffffffb0; sub ecx,edx
     if (R32(0x60bbc) === 0) {                                          // 18b2d
       W32(0x4c4fc, 0x3e);                                              // 18b36
-      W32(0x4c38c, imod(await F.rand_232c7(), 0x10e));                 // 18b40..18b53
-      W32(0x4c39c, imod(await F.rand_232c7(), 0x24));                  // 18b59..18b6c
+      W32(0x4c38c, imod(F.rand_232c7(), 0x10e));                 // 18b40..18b53
+      W32(0x4c39c, imod(F.rand_232c7(), 0x24));                  // 18b59..18b6c
       W32(0x4c3a0, 2);                                                 // 18b72
       W32(0x4c3ac, 0x1e);                                              // 18b7c
     }
@@ -53,8 +53,8 @@ register(0x18a58, 'sub_18a58', async function sub_18a58() {
     W32(0x4c390, (R32(0x4c390) - 5) | 0);                              // 18b8f
     if (R32(0x4c390) < -0x50) {                                        // 18b96: jge (signed)
       W32(0x4c4fc, 0x3e);                                              // 18b9f
-      W32(0x4c38c, imod(await F.rand_232c7(), 0x10e));                 // 18ba9..18bbc
-      W32(0x4c39c, imod(await F.rand_232c7(), 0x24));                  // 18bc2..18bd5
+      W32(0x4c38c, imod(F.rand_232c7(), 0x10e));                 // 18ba9..18bbc
+      W32(0x4c39c, imod(F.rand_232c7(), 0x24));                  // 18bc2..18bd5
       W32(0x4c3a0, 2);                                                 // 18bdb
     }
   }
@@ -64,11 +64,11 @@ register(0x18a58, 'sub_18a58', async function sub_18a58() {
     W32(0x4c39c, (R32(0x4c39c) - 1) | 0);                              // 18bf9
     if (R32(0x4c39c) < 0) {                                            // 18bff: jge (signed)
       if (R32(0x4c3a0) >= 0) {                                         // 18c08: jl (signed)
-        W32(0x4c3a0, imod((-(await F.rand_232c7())) | 0, 5));          // 18c11..18c26: neg edx; idiv 5
+        W32(0x4c3a0, imod((-(F.rand_232c7())) | 0, 5));          // 18c11..18c26: neg edx; idiv 5
       } else {
-        W32(0x4c3a0, imod(await F.rand_232c7(), 5));                   // 18c2e..18c41
+        W32(0x4c3a0, imod(F.rand_232c7(), 5));                   // 18c2e..18c41
       }
-      W32(0x4c39c, imod(await F.rand_232c7(), 0x24));                  // 18c47..18c5a
+      W32(0x4c39c, imod(F.rand_232c7(), 0x24));                  // 18c47..18c5a
     }
     if (R32(0x4c390) > 0x6c) {                                         // 18c60: jle (signed)
       for (i = 0; i < 0x1a; i++) {                                     // 18c6d..18c80, 18c76 (mov eax,[ebp-0xc] dead)
@@ -76,9 +76,9 @@ register(0x18a58, 'sub_18a58', async function sub_18a58() {
           a = R32(0x4c394);                                            // 18c92..18ca2: (w - (w >> 31)) >> 1
           a = ((a - (a >> 31)) | 0) >> 1;
           // 18ca4..18cbb: abs(x + width/2 - X[i])
-          if ((await F.abs_2377c((((R32(0x4c38c) + a) | 0) - R32(0x3a878 + Math.imul(i, 0x18c))) | 0)) < best) { // 18cc0: jge (signed)
+          if ((F.abs_2377c((((R32(0x4c38c) + a) | 0) - R32(0x3a878 + Math.imul(i, 0x18c))) | 0)) < best) { // 18cc0: jge (signed)
             // 18cc5..18cdc: best = abs(x - X[i]) — note: without the width/2 term used in the comparison above
-            best = await F.abs_2377c((R32(0x4c38c) - R32(0x3a878 + Math.imul(i, 0x18c))) | 0);
+            best = F.abs_2377c((R32(0x4c38c) - R32(0x3a878 + Math.imul(i, 0x18c))) | 0);
             W32(0x60bd0, i);                                           // 18cdf..18ce2
           }
         }
@@ -123,7 +123,7 @@ register(0x18a58, 'sub_18a58', async function sub_18a58() {
     if (a <= c) {                                                      // 18e3b: jg (signed)
       W32(0x4c4fc, 0x40);                                              // 18e3f
       W32(0x4c3a4, (0x37 - R32(0x30bec)) | 0);                         // 18e49..18e55
-      await F.dws_DPlay_1eff8(0x61620);                                // 18e5b..18e66 (cdecl)
+      F.dws_DPlay_1eff8(0x61620);                                // 18e5b..18e66 (cdecl)
     }
   }
 
@@ -132,18 +132,18 @@ register(0x18a58, 'sub_18a58', async function sub_18a58() {
     W32(0x4c3a4, (R32(0x4c3a4) - 1) | 0);                              // 18e7c: dec counter_3
     if (R32(0x4c3a4) < 0) {                                            // 18e82: jge (signed)
       W32(0x4c4fc, 0x3f);                                              // 18e8b
-      await F.dws_DDiscard_1f770(R16(0x6162a));                        // 18e95..18ea3: zero-extended word soundnum of 0x61620
+      F.dws_DDiscard_1f770(R16(0x6162a));                        // 18e95..18ea3: zero-extended word soundnum of 0x61620
       W32((0x3a9e8 + Math.imul(R32(0x60bd0), 0x18c)) | 0, 0);          // 18ea6..18eb0: state[j] = 0
       W32((0x3a9e0 + Math.imul(R32(0x60bd0), 0x18c)) | 0, 7);          // 18eba..18ec4: curr_frame[j] = 7
     }
   }
 
   // 18ece..18ee2: dws_DSoundStatus(zero-extended word [0x6164a] (soundnum of 0x61640), 0x60f18) (cdecl)
-  await F.dws_DSoundStatus_1f348(R16(0x6164a), 0x60f18);
+  F.dws_DSoundStatus_1f348(R16(0x6164a), 0x60f18);
 
   // 18ee5..18f16: skip if y <= -0x3c, state == 0, state == 0x40 or word [0x60f18] != 0
   if (!(R32(0x4c390) <= -0x3c || R32(0x4c4fc) === 0 || R32(0x4c4fc) === 0x40 || R16(0x60f18) !== 0)) {
-    await F.dws_DPlay_1eff8(0x61640);                                  // 18f10..18f1b (cdecl)
+    F.dws_DPlay_1eff8(0x61640);                                  // 18f10..18f1b (cdecl)
   }
 
   stackFree(4);

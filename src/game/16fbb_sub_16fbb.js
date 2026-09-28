@@ -17,7 +17,7 @@ import { R8, R32, W8, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
 import { stackAlloc, stackFree } from '../runtime/stack.js';
 
-register(0x16fbb, 'sub_16fbb', async function sub_16fbb() {
+register(0x16fbb, 'sub_16fbb', function sub_16fbb() {
   const c = stackAlloc(4); // [ebp-4]: RGB_color (3 bytes used), address passed to Read/Write_Color_Reg
   let i;                   // [ebp-8]
   let j;                   // [ebp-0xc]
@@ -46,9 +46,9 @@ register(0x16fbb, 'sub_16fbb', async function sub_16fbb() {
   if (R32(0x5fc08) > 0xa0 && (R32(0x5fd74) === 0x46 || R32(0x5fd74) === 0x45)) {
     W32(0x5fd74, 0x44);
     W32(0x5fc20, 0xc);
-    await F.Read_Palette_20618(0, 0xff, 0x60bd4);  // 170bf..170cb
+    F.Read_Palette_20618(0, 0xff, 0x60bd4);  // 170bf..170cb
     W32(0x5ff00, 1);
-    await F.dws_DPlay_1eff8(0x614a0);               // 170da..170e5 (cdecl, add esp,4)
+    F.dws_DPlay_1eff8(0x614a0);               // 170da..170e5 (cdecl, add esp,4)
     W32(0x5fd90, R32(0x5fc04) - 0x28);
     W32(0x5fd94, R32(0x5fc08) - R32(0x5fd9c));
   }
@@ -64,19 +64,19 @@ register(0x16fbb, 'sub_16fbb', async function sub_16fbb() {
     if (R32(0x5fc20) > 6) {
       // 17153..171b7: every DAC entry 0..0xfe: each component += 2 (byte add), clamped to 0x3f
       for (i = 0; i < 0xff; i++) {
-        await F.Read_Color_Reg_205a8(i, c);
+        F.Read_Color_Reg_205a8(i, c);
         W8(c, (R8(c) + 2) & 0xff);
         if (R8(c) > 0x3f) W8(c, 0x3f);
         W8(c + 1, (R8(c + 1) + 2) & 0xff);
         if (R8(c + 1) > 0x3f) W8(c + 1, 0x3f);
         W8(c + 2, (R8(c + 2) + 2) & 0xff);
         if (R8(c + 2) > 0x3f) W8(c + 2, 0x3f);
-        await F.Write_Color_Reg_20541(i, c);
+        F.Write_Color_Reg_20541(i, c);
       }
     } else {
       // 171bb..1721c: every DAC entry 0..0xfe: each component += 0xfe (byte add, i.e. -2 mod 256)
       for (i = 0; i < 0xff; i++) {
-        await F.Read_Color_Reg_205a8(i, c);
+        F.Read_Color_Reg_205a8(i, c);
         W8(c, (R8(c) + 0xfe) & 0xff);
         // ORIGINAL BUG: 171e2..171e9 `xor eax,eax; mov al,[ebp-4]; test eax,eax; jge` — the byte is
         // zero-extended, so the value is never negative and the clamp to 0 never runs; a component below 2
@@ -86,7 +86,7 @@ register(0x16fbb, 'sub_16fbb', async function sub_16fbb() {
         if (R8(c + 1) < 0) W8(c + 1, 0);
         W8(c + 2, (R8(c + 2) + 0xfe) & 0xff);
         if (R8(c + 2) < 0) W8(c + 2, 0);
-        await F.Write_Color_Reg_20541(i, c);
+        F.Write_Color_Reg_20541(i, c);
       }
     }
     // 1721e..17257
@@ -95,7 +95,7 @@ register(0x16fbb, 'sub_16fbb', async function sub_16fbb() {
       W32(0x5fd74, 0);
       W32(0x5ff00, 0);
       W32(0x5fef8, 0);
-      await F.Write_Palette_2069f(0, 0xff, 0x60bd4);
+      F.Write_Palette_2069f(0, 0xff, 0x60bd4);
     }
     // 1725c..172bd
     if (R32(0x5fc20) < 4) {
@@ -111,7 +111,7 @@ register(0x16fbb, 'sub_16fbb', async function sub_16fbb() {
   // 172bf..1738f
   if (R32(0x5fd74) === 0 && R32(0x60bbc) === 0) {
     // 172d9..172ec: rand() % 2 via cdq-style `sar edx,0x1f; idiv ecx` (signed remainder)
-    if (imod(await F.rand_232c7(), 2) === 1) {
+    if (imod(F.rand_232c7(), 2) === 1) {
       W32(0x5fd74, 0x46);
       W32(0x5fc04, (Math.imul(R32(0x30bec) - 0x14, 0x64) - 0x320) | 0);
     } else {

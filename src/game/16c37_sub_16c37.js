@@ -11,61 +11,61 @@
 import { F, register } from '../runtime/registry.js';
 import { R32 } from '../runtime/mem.js';
 
-register(0x16c37, 'sub_16c37', async function sub_16c37() {
+register(0x16c37, 'sub_16c37', function sub_16c37() {
   let i; // [ebp-4]
 
-  await F.Erase_Sprite_Clip_211fc(0x5fc04, R32(0x64e7c));
-  await F.Erase_Sprite_Clip_211fc(0x5fd90, R32(0x64e7c));
-  await F.Erase_Sprite_Clip_211fc(0x33c30, R32(0x64e7c));
+  F.Erase_Sprite_Clip_211fc(0x5fc04, R32(0x64e7c));
+  F.Erase_Sprite_Clip_211fc(0x5fd90, R32(0x64e7c));
+  F.Erase_Sprite_Clip_211fc(0x33c30, R32(0x64e7c));
   for (i = 0; i < 5; i++) {
-    await F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x33f48, R32(0x64e7c));
+    F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x33f48, R32(0x64e7c));
   }
   for (i = 0; i < 3; i++) {
-    await F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x3d86c, R32(0x64e7c));
+    F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x3d86c, R32(0x64e7c));
   }
   for (i = 0; i < 0x3f; i++) {
-    await F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x3de9c, R32(0x64e7c));
+    F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x3de9c, R32(0x64e7c));
   }
   for (i = 0; i < 0x3f; i++) {
-    await F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x46218, R32(0x64e7c));
+    F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x46218, R32(0x64e7c));
   }
   for (i = 0; i < 0xc8; i++) {
-    await F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x4c518, R32(0x64e7c));
+    F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x4c518, R32(0x64e7c));
   }
   for (i = 0; i < 4; i++) {
-    await F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x3d23c, R32(0x64e7c));
+    F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x3d23c, R32(0x64e7c));
   }
   for (i = 0; i < 1; i++) {
-    await F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x3d0b0, R32(0x64e7c));
+    F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x3d0b0, R32(0x64e7c));
   }
   for (i = 0; i < 0x1a; i++) {
-    await F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x3a878, R32(0x64e7c));
+    F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x3a878, R32(0x64e7c));
   }
-  await F.Erase_Sprite_Clip_211fc(0x45d74, R32(0x64e7c));
-  await F.Erase_Sprite_Clip_211fc(0x5fa78, R32(0x64e7c));
-  await F.Erase_Sprite_Clip_211fc(0x4c38c, R32(0x64e7c));
+  F.Erase_Sprite_Clip_211fc(0x45d74, R32(0x64e7c));
+  F.Erase_Sprite_Clip_211fc(0x5fa78, R32(0x64e7c));
+  F.Erase_Sprite_Clip_211fc(0x4c38c, R32(0x64e7c));
   for (i = 0; i < 0x19; i++) {
-    await F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x35b20, R32(0x64e7c));
+    F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x35b20, R32(0x64e7c));
   }
   for (i = 0; i < 0x19; i++) {
-    await F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x381cc, R32(0x64e7c));
+    F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x381cc, R32(0x64e7c));
   }
-  await F.Erase_Sprite_Clip_211fc(0x45f00, R32(0x64e7c));
-  await F.Erase_Sprite_Clip_211fc(0x4608c, R32(0x64e7c));
+  F.Erase_Sprite_Clip_211fc(0x45f00, R32(0x64e7c));
+  F.Erase_Sprite_Clip_211fc(0x4608c, R32(0x64e7c));
   for (i = 0; i < 0xd; i++) {
-    await F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x34704, R32(0x64e7c));
+    F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x34704, R32(0x64e7c));
   }
   for (i = 0; i < 7; i++) {
-    await F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x44010, R32(0x64e7c));
+    F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x44010, R32(0x64e7c));
   }
   for (i = 0; i < 5; i++) {
-    await F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x44ae4, R32(0x64e7c));
+    F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x44ae4, R32(0x64e7c));
   }
   for (i = 0; i < 3; i++) {
-    await F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x452a0, R32(0x64e7c));
+    F.Erase_Sprite_Clip_211fc(i * 0x18c + 0x452a0, R32(0x64e7c));
   }
-  await F.Erase_Sprite_Clip_211fc(0x33dbc, R32(0x64e7c));
-  await F.Erase_Sprite_Clip_211fc(0x3dd10, R32(0x64e7c));
-  await F.Erase_Sprite_Clip_211fc(0x33918, R32(0x64e7c));
-  await F.Erase_Sprite_Clip_211fc(0x33aa4, R32(0x64e7c));
+  F.Erase_Sprite_Clip_211fc(0x33dbc, R32(0x64e7c));
+  F.Erase_Sprite_Clip_211fc(0x3dd10, R32(0x64e7c));
+  F.Erase_Sprite_Clip_211fc(0x33918, R32(0x64e7c));
+  F.Erase_Sprite_Clip_211fc(0x33aa4, R32(0x64e7c));
 });

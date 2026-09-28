@@ -22,7 +22,7 @@ import { F, register } from '../runtime/registry.js';
 import { R16, R32, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
 
-register(0x136a5, 'sub_136a5', async function sub_136a5() {
+register(0x136a5, 'sub_136a5', function sub_136a5() {
   let i;        // [ebp-0x18]
   let k;        // [ebp-0x14]
   let j;        // [ebp-0x10]
@@ -88,18 +88,18 @@ register(0x136a5, 'sub_136a5', async function sub_136a5() {
           W32(0x35c90 + S(i), 0x21);                            // 0x13941
           W32(0x35b34 + S(i), 0);                               // 0x13952 counter_2 (+0x14)
           W32(0x35c88 + S(i), 5);                               // 0x13963
-          r = imod(await F.rand_232c7(), 3);                    // 0x13974..0x13987
-          await F.dws_DDiscard_1f770(R16(0x612aa));             // 0x1398a
-          await F.dws_DDiscard_1f770(R16(0x612ca));             // 0x1399c
-          await F.dws_DDiscard_1f770(R16(0x612ea));             // 0x139ae
+          r = imod(F.rand_232c7(), 3);                    // 0x13974..0x13987
+          F.dws_DDiscard_1f770(R16(0x612aa));             // 0x1398a
+          F.dws_DDiscard_1f770(R16(0x612ca));             // 0x1399c
+          F.dws_DDiscard_1f770(R16(0x612ea));             // 0x139ae
           if (r === 0) {
-            await F.dws_DPlay_1eff8(0x612a0);                   // 0x139c6
+            F.dws_DPlay_1eff8(0x612a0);                   // 0x139c6
           }
           if (r === 1) {
-            await F.dws_DPlay_1eff8(0x612c0);                   // 0x139da
+            F.dws_DPlay_1eff8(0x612c0);                   // 0x139da
           }
           if (r === 2) {
-            await F.dws_DPlay_1eff8(0x612e0);                   // 0x139ee
+            F.dws_DPlay_1eff8(0x612e0);                   // 0x139ee
           }
           W32(0x5ff2c + Qo(j), 0);                              // 0x139fc
           W32(0x60a68, (R32(0x60a68) + 0xf) | 0);               // 0x13a0a
@@ -112,19 +112,19 @@ register(0x136a5, 'sub_136a5', async function sub_136a5() {
             ((R32(0x35b24 + S(i)) + 0x11) | 0) < R32(0x5ff24 + Qo(j)) &&
             ((R32(0x35b24 + S(i)) + R32(0x35b2c + S(i))) | 0) > R32(0x5ff24 + Qo(j)) &&
             (R32(0x35c90 + S(i)) === 0x1c || R32(0x35c90 + S(i)) === 0x1b)) {
-          if (imod(await F.rand_232c7(), 10) === 1) {           // 0x13ad8..0x13aee
+          if (imod(F.rand_232c7(), 10) === 1) {           // 0x13ad8..0x13aee
             if (R32(0x35b20 + S(i)) > 0xa0) {                   // 0x13af0 (jle)
               W32(0x35c90 + S(i), 2);                           // 0x13b03
             } else {
               W32(0x35c90 + S(i), 3);                           // 0x13b16
             }
-            W32(0x35c88 + S(i), (imod(await F.rand_232c7(), 3) + 0x13) | 0);  // 0x13b27..0x13b44
+            W32(0x35c88 + S(i), (imod(F.rand_232c7(), 3) + 0x13) | 0);  // 0x13b27..0x13b44
           } else {
             W32(0x35c90 + S(i), 4);                             // 0x13b4c
             W32(0x35c88 + S(i), 0x15);                          // 0x13b5d
           }
-          await F.dws_DDiscard_1f770(R16(0x6132a));             // 0x13b6e
-          await F.dws_DPlay_1eff8(0x61320);                     // 0x13b7f
+          F.dws_DDiscard_1f770(R16(0x6132a));             // 0x13b6e
+          F.dws_DPlay_1eff8(0x61320);                     // 0x13b7f
           W32(0x5ff2c + Qo(j), 0);                              // 0x13b8d
           W32(0x60a68, (R32(0x60a68) + 0xb) | 0);               // 0x13b9b
           W32(0x60a6c, (R32(0x60a6c) + 1) | 0);                 // 0x13ba2
@@ -165,8 +165,8 @@ register(0x136a5, 'sub_136a5', async function sub_136a5() {
           }
         }
         W32(0x35c90 + S(i), 0);                                 // 0x13d9c
-        await F.dws_DDiscard_1f770(R16(0x6134a));               // 0x13dad
-        await F.dws_DPlay_1eff8(0x61340);                       // 0x13dbe
+        F.dws_DDiscard_1f770(R16(0x6134a));               // 0x13dad
+        F.dws_DPlay_1eff8(0x61340);                       // 0x13dbe
         W32(0x35c88 + S(i), 0xb);                               // 0x13dcc
       }
     }
@@ -214,7 +214,7 @@ register(0x136a5, 'sub_136a5', async function sub_136a5() {
             W32(0x3a88c + S(j), 0x24);                          // 0x13fc3 P[j].counter_2 (+0x14)
             W32(0x60b90, R32(0x381cc + S(i)));                  // 0x13fd4
             W32(0x60b94, (R32(0x381d0 + S(i)) - 0x16) | 0);     // 0x13fe6
-            await F.sub_1352c();                                // 0x13ffb
+            F.sub_1352c();                                // 0x13ffb
             W32((R32(0x60b8c) << 2) + 0x60b58, 0xc);            // 0x14000..0x14008
           }
         }

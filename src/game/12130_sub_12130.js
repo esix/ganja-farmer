@@ -67,7 +67,7 @@ const fistp32 = (v) => (v >= -2147483648 && v <= 2147483647 ? v | 0 : -214748364
 const onScreen = (e) => !(R32(0x5ff24 + e) < 0) && R32(0x5ff24 + e) <= 0xc8 &&
                          R32(0x5ff20 + e) >= 0 && R32(0x5ff20 + e) <= 0x140;
 
-register(0x12130, 'sub_12130', async function sub_12130() {
+register(0x12130, 'sub_12130', function sub_12130() {
   let i; // [ebp-0x10]
   let j; // [ebp-0xc]
   let k; // [ebp-4]
@@ -88,18 +88,18 @@ register(0x12130, 'sub_12130', async function sub_12130() {
             W32(0x5ff28 + e, 2);                                                // 121e6
           }
         }
-        await F.Write_Pixel_DB_22219(R32(0x5ff20 + e), R32(0x5ff24 + e), R32(0x5ff28 + e)); // 121f0..1220e
+        F.Write_Pixel_DB_22219(R32(0x5ff20 + e), R32(0x5ff24 + e), R32(0x5ff28 + e)); // 121f0..1220e
       }
 
       // 12213..12222: fldz; fcomp [+0x40]; jb 12251 (0 < v or unordered)
       if (!(0 >= RF64(0x5ff40 + e))) {
         t = R32(0x5ff24 + e);                                                   // 12259..1225f fild; fstp
         t = t - RF64(0x5ff40 + e);                                              // 12262..1226b fld; fsub; fstp
-        W32(0x5ff24 + e, fistp32(await F.__CHP_222a4(t)));                      // 1226e..12276 fld; __CHP; fistp
+        W32(0x5ff24 + e, fistp32(F.__CHP_222a4(t)));                      // 1226e..12276 fld; __CHP; fistp
       } else {
         t = R32(0x5ff24 + e);                                                   // 1222c..12232
         t = t + RF64(0x5ff40 + e);                                              // 12235..1223e fld; fadd; fstp
-        W32(0x5ff24 + e, fistp32(await F.__CHP_222a4(t)));                      // 12241..12249
+        W32(0x5ff24 + e, fistp32(F.__CHP_222a4(t)));                      // 12241..12249
       }
 
       if (R32(0x60b54) >= 0xa) {                                                // 1227c: jl 122ad
@@ -116,7 +116,7 @@ register(0x12130, 'sub_12130', async function sub_12130() {
       }
       t = R32(0x5ff20 + e);                                                     // 122ef..122f5
       t = t + RF64(0x5ff48 + e);                                                // 122f8..12301
-      W32(0x5ff20 + e, fistp32(await F.__CHP_222a4(t)));                        // 12304..1230c
+      W32(0x5ff20 + e, fistp32(F.__CHP_222a4(t)));                        // 12304..1230c
 
       // 12312..1233c: reset unless y > 0 && x > 0 && x < 0x140
       if (!(R32(0x5ff24 + e) > 0 && R32(0x5ff20 + e) > 0 && R32(0x5ff20 + e) < 0x140)) {
@@ -125,7 +125,7 @@ register(0x12130, 'sub_12130', async function sub_12130() {
         W32(0x5ff20 + e, 1);                                                    // 1235e
       }
       if (onScreen(e)) {                                                        // 12368..123a4
-        W32(0x5ff28 + e, await F.Read_Pixel_DB_2225c(R32(0x5ff20 + e), R32(0x5ff24 + e))); // 123a8..123c5
+        W32(0x5ff28 + e, F.Read_Pixel_DB_2225c(R32(0x5ff20 + e), R32(0x5ff24 + e))); // 123a8..123c5
       }
 
       // 123cb..12524: sprites 0x33f48, k < 5
@@ -137,19 +137,19 @@ register(0x12130, 'sub_12130', async function sub_12130() {
             ((((R32(0x33f4c + o) + R32(0x33f54 + o)) | 0) - 5) | 0) > R32(0x5ff24 + e) &&
             ((R32(0x33f4c + o) + 5) | 0) < R32(0x5ff24 + e)) {
           W32(0x33f5c + o, (R32(0x33f5c + o) - 1) | 0);                         // 12482 dec counter_2
-          r = await F.rand_232c7();                                             // 1248f
+          r = F.rand_232c7();                                             // 1248f
           d = imod(r, 3);
-          r = await F.rand_232c7();                                             // 124a4
+          r = F.rand_232c7();                                             // 124a4
           d = (d - imod(r, 3)) | 0;                                             // 124b7 sub ebx, edx
           W32(0x33f48 + o, (R32(0x33f48 + o) + d) | 0);                         // 124b9 add [ecx+0x33f48]
-          r = await F.rand_232c7();                                             // 124c6
+          r = F.rand_232c7();                                             // 124c6
           d = imod(r, 3);
-          r = await F.rand_232c7();                                             // 124db
+          r = F.rand_232c7();                                             // 124db
           d = (d - imod(r, 3)) | 0;                                             // 124ee
           W32(0x33f4c + o, (R32(0x33f4c + o) + d) | 0);                         // 124f0 add [ecx+0x33f4c]
           W32(0x5ff2c + e, 0);                                                  // 124fa
-          await F.dws_DDiscard_1f770(R16(0x6126a));                             // 12504..1250e (cdecl)
-          await F.dws_DPlay_1eff8(0x61260);                                     // 12516..1251c (cdecl)
+          F.dws_DDiscard_1f770(R16(0x6126a));                             // 12504..1250e (cdecl)
+          F.dws_DPlay_1eff8(0x61260);                                     // 12516..1251c (cdecl)
         }
       }
 
@@ -166,9 +166,9 @@ register(0x12130, 'sub_12130', async function sub_12130() {
           W32(0x60b90, (R32(0x3d23c + o) - 0xc) | 0);                           // 125f0..12600
           W32(0x60b94, (R32(0x3d240 + o) - 0x16) | 0);                          // 12605..12615
           W32(0x60b58 + (R32(0x60b8c) << 2), 0x33);                             // 1261a..12622
-          await F.sub_1352c();                                                  // 1262c
-          await F.dws_DDiscard_1f770(R16(0x6128a));                             // 12631..1263a (cdecl)
-          await F.dws_DPlay_1eff8(0x61280);                                     // 12642..12648 (cdecl)
+          F.sub_1352c();                                                  // 1262c
+          F.dws_DDiscard_1f770(R16(0x6128a));                             // 12631..1263a (cdecl)
+          F.dws_DPlay_1eff8(0x61280);                                     // 12642..12648 (cdecl)
           W32(0x5ff2c + e, 0);                                                  // 12650
           W32(0x60a68, (R32(0x60a68) + 0x1f5) | 0);                             // 1265e
           W32(0x60a6c, (R32(0x60a6c) + 1) | 0);                                 // 12668
@@ -184,9 +184,9 @@ register(0x12130, 'sub_12130', async function sub_12130() {
         W32(0x60b90, (R32(0x5fc04) - 0xc) | 0);                                 // 126d5..126dd
         W32(0x60b94, (R32(0x5fc08) - 0x16) | 0);                                // 126e2..126ea
         W32(0x60b58 + (R32(0x60b8c) << 2), 0x33);                               // 126ef..126f7
-        await F.sub_1352c();                                                    // 12701
-        await F.dws_DDiscard_1f770(R16(0x6128a));                               // 12706..1270f (cdecl)
-        await F.dws_DPlay_1eff8(0x61280);                                       // 12717..1271d (cdecl)
+        F.sub_1352c();                                                    // 12701
+        F.dws_DDiscard_1f770(R16(0x6128a));                               // 12706..1270f (cdecl)
+        F.dws_DPlay_1eff8(0x61280);                                       // 12717..1271d (cdecl)
       }
 
       // 12725..1296d: sprites 0x3d0b0, j < 1
@@ -199,33 +199,33 @@ register(0x12130, 'sub_12130', async function sub_12130() {
             ((R32(0x3d0b4 + o) + R32(0x3d0bc + o)) | 0) > R32(0x5ff24 + e) &&
             R32(0x3d220 + o) !== 0) {
           W32(0x3d0cc + o, (R32(0x3d0cc + o) - 1) | 0);                         // 127e2 dec threshold_1
-          r = await F.rand_232c7();                                             // 127ef
+          r = F.rand_232c7();                                             // 127ef
           d = imod(r, 3);
-          r = await F.rand_232c7();                                             // 12804
+          r = F.rand_232c7();                                             // 12804
           d = (d - imod(r, 3)) | 0;                                             // 12817
           W32(0x3d0b0 + o, (R32(0x3d0b0 + o) + d) | 0);                         // 12819
-          r = await F.rand_232c7();                                             // 12826
+          r = F.rand_232c7();                                             // 12826
           d = imod(r, 3);
-          r = await F.rand_232c7();                                             // 1283b
+          r = F.rand_232c7();                                             // 1283b
           d = (d - imod(r, 3)) | 0;                                             // 1284e
           W32(0x3d0b4 + o, (R32(0x3d0b4 + o) + d) | 0);                         // 12850
           W32(0x5ff2c + e, 0);                                                  // 1285a
-          await F.dws_DDiscard_1f770(R16(0x6126a));                             // 12864..1286e (cdecl)
-          await F.dws_DPlay_1eff8(0x61260);                                     // 12876..1287c (cdecl)
+          F.dws_DDiscard_1f770(R16(0x6126a));                             // 12864..1286e (cdecl)
+          F.dws_DPlay_1eff8(0x61260);                                     // 12876..1287c (cdecl)
         }
         if (R32(0x3d0cc + Math.imul(j, 0x18c)) < 0) {                           // 12884: jge 1296d
           W32(0x3d220 + Math.imul(j, 0x18c), 0);                                // 12898 state
           for (k = 0; k < 4; k++) {                                             // 128a9..128bc
             o = Math.imul(j, 0x18c);                                            // 128c2 imul ecx
-            r = await F.rand_232c7();                                           // 128c9
+            r = F.rand_232c7();                                           // 128c9
             W32(0x60b90, (imod(r, 0x1e) + R32(0x3d0b0 + o)) | 0);               // 128dc..128e4 (x read after rand)
             o = Math.imul(j, 0x18c);                                            // 128ea
-            r = await F.rand_232c7();                                           // 128f1
+            r = F.rand_232c7();                                           // 128f1
             W32(0x60b94, (imod(r, 0x14) + R32(0x3d0b4 + o)) | 0);               // 12904..1290c
             W32(0x60b58 + (R32(0x60b8c) << 2), 0x33);                           // 12912..1291b
-            await F.sub_1352c();                                                // 12925
-            await F.dws_DDiscard_1f770(R16(0x6128a));                           // 1292a..12934 (cdecl)
-            await F.dws_DPlay_1eff8(0x61280);                                   // 1293c..12942 (cdecl)
+            F.sub_1352c();                                                // 12925
+            F.dws_DDiscard_1f770(R16(0x6128a));                           // 1292a..12934 (cdecl)
+            F.dws_DPlay_1eff8(0x61280);                                   // 1293c..12942 (cdecl)
           }
           W32(0x5ff2c + e, 0);                                                  // 1294f
           W32(0x60a68, (R32(0x60a68) + 0x12c) | 0);                             // 1295d
@@ -243,28 +243,28 @@ register(0x12130, 'sub_12130', async function sub_12130() {
             ((R32(0x3d870 + o) + R32(0x3d878 + o)) | 0) > R32(0x5ff24 + e) &&
             R32(0x3d9dc + o) !== 0) {
           W32(0x3d880 + o, (R32(0x3d880 + o) - 1) | 0);                         // 12a2f dec counter_2
-          r = await F.rand_232c7();                                             // 12a3c
+          r = F.rand_232c7();                                             // 12a3c
           d = imod(r, 3);
-          r = await F.rand_232c7();                                             // 12a51
+          r = F.rand_232c7();                                             // 12a51
           d = (d - imod(r, 3)) | 0;                                             // 12a64
           W32(0x3d86c + o, (R32(0x3d86c + o) + d) | 0);                         // 12a66
-          r = await F.rand_232c7();                                             // 12a73
+          r = F.rand_232c7();                                             // 12a73
           d = imod(r, 3);
-          r = await F.rand_232c7();                                             // 12a88
+          r = F.rand_232c7();                                             // 12a88
           d = (d - imod(r, 3)) | 0;                                             // 12a9b
           W32(0x3d870 + o, (R32(0x3d870 + o) + d) | 0);                         // 12a9d
           W32(0x5ff2c + e, 0);                                                  // 12aa7
-          await F.dws_DDiscard_1f770(R16(0x6126a));                             // 12ab1..12abb (cdecl)
-          await F.dws_DPlay_1eff8(0x61260);                                     // 12ac3..12ac9 (cdecl)
+          F.dws_DDiscard_1f770(R16(0x6126a));                             // 12ab1..12abb (cdecl)
+          F.dws_DPlay_1eff8(0x61260);                                     // 12ac3..12ac9 (cdecl)
         }
         if (R32(0x3d880 + o) < 0) {                                             // 12ad1: jge 12b71
           W32(0x3d9dc + o, 0);                                                  // 12ae5 state
           W32(0x60b90, (R32(0x3d86c + o) - 0xc) | 0);                           // 12af6..12b06
           W32(0x60b94, (R32(0x3d870 + o) - 0x16) | 0);                          // 12b0b..12b1b
           W32(0x60b58 + (R32(0x60b8c) << 2), 0x33);                             // 12b20..12b28
-          await F.sub_1352c();                                                  // 12b32
-          await F.dws_DDiscard_1f770(R16(0x6128a));                             // 12b37..12b40 (cdecl)
-          await F.dws_DPlay_1eff8(0x61280);                                     // 12b48..12b4e (cdecl)
+          F.sub_1352c();                                                  // 12b32
+          F.dws_DDiscard_1f770(R16(0x6128a));                             // 12b37..12b40 (cdecl)
+          F.dws_DPlay_1eff8(0x61280);                                     // 12b48..12b4e (cdecl)
           W32(0x5ff2c + e, 0);                                                  // 12b56
           W32(0x60a68, (R32(0x60a68) + 0x64) | 0);                              // 12b64
           W32(0x60a6c, (R32(0x60a6c) + 1) | 0);                                 // 12b6b
@@ -280,20 +280,20 @@ register(0x12130, 'sub_12130', async function sub_12130() {
         W32(0x4c3ac, (R32(0x4c3ac) - 1) | 0);                                   // 12bd9 dec threshold_2
         W32(0x4c3a0, Math.imul(R32(0x4c3a0), -1));                              // 12bdf imul eax, [..], -1
         W32(0x5ff2c + e, 0);                                                    // 12beb
-        await F.dws_DDiscard_1f770(R16(0x6126a));                               // 12bf9..12c02 (cdecl)
-        await F.dws_DPlay_1eff8(0x61260);                                       // 12c0a..12c10 (cdecl)
+        F.dws_DDiscard_1f770(R16(0x6126a));                               // 12bf9..12c02 (cdecl)
+        F.dws_DPlay_1eff8(0x61260);                                       // 12c0a..12c10 (cdecl)
       }
       if (R32(0x4c3ac) < 0 && R32(0x4c4fc) !== 0) {                             // 12c18..12c28
         W32(0x4c4fc, 0);                                                        // 12c2f state
         for (k = 0; k < 4; k++) {                                               // 12c39..12c4c
-          r = await F.rand_232c7();                                             // 12c4e
+          r = F.rand_232c7();                                             // 12c4e
           W32(0x60b90, (R32(0x4c38c) + imod(r, 0x1e)) | 0);                     // 12c5f..12c68 (x read after rand)
-          r = await F.rand_232c7();                                             // 12c6d
+          r = F.rand_232c7();                                             // 12c6d
           W32(0x60b94, (imod(r, 0x14) + R32(0x4c390)) | 0);                     // 12c7e..12c87
           W32(0x60b58 + (R32(0x60b8c) << 2), 0x33);                             // 12c8d..12c96
-          await F.sub_1352c();                                                  // 12ca0
-          await F.dws_DDiscard_1f770(R16(0x6128a));                             // 12ca5..12cae (cdecl)
-          await F.dws_DPlay_1eff8(0x61280);                                     // 12cb6..12cbc (cdecl)
+          F.sub_1352c();                                                  // 12ca0
+          F.dws_DDiscard_1f770(R16(0x6128a));                             // 12ca5..12cae (cdecl)
+          F.dws_DPlay_1eff8(0x61280);                                     // 12cb6..12cbc (cdecl)
         }
         W32(0x5ff2c + e, 0);                                                    // 12cc9
         W32(0x60a68, (R32(0x60a68) + 0x3e8) | 0);                               // 12cd7
@@ -316,7 +316,7 @@ register(0x12130, 'sub_12130', async function sub_12130() {
     }
     if (R32(0x5ff2c + e) === 0) {                                               // 12d9f: jne 12e77
       if (onScreen(e)) {                                                        // 12dac..12de8
-        await F.Write_Pixel_DB_22219(R32(0x5ff20 + e), R32(0x5ff24 + e), R32(0x5ff28 + e)); // 12dec..12e0a
+        F.Write_Pixel_DB_22219(R32(0x5ff20 + e), R32(0x5ff24 + e), R32(0x5ff28 + e)); // 12dec..12e0a
       }
       W32(0x5ff24 + e, 1);                                                      // 12e13
       W32(0x5ff20 + e, 1);                                                      // 12e21

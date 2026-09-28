@@ -34,7 +34,7 @@ import { R32, W32, RF64, WF64 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
 import * as x87 from '../runtime/x87.js';
 
-register(0x1977e, 'sub_1977e', async function sub_1977e() {
+register(0x1977e, 'sub_1977e', function sub_1977e() {
   let n; // [ebp-8]: entries set up so far (loop runs while < 3)
   let i; // [ebp-4]: index into the 0x4c518 array
   let r; // [ebp-0x1c] as rand()%2 (fild operand)
@@ -53,13 +53,13 @@ register(0x1977e, 'sub_1977e', async function sub_1977e() {
           ((R32(0x33dc0) - R32(0x33aa8)) | 0) > 0) {
         y = (R32(0x33dc0) - R32(0x33aa8)) | 0;                                  // 1980d..1981e fild; fstp qword
         x = (((R32(0x33aa4) - 0x14) | 0) - R32(0x33dbc) + 0xd) | 0;            // 19821..19838 fild; fstp qword
-        WF64(0x61660, x87.toDouble(await F.atan_st0_23686(y / x)));            // 1983b..19846 fld; fdiv; atan; fstp
-        r = imod(await F.rand_232c7(), 2);                                      // 1984c..1985f
+        WF64(0x61660, x87.toDouble(F.atan_st0_23686(y / x)));            // 1983b..19846 fld; fdiv; atan; fstp
+        r = imod(F.rand_232c7(), 2);                                      // 1984c..1985f
         W32(0x4c528 + i * 0x18c,                                                // 19862..1988a
-          (await F.__CHP_222a4(r + x87.fmul(await F.cos_st0_236cc(RF64(0x61660)), RF64(0x30184)))) | 0); // faddp st(1): st1 + st0
-        r = imod(await F.rand_232c7(), 2);                                      // 19890..198a3
+          (F.__CHP_222a4(r + x87.fmul(F.cos_st0_236cc(RF64(0x61660)), RF64(0x30184)))) | 0); // faddp st(1): st1 + st0
+        r = imod(F.rand_232c7(), 2);                                      // 19890..198a3
         W32(0x4c52c + i * 0x18c,                                                // 198a6..198ce
-          (await F.__CHP_222a4(x87.fmul(await F.sin_st0_236d6(RF64(0x61660)), RF64(0x3018c)) - r)) | 0); // fsubrp st(1): st0 - st1
+          (F.__CHP_222a4(x87.fmul(F.sin_st0_236d6(RF64(0x61660)), RF64(0x3018c)) - r)) | 0); // fsubrp st(1): st0 - st1
       }
 
       // 198d4..198f8: if (0x33dbc.x + 0xd - 0x33aa4.x - 0x14) > 0 && (0x33dc0 - 0x33aa8) > 0
@@ -67,26 +67,26 @@ register(0x1977e, 'sub_1977e', async function sub_1977e() {
           ((R32(0x33dc0) - R32(0x33aa8)) | 0) > 0) {
         y = (((R32(0x33dc0) - R32(0x33aa8)) | 0) - 0x14) | 0;                  // 198fd..19911
         x = (((R32(0x33dbc) + 0xd) | 0) - R32(0x33aa4) - 0x14) | 0;            // 19914..1992b
-        WF64(0x61660, x87.toDouble(await F.atan_st0_23686(y / x)));            // 1992e..19939
-        r = imod(await F.rand_232c7(), 2);                                      // 1993f..19952
+        WF64(0x61660, x87.toDouble(F.atan_st0_23686(y / x)));            // 1992e..19939
+        r = imod(F.rand_232c7(), 2);                                      // 1993f..19952
         W32(0x4c528 + i * 0x18c,                                                // 19955..1997d
-          (await F.__CHP_222a4(x87.fmul(await F.cos_st0_236cc(RF64(0x61660)), RF64(0x30194)) - r)) | 0); // fsubrp st(1): st0 - st1
-        r = imod(await F.rand_232c7(), 2);                                      // 19983..19996
+          (F.__CHP_222a4(x87.fmul(F.cos_st0_236cc(RF64(0x61660)), RF64(0x30194)) - r)) | 0); // fsubrp st(1): st0 - st1
+        r = imod(F.rand_232c7(), 2);                                      // 19983..19996
         W32(0x4c52c + i * 0x18c,                                                // 19999..199c1
-          (await F.__CHP_222a4(x87.fmul(await F.sin_st0_236d6(RF64(0x61660)), RF64(0x30194)) - r)) | 0); // fsubrp st(1): st0 - st1
+          (F.__CHP_222a4(x87.fmul(F.sin_st0_236d6(RF64(0x61660)), RF64(0x30194)) - r)) | 0); // fsubrp st(1): st0 - st1
       }
 
       // 199c7..199e7: if 0x33aa4.x + 6 > 0x33dbc.x && 0x33aa8 + 6 > 0x33dc0
       if (((R32(0x33aa4) + 6) | 0) > R32(0x33dbc) &&
           ((R32(0x33aa8) + 6) | 0) > R32(0x33dc0)) {
-        W32(0x4c528 + i * 0x18c, (imod(await F.rand_232c7(), 2) + 7) | 0);    // 199e9..19a06
+        W32(0x4c528 + i * 0x18c, (imod(F.rand_232c7(), 2) + 7) | 0);    // 199e9..19a06
         W32(0x4c52c + i * 0x18c, 0);                                            // 19a0c..19a13
       }
 
       // 19a1d..19a3d: if 0x33aa4.x + 6 < 0x33dbc.x && 0x33aa8 + 6 > 0x33dc0
       if (((R32(0x33aa4) + 6) | 0) < R32(0x33dbc) &&
           ((R32(0x33aa8) + 6) | 0) > R32(0x33dc0)) {
-        W32(0x4c528 + i * 0x18c, (-7 - imod(await F.rand_232c7(), 2)) | 0);   // 19a3f..19a60
+        W32(0x4c528 + i * 0x18c, (-7 - imod(F.rand_232c7(), 2)) | 0);   // 19a3f..19a60
         W32(0x4c52c + i * 0x18c, 0);                                            // 19a66..19a6d
       }
 

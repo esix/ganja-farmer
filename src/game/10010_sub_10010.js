@@ -4,9 +4,9 @@
 // entry of the table at 0x60a70), so `a` is used as the FILE* argument of fread.
 import { F, register } from '../runtime/registry.js';
 
-register(0x10010, 'sub_10010', async function sub_10010(a, b) {
+register(0x10010, 'sub_10010', function sub_10010(a, b) {
   let r; // [ebp-4]
 
-  r = await F.fread_1e110(b, 0x18, 1, a); // library call (fread does not wait): synchronous
+  r = F.fread_1e110(b, 0x18, 1, a); // library call (fread does not wait): synchronous
   return r;
 });

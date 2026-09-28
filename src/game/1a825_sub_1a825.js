@@ -11,7 +11,7 @@
 import { register } from '../runtime/registry.js';
 import { W32 } from '../runtime/mem.js';
 
-register(0x1a825, 'sub_1a825', async function sub_1a825() {
+register(0x1a825, 'sub_1a825', function sub_1a825() {
   let i; // [ebp-4]
 
   i = 0; // 0x1a83d (dead store)

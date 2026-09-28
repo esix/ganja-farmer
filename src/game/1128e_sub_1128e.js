@@ -36,18 +36,18 @@ register(0x1128e, 'sub_1128e', async function sub_1128e() {
 
   counter = 0x12c;                                                          // 0x112a6
   done = 0;                                                                 // 0x112ad
-  await F.PCX_Init_207a0(0x31ee4);                                          // 0x112b4..0x112b9
-  await F.PCX_Load_20806(0x300cc /* "hiscore.pcx" */, 0x31ee4, 1);          // 0x112be..0x112cd
-  await F.PCX_Copy_To_Buffer_20bd7(0x31ee4, R32(0x64e7c));                  // 0x112d2..0x112dd
-  await F.PCX_Delete_20b69(0x31ee4);                                        // 0x112e2..0x112e7
+  F.PCX_Init_207a0(0x31ee4);                                          // 0x112b4..0x112b9
+  F.PCX_Load_20806(0x300cc /* "hiscore.pcx" */, 0x31ee4, 1);          // 0x112be..0x112cd
+  F.PCX_Copy_To_Buffer_20bd7(0x31ee4, R32(0x64e7c));                  // 0x112d2..0x112dd
+  F.PCX_Delete_20b69(0x31ee4);                                        // 0x112e2..0x112e7
   W32(0x45d74, 0xfa);                                                       // 0x112ec
   W32(0x45d78, 0xa);                                                        // 0x112f6
-  await F.Behind_Sprite_Clip_2106f(0x45d74, R32(0x64e7c));                  // 0x11300..0x1130b
+  F.Behind_Sprite_Clip_2106f(0x45d74, R32(0x64e7c));                  // 0x11300..0x1130b
   // 0x11310..0x1132a: idiv ebx(8); eax = 4 - edx (remainder)
-  W32(0x45d90, (4 - imod(await F.rand_232c7(), 8)) | 0);
+  W32(0x45d90, (4 - imod(F.rand_232c7(), 8)) | 0);
   // 0x1132f..0x11349: idiv ebx(6); eax = 3 - edx (remainder)
-  W32(0x45d94, (3 - imod(await F.rand_232c7(), 6)) | 0);
-  await F.sub_107ce();                                                      // 0x1134e
+  W32(0x45d94, (3 - imod(F.rand_232c7(), 6)) | 0);
+  F.sub_107ce();                                                      // 0x1134e
 
   while (done === 0) {                                                      // 0x11353: cmp [ebp-4],0; jne 0x114e1
     if (R32(0x45d90) === 0) {                                               // 0x1135d
@@ -62,28 +62,28 @@ register(0x1128e, 'sub_1128e', async function sub_1128e() {
     // 0x11391..0x113aa: x + width > 0x140 (jle) && dx > 0 (jg)
     if (((R32(0x45d74) + R32(0x45d7c)) | 0) > 0x140 && R32(0x45d90) > 0) {
       // 0x113ae..0x113c3: neg; idiv ecx(5); store edx (remainder)
-      W32(0x45d90, imod((-(await F.rand_232c7())) | 0, 5));
+      W32(0x45d90, imod((-(F.rand_232c7())) | 0, 5));
     }
     // 0x113c9..0x113d9: x < 0 (jge) && dx < 0 (jl)
     if (R32(0x45d74) < 0 && R32(0x45d90) < 0) {
-      W32(0x45d90, imod(await F.rand_232c7(), 5));                          // 0x113dd..0x113f0
+      W32(0x45d90, imod(F.rand_232c7(), 5));                          // 0x113dd..0x113f0
     }
     // 0x113f6..0x1140f: y + height > 0xc8 (jle) && dy > 0 (jg)
     if (((R32(0x45d78) + R32(0x45d80)) | 0) > 0xc8 && R32(0x45d94) > 0) {
       // 0x11413..0x11428: neg; idiv ecx(4); store edx (remainder)
-      W32(0x45d94, imod((-(await F.rand_232c7())) | 0, 4));
+      W32(0x45d94, imod((-(F.rand_232c7())) | 0, 4));
     }
     // 0x1142e..0x1143e: y < 0 (jge) && dy < 0 (jl)
     if (R32(0x45d78) < 0 && R32(0x45d94) < 0) {
-      W32(0x45d94, imod(await F.rand_232c7(), 4));                          // 0x11442..0x11455
+      W32(0x45d94, imod(F.rand_232c7(), 4));                          // 0x11442..0x11455
     }
 
-    await F.sub_14fba();                                                    // 0x1145b
-    await F.Erase_Sprite_Clip_211fc(0x45d74, R32(0x64e7c));                 // 0x11460..0x1146b
-    await F.Behind_Sprite_Clip_2106f(0x45d74, R32(0x64e7c));                // 0x11470..0x1147b
-    await F.Draw_Sprite_Clip_212c0(0x45d74, R32(0x64e7c), 1);               // 0x11480..0x11490
-    await F.Show_Double_Buffer_21531(R32(0x64e7c), 0);                      // 0x11495..0x1149c
-    await F.sub_10050();                                                    // 0x114a1
+    F.sub_14fba();                                                    // 0x1145b
+    F.Erase_Sprite_Clip_211fc(0x45d74, R32(0x64e7c));                 // 0x11460..0x1146b
+    F.Behind_Sprite_Clip_2106f(0x45d74, R32(0x64e7c));                // 0x11470..0x1147b
+    F.Draw_Sprite_Clip_212c0(0x45d74, R32(0x64e7c), 1);               // 0x11480..0x11490
+    F.Show_Double_Buffer_21531(R32(0x64e7c), 0);                      // 0x11495..0x1149c
+    F.sub_10050();                                                    // 0x114a1
     await F.Time_Delay_20404(1);                                            // 0x114a6..0x114ab
 
     counter = (counter - 1) | 0;                                            // 0x114b0 add [ebp-8], -1
@@ -95,5 +95,5 @@ register(0x1128e, 'sub_1128e', async function sub_1128e() {
       done = 1;                                                             // 0x114d5
     }
   }                                                                         // 0x114dc jmp 0x11353
-  await F.Fill_Screen_20768(0);                                             // 0x114e1..0x114e3
+  F.Fill_Screen_20768(0);                                             // 0x114e1..0x114e3
 });

@@ -10,7 +10,7 @@
 import { register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 
-register(0x135bb, 'sub_135bb', async function sub_135bb() {
+register(0x135bb, 'sub_135bb', function sub_135bb() {
   let i; // [ebp-4]
 
   // 0x135d3 .. 0x135e6: for (i = 0; i < 13; i++)   (jge: signed)

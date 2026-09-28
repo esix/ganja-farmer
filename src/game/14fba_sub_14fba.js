@@ -9,38 +9,38 @@
 import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 
-register(0x14fba, 'sub_14fba', async function sub_14fba() {
+register(0x14fba, 'sub_14fba', function sub_14fba() {
   let phase; // [ebp-4]
 
   phase = R32(0x60ba0);                                   // 14fd2/14fd7
   // 1510c..15118: cmp [ebp-4],3; ja default; jmp [phase*4 + 0x150fc]
   switch (phase >>> 0) {
     case 0:                                               // 14fdf
-      await F.Write_Color_Reg_20541(0xf9, 0x30c00);
-      await F.Write_Color_Reg_20541(0xfa, 0x30c08);
-      await F.Write_Color_Reg_20541(0xfb, 0x30c10);
-      await F.Write_Color_Reg_20541(0xfc, 0x30c18);
+      F.Write_Color_Reg_20541(0xf9, 0x30c00);
+      F.Write_Color_Reg_20541(0xfa, 0x30c08);
+      F.Write_Color_Reg_20541(0xfb, 0x30c10);
+      F.Write_Color_Reg_20541(0xfc, 0x30c18);
       W32(0x60ba0, (R32(0x60ba0) + 1) | 0);               // 1501b: inc dword [0x60ba0]
       break;
     case 1:                                               // 15026
-      await F.Write_Color_Reg_20541(0xf9, 0x30c08);
-      await F.Write_Color_Reg_20541(0xfa, 0x30c10);
-      await F.Write_Color_Reg_20541(0xfb, 0x30c18);
-      await F.Write_Color_Reg_20541(0xfc, 0x30c00);
+      F.Write_Color_Reg_20541(0xf9, 0x30c08);
+      F.Write_Color_Reg_20541(0xfa, 0x30c10);
+      F.Write_Color_Reg_20541(0xfb, 0x30c18);
+      F.Write_Color_Reg_20541(0xfc, 0x30c00);
       W32(0x60ba0, (R32(0x60ba0) + 1) | 0);               // 15062
       break;
     case 2:                                               // 1506d
-      await F.Write_Color_Reg_20541(0xf9, 0x30c10);
-      await F.Write_Color_Reg_20541(0xfa, 0x30c18);
-      await F.Write_Color_Reg_20541(0xfb, 0x30c00);
-      await F.Write_Color_Reg_20541(0xfc, 0x30c08);
+      F.Write_Color_Reg_20541(0xf9, 0x30c10);
+      F.Write_Color_Reg_20541(0xfa, 0x30c18);
+      F.Write_Color_Reg_20541(0xfb, 0x30c00);
+      F.Write_Color_Reg_20541(0xfc, 0x30c08);
       W32(0x60ba0, (R32(0x60ba0) + 1) | 0);               // 150a9
       break;
     case 3:                                               // 150b1
-      await F.Write_Color_Reg_20541(0xf9, 0x30c18);
-      await F.Write_Color_Reg_20541(0xfa, 0x30c00);
-      await F.Write_Color_Reg_20541(0xfb, 0x30c08);
-      await F.Write_Color_Reg_20541(0xfc, 0x30c10);
+      F.Write_Color_Reg_20541(0xf9, 0x30c18);
+      F.Write_Color_Reg_20541(0xfa, 0x30c00);
+      F.Write_Color_Reg_20541(0xfb, 0x30c08);
+      F.Write_Color_Reg_20541(0xfc, 0x30c10);
       W32(0x60ba0, 0);                                    // 150ed
       break;
     default:                                              // 150f9: jmp epilogue

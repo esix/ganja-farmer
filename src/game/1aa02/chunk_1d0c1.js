@@ -24,7 +24,7 @@ export async function chunk_1d0c1() {
   let v18; // [ebp-0x18]  switch operand
   let v1c; // [ebp-0x1c]  switch index
 
-  W32(0x60a64, await F.Timer_Query_235f9());                     // 1d0c1 call, 1d0c6 mov [0x60a64],eax
+  W32(0x60a64, F.Timer_Query_235f9());                     // 1d0c1 call, 1d0c6 mov [0x60a64],eax
   W32(0x60bc0, 1);                                               // 1d0cb
   for (i = 0; i < 0x1a; i++) {                                   // 1d0d5 =0; 1d0e4 cmp 0x1a / jge 1d106; 1d0de..1d0e1 inc
     if (R32(0x3a9e8 + Math.imul(i, 0x18c)) !== 0) {              // 1d0ea imul, 1d0f1 cmp [eax+0x3a9e8],0, 1d0f8 je 1d104
@@ -37,7 +37,7 @@ export async function chunk_1d0c1() {
   }
   W32(0x60ba8, R32(0x33aa8));                                    // 1d11f..1d124
   W32(0x60ba4, R32(0x33aa4));                                    // 1d129..1d12e
-  await F.Squeeze_Mouse_230df(3, 0x60b48, 0x60b4c, 0x60b50);     // 1d133 ecx, 1d138 ebx, 1d13d edx, 1d142 eax, 1d147 call
+  F.Squeeze_Mouse_230df(3, 0x60b48, 0x60b4c, 0x60b50);     // 1d133 ecx, 1d138 ebx, 1d13d edx, 1d142 eax, 1d147 call
   W32(0x33aa4, ((R32(0x60b48) >> 1) - 0x10) | 0);                // 1d14c mov, 1d151 sar 1, 1d153 sub 0x10, 1d156 mov
   if (R32(0x33aa4) < 0) {                                        // 1d15b cmp 0, 1d162 jge 1d16e (signed)
     W32(0x33aa4, 0);                                             // 1d164
@@ -47,7 +47,7 @@ export async function chunk_1d0c1() {
   if (R32(0x64f08) !== 0) {                                      // 1d178 cmp, 1d17f je 1d186
     await F.sub_10c0b();                                         // 1d181
   }
-  await F.sub_16c37();                                           // 1d186
+  F.sub_16c37();                                           // 1d186
   if (R32(0x64ff4) !== 0) {                                      // 1d18b cmp, 1d192 je 1d199
     await F.sub_10cac();                                         // 1d194
   }
@@ -64,10 +64,10 @@ export async function chunk_1d0c1() {
     W32(0x30bec, (R32(0x30bec) - 1) | 0);                        // 1d209 dec [0x30bec]
   }
   if (R32(0x64fc8) !== 0 && R32(0x64f5c) !== 0 && R32(0x64f98) !== 0) { // 1d20f/1d216, 1d218/1d21f, 1d223/1d22a
-    await F.sub_1a825();                                         // 1d22e
+    F.sub_1a825();                                         // 1d22e
   }
   if (R32(0x64f18) !== 0 && R32(0x64f10) !== 0 && R32(0x64f30) !== 0) { // 1d233/1d23a, 1d23c/1d243, 1d247/1d24e
-    await F.dws_DPlay_1eff8(0x611c0);                            // 1d252..1d25d (cdecl, add esp,4)
+    F.dws_DPlay_1eff8(0x611c0);                            // 1d252..1d25d (cdecl, add esp,4)
     for (i = 0; i < 0x1a; i++) {                                 // 1d260 =0; 1d26f cmp 0x1a / jge 1d2aa; 1d269..1d26c inc
       W32(0x3a9e8 + Math.imul(i, 0x18c), 0x33);                  // 1d275 imul, 1d27c
       W32(0x3a9e0 + Math.imul(i, 0x18c), 6);                     // 1d286 imul, 1d28d
@@ -76,16 +76,16 @@ export async function chunk_1d0c1() {
   }
   if (R32(0x64f8c) !== 0 && R32(0x64fcc) !== 0) {                // 1d2aa/1d2b1 je 1d2bc(->1d2d6); 1d2b3/1d2ba jne 1d2be
     W32(0x60bb4, 1);                                             // 1d2be
-    await F.dws_DPlay_1eff8(0x61460);                            // 1d2c8..1d2d3
+    F.dws_DPlay_1eff8(0x61460);                            // 1d2c8..1d2d3
   }
   if (R32(0x64f8c) !== 0 && R32(0x64fc4) !== 0) {                // 1d2d6/1d2dd je 1d2e8(->1d30c); 1d2df/1d2e6 jne 1d2ea
     W32(0x60bb8, 1);                                             // 1d2ea
     W32(0x60ef4, 0x39);                                          // 1d2f4
-    await F.dws_DPlay_1eff8(0x61480);                            // 1d2fe..1d309
+    F.dws_DPlay_1eff8(0x61480);                            // 1d2fe..1d309
   }
   if (R32(0x64f8c) !== 0 && R32(0x64fc8) !== 0) {                // 1d30c/1d313 je 1d31e(->1d338); 1d315/1d31c jne 1d320
     W32(0x60bb0, 1);                                             // 1d320
-    await F.dws_DPlay_1eff8(0x61440);                            // 1d32a..1d335
+    F.dws_DPlay_1eff8(0x61440);                            // 1d32a..1d335
   }
 
   if (R32(0x60f00) === 0 && R32(0x60b50) === 2) {                // 1d338/1d33f jne 1d34a(->1d61d); 1d341/1d348 je 1d34f
@@ -99,62 +99,62 @@ export async function chunk_1d0c1() {
       switch (v1c) {
         case 1:                                                  // [0x60ee8] == 0x36 -> 0x1d35c
           if (R32(0x60bb0) === 1) {                              // 1d35c cmp, 1d363 jne 1d3b8
-            await F.dws_DDiscard_1f770(R16(0x6148a));            // 1d365..1d373 (zero-extended word)
-            await F.dws_DDiscard_1f770(R16(0x613ea));            // 1d376..1d384
+            F.dws_DDiscard_1f770(R16(0x6148a));            // 1d365..1d373 (zero-extended word)
+            F.dws_DDiscard_1f770(R16(0x613ea));            // 1d376..1d384
             W32(0x60ee8, 0x37);                                  // 1d387
             W32(0x33f2c, 1);                                     // 1d391
             W32(0x33f24, 0);                                     // 1d39b
-            await F.dws_DPlay_1eff8(0x61440);                    // 1d3a5..1d3b0; 1d3b3 jmp 1d613
+            F.dws_DPlay_1eff8(0x61440);                    // 1d3a5..1d3b0; 1d3b3 jmp 1d613
           } else if (R32(0x60bb4) === 1) {                       // 1d3b8 cmp, 1d3bf jne 1d3ef
-            await F.dws_DDiscard_1f770(R16(0x6144a));            // 1d3c1..1d3cf
+            F.dws_DDiscard_1f770(R16(0x6144a));            // 1d3c1..1d3cf
             W32(0x60ee8, 0x35);                                  // 1d3d2
-            await F.dws_DPlay_1eff8(0x61460);                    // 1d3dc..1d3e7; 1d3ea jmp 1d613
+            F.dws_DPlay_1eff8(0x61460);                    // 1d3dc..1d3e7; 1d3ea jmp 1d613
           } else if (R32(0x60bb8) === 1) {                       // 1d3ef cmp, 1d3f6 jne 1d430
-            await F.dws_DDiscard_1f770(R16(0x6146a));            // 1d3f8..1d406
+            F.dws_DDiscard_1f770(R16(0x6146a));            // 1d3f8..1d406
             W32(0x60ee8, 0x38);                                  // 1d409
             W32(0x60ef4, 0x39);                                  // 1d413
-            await F.dws_DPlay_1eff8(0x61480);                    // 1d41d..1d428; 1d42b jmp 1d613
+            F.dws_DPlay_1eff8(0x61480);                    // 1d41d..1d428; 1d42b jmp 1d613
           }                                                      // 1d430 jmp 1d613
           break;
         case 2:                                                  // [0x60ee8] == 0x37 -> 0x1d435
           if (R32(0x60bb4) === 1) {                              // 1d435 cmp, 1d43c jne 1d46c
-            await F.dws_DDiscard_1f770(R16(0x6144a));            // 1d43e..1d44c
+            F.dws_DDiscard_1f770(R16(0x6144a));            // 1d43e..1d44c
             W32(0x60ee8, 0x35);                                  // 1d44f
-            await F.dws_DPlay_1eff8(0x61460);                    // 1d459..1d464; 1d467 jmp 1d613
+            F.dws_DPlay_1eff8(0x61460);                    // 1d459..1d464; 1d467 jmp 1d613
           } else if (R32(0x60bb8) === 1) {                       // 1d46c cmp, 1d473 jne 1d4ad
-            await F.dws_DDiscard_1f770(R16(0x6146a));            // 1d475..1d483
+            F.dws_DDiscard_1f770(R16(0x6146a));            // 1d475..1d483
             W32(0x60ee8, 0x38);                                  // 1d486
             W32(0x60ef4, 0x39);                                  // 1d490
-            await F.dws_DPlay_1eff8(0x61480);                    // 1d49a..1d4a5; 1d4a8 jmp 1d613
+            F.dws_DPlay_1eff8(0x61480);                    // 1d49a..1d4a5; 1d4a8 jmp 1d613
           }                                                      // 1d4ad jmp 1d613
           break;
         case 0:                                                  // [0x60ee8] == 0x35 -> 0x1d4b2
           if (R32(0x60bb8) === 1) {                              // 1d4b2 cmp, 1d4b9 jne 1d4f3
-            await F.dws_DDiscard_1f770(R16(0x6146a));            // 1d4bb..1d4c9
+            F.dws_DDiscard_1f770(R16(0x6146a));            // 1d4bb..1d4c9
             W32(0x60ee8, 0x38);                                  // 1d4cc
             W32(0x60ef4, 0x39);                                  // 1d4d6
-            await F.dws_DPlay_1eff8(0x61480);                    // 1d4e0..1d4eb; 1d4ee jmp 1d613
+            F.dws_DPlay_1eff8(0x61480);                    // 1d4e0..1d4eb; 1d4ee jmp 1d613
           } else if (R32(0x60bb0) === 1) {                       // 1d4f3 cmp, 1d4fa jne 1d54f
-            await F.dws_DDiscard_1f770(R16(0x6148a));            // 1d4fc..1d50a
-            await F.dws_DDiscard_1f770(R16(0x613ea));            // 1d50d..1d51b
+            F.dws_DDiscard_1f770(R16(0x6148a));            // 1d4fc..1d50a
+            F.dws_DDiscard_1f770(R16(0x613ea));            // 1d50d..1d51b
             W32(0x60ee8, 0x37);                                  // 1d51e
             W32(0x33f2c, 1);                                     // 1d528
             W32(0x33f24, 0);                                     // 1d532
-            await F.dws_DPlay_1eff8(0x61440);                    // 1d53c..1d547; 1d54a jmp 1d613
+            F.dws_DPlay_1eff8(0x61440);                    // 1d53c..1d547; 1d54a jmp 1d613
           }                                                      // 1d54f jmp 1d613
           break;
         case 3:                                                  // [0x60ee8] == 0x38 -> 0x1d554
           if (R32(0x60bb0) === 1) {                              // 1d554 cmp, 1d55b jne 1d5ad
-            await F.dws_DDiscard_1f770(R16(0x6148a));            // 1d55d..1d56b
-            await F.dws_DDiscard_1f770(R16(0x613ea));            // 1d56e..1d57c
+            F.dws_DDiscard_1f770(R16(0x6148a));            // 1d55d..1d56b
+            F.dws_DDiscard_1f770(R16(0x613ea));            // 1d56e..1d57c
             W32(0x60ee8, 0x37);                                  // 1d57f
             W32(0x33f2c, 1);                                     // 1d589
             W32(0x33f24, 0);                                     // 1d593
-            await F.dws_DPlay_1eff8(0x61440);                    // 1d59d..1d5a8; 1d5ab jmp 1d613
+            F.dws_DPlay_1eff8(0x61440);                    // 1d59d..1d5a8; 1d5ab jmp 1d613
           } else if (R32(0x60bb4) === 1) {                       // 1d5ad cmp, 1d5b4 jne 1d5e1
-            await F.dws_DDiscard_1f770(R16(0x6144a));            // 1d5b6..1d5c4
+            F.dws_DDiscard_1f770(R16(0x6144a));            // 1d5b6..1d5c4
             W32(0x60ee8, 0x35);                                  // 1d5c7
-            await F.dws_DPlay_1eff8(0x61460);                    // 1d5d1..1d5dc; 1d5df jmp 1d613
+            F.dws_DPlay_1eff8(0x61460);                    // 1d5d1..1d5dc; 1d5df jmp 1d613
           }                                                      // 1d5e1 jmp 1d613
           break;
       }
