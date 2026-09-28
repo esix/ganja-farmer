@@ -37,7 +37,6 @@ import './232fb_Load_File.js';
 import './235f9_Timer_Query.js';
 import './2362c_Timer_Program.js';
 import './crt_heap.js';
-import './crt_startup.js';
 import './crt_stdio.js';
 import './crt.js';
 import './stk_client.js';

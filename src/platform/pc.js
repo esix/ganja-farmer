@@ -6,8 +6,6 @@
 //   ports  40h, 43h (OUT)       PIT channel 0    pit.js
 //          3C7h/3C8h (OUT), 3C9h (IN/OUT), 3DAh (IN)  VGA  vga.js
 //   INT    10h AH=00h           video BIOS       vga.js
-//          21h AH=25h/35h       PMODE/W vectors  dpmi.js (other AH: setDosHandler)
-//          31h                  DPMI             dpmi.js
 //          33h AX=0/2/3         mouse driver     mouse.js
 import { setIoBackend } from '../runtime/io.js';
 import { setYieldHook } from '../runtime/cpu.js';
@@ -15,7 +13,6 @@ import * as pit from './pit.js';
 import * as kbd from './kbd.js';
 import * as vga from './vga.js';
 import * as mouse from './mouse.js';
-import * as dpmi from './dpmi.js';
 
 const hex = (n) => '0x' + (n >>> 0).toString(16);
 
@@ -37,8 +34,6 @@ export const backend = {
   int(num, regs) {
     switch (num) {
       case 0x10: return vga.int10(regs);
-      case 0x21: return dpmi.int21(regs);
-      case 0x31: return dpmi.int31(regs);
       case 0x33: return mouse.int33(regs);
     }
     throw new Error('pc: INT ' + hex(num) + ' not emulated');
@@ -53,7 +48,7 @@ export const backend = {
 // all 256. UNCERTAIN: the DAC register indices at program start are not reset here (the mode set
 // resets them before any program access).
 export function reset({ msSinceMidnight } = {}) {
-  dpmi.resetDpmi(); vga.reset(); mouse.reset(); kbd.reset();
+  vga.reset(); mouse.reset(); kbd.reset();
   pit.install(); pit.reset();
   if (msSinceMidnight === undefined) {
     const d = new Date();
@@ -65,12 +60,10 @@ export function reset({ msSinceMidnight } = {}) {
 // Install as the io.js backend. Options:
 //   onBiosKey(scan, ascii): BIOS keyboard buffer sink (console layer's push)
 //   onStkTick(): STK update, called on every STK timer interrupt (sound layer)
-//   dosHandler(regs): INT 21h functions other than 25h/35h (CRT/DOS layer), if they come through io.js
 export function install(opts = {}) {
   reset(opts);
   if (opts.onBiosKey) kbd.setOnBiosKey(opts.onBiosKey);
   if (opts.onStkTick) pit.setOnStkTick(opts.onStkTick);
-  if (opts.dosHandler) dpmi.setDosHandler(opts.dosHandler);
   return setIoBackend(backend);
 }
 
@@ -136,7 +129,6 @@ export function attachBrowser(canvas) {
   };
 }
 
-export { pit, kbd, vga, mouse, dpmi };
+export { pit, kbd, vga, mouse };
 export const { setOnStkTick, stkTimerInstall, stkTimerKill } = pit;
 export const { setOnBiosKey } = kbd;
-export const { selBase, rmLinear, SEL_CODE, SEL_DATA } = dpmi;

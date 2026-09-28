@@ -1,7 +1,7 @@
-// The emulated PC running GANJAFRM.EXE, shared by the browser boot (boot.js) and the headless runner
-// (test/run-headless.mjs). The host supplies the data image, the ROM font and the files; this module
-// powers the machine on and runs the program the way DOS + PMODE/W + the Watcom startup do.
-import { loadInitialData, loadRomFont, R32 } from './runtime/mem.js';
+// The machine running the game, shared by the browser boot (boot.js) and the headless runner
+// (tests/run-headless.mjs). The host supplies the data image, the ROM font and the files; this module
+// powers the machine on and runs the program.
+import { loadInitialData, loadRomFont } from './runtime/mem.js';
 import { F } from './runtime/registry.js';
 import './game/index.js';
 import * as pc from './platform/pc.js';
@@ -10,25 +10,9 @@ import * as textmode from './platform/textmode.js';
 import * as images from './platform/images.js';
 import * as sounds from './platform/sounds.js';
 import './lib/index.js';
-import { cstart, runInitializers, beforeMain, exit_28bdc } from './lib/crt_startup.js';
+import { crtInit, crtExit } from './lib/crt.js';
 
-// GANJA.BAT is `stkrun ganjafrm`: nothing follows the program name, so the command tail is empty.
-// UNCERTAIN: STKRUN.EXE builds the EXEC call; that it passes an empty tail (and the exact path DOS
-// records for the program) was not traced in STKRUN (it is packed). Neither is read by the game
-// (main never reads argc/argv, MAIN_PLAN.md §1.1).
-export const DEFAULT_TAIL = '';
-export const DEFAULT_PROGRAM_PATH = 'C:\\GANJA\\GANJAFRM.EXE';
-// UNCERTAIN: the environment STKRUN passes on (its own, i.e. COMMAND.COM's) is setup-dependent. Assumed a
-// standard MS-DOS 6.22 installation: COMSPEC from COMMAND.COM, then PROMPT/PATH/TEMP as set by the
-// AUTOEXEC.BAT that MS-DOS 6.22 Setup writes. No BLASTER variable (consistent with the STKRUN set-up the
-// port assumes, platform/sound/stkrun.js). It sizes the environ table (0x2e6c4: two mallocs before
-// __InitFiles, so it shifts the heap addresses of everything allocated later) and is scanned for "no87=".
-export const DEFAULT_ENV = ['COMSPEC=C:\\COMMAND.COM', 'PROMPT=$p$g', 'PATH=C:\\DOS', 'TEMP=C:\\DOS'];
-// UNCERTAIN: DOS version (INT 21h AH=30h at 0x23845 -> [0x31143]/[0x31144]); MS-DOS 6.22 assumed, the same
-// DOS the DPMI 0300h services in platform/dpmi.js assume.
-export const DEFAULT_DOS_VERSION = [6, 22];
-
-// Power on: memory image, ROM font, BIOS/PIC/PIT/keyboard/VGA/mouse/DPMI reset, STKRUN resident.
+// Power on: memory image, ROM font, BIOS tick / timer / keyboard / VGA / mouse reset.
 //   opts.onStkTick: STK update hook (sound layer) — passed to pc.install
 export function powerOn({ dataInit, font, msSinceMidnight, onStkTick } = {}) {
   loadInitialData(dataInit);
@@ -37,21 +21,17 @@ export function powerOn({ dataInit, font, msSinceMidnight, onStkTick } = {}) {
   textmode.attachConsole();
 }
 
-// Run the program: cstart (0x23820..0x23a20), the CRT initializers (XI table 0x31b9a, run by 0x24fa4 in
-// priority order — lib/crt_startup.js runInitializers lists all 16 and what is and is not reproduced),
-// 0x24f3b's set-up, main(argc, argv), exit(ret). Returns { exitCode, ret }.
-export async function runProgram({ tail = DEFAULT_TAIL, programPath = DEFAULT_PROGRAM_PATH, env = DEFAULT_ENV,
-  dosVersion = DEFAULT_DOS_VERSION } = {}) {
-  await images.decodeAll();                // assets/game/*.PNG for PCX_Load (stage 2: pictures are PNG)
-  sounds.mountAll();                       // assets/game/*.WAV -> *.DWD in the DOS file system (stage 2)
-  cstart({ tail, env, programPath, dosVersion }); // cstart 0x23820..0x23a20
-  runInitializers(env);                    // 0x23a26: 0x24fa4(0xff)
-  beforeMain();                            // 0x23a32: 0x24f3b ([0x31128]; 0x28b80 [0x31794])
-  // 0x24f7e..0x24f89: EDX = [0x65218] (argv), EAX = [0x65214] (argc); call main 0x1aa02
-  const ret = await F.sub_1aa02(R32(0x65214), R32(0x65218));
-  // 0x24f8e: call 0x28bdc (exit) with EAX = main's return value
-  const exitCode = exit_28bdc(ret);
-  return { exitCode, ret };
+// Run the program: prepare the converted assets, then main, then exit. Returns { exitCode, ret }.
+// Stage 2: the Watcom start-up (cstart, the 16 CRT initializers: argv, environment, code page, extender
+// set-up, iostreams) is gone: main never reads argc/argv (MAIN_PLAN.md §1.1) and nothing the game reads came
+// from it (its BSS clear is already done: memory starts zeroed). The exit code is main's return value & 0xFF.
+export async function runProgram() {
+  await images.decodeAll();                // assets/game/*.PNG for PCX_Load
+  sounds.mountAll();                       // assets/game/*.WAV -> *.DWD in the DOS file system
+  crtInit();
+  const ret = await F.sub_1aa02(0, 0);     // main(argc, argv): both unused
+  crtExit();
+  return { exitCode: ret & 0xff, ret };
 }
 
 export { pc, con };
