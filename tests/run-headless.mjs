@@ -9,6 +9,10 @@
 //   --every S          additionally snapshot every S virtual seconds
 //   --realtime         use the wall clock instead of the virtual clock (for measuring the tick rate)
 //   --step MS          virtual time per yield (default 1 ms)
+//   --trace FILE       every 32 yields write "yield memHash dacHash oplHash": FNV-1a of game memory (data
+//                      0x30000.., VGA 0xA0000.., heap 0x100000..+2 MB) and running hashes of the sound
+//                      card's DAC bytes and the music driver's OPL writes. Two runs of the same code give
+//                      identical files; refactors that keep behaviour must too (see docs).
 //
 // Virtual clock: the PIT scheduler (pit.setClock) and the VGA retrace (vga.setVgaClock) read a virtual
 // millisecond counter. Every yieldCpu() (the game's busy-wait loops, runtime/cpu.js) advances it by
@@ -24,7 +28,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { powerOn, runProgram, pc, con } from '../src/machine.js';
 import { setYieldHook, hostYield } from '../src/runtime/cpu.js';
-import { R32u } from '../src/runtime/mem.js';
+import { R32u, u8, DATA_BASE, DATA_END, VGA_BASE, HEAP_BASE } from '../src/runtime/mem.js';
 import { F } from '../src/runtime/registry.js';
 import * as vfs from '../src/platform/vfs.js';
 import * as display from '../src/platform/display.js';
@@ -39,6 +43,7 @@ const outDir = opt('--out', join(tmpdir(), 'ganja-headless'));
 const maxS = +opt('--max', 600);
 const everyS = opt('--every', null);
 const stepMs = +opt('--step', 1);
+const traceFile = opt('--trace', null);
 const realtime = flag('--realtime');
 const noSound = flag('--no-sound');
 mkdirSync(outDir, { recursive: true });
@@ -170,10 +175,30 @@ function runEvents() {
   }
 }
 
+// ---- trace (--trace) ------------------------------------------------------------------------------
+const traceLines = [];
+const fnv = (h, b) => Math.imul(h ^ b, 0x01000193);
+let dacHash = 0x811c9dc5 | 0, oplHash = 0x811c9dc5 | 0;
+function memHash() {
+  let h = 0x811c9dc5 | 0;
+  const w = new Uint32Array(u8.buffer);
+  for (const [a, b] of [[DATA_BASE, DATA_END], [VGA_BASE, VGA_BASE + 64000], [HEAP_BASE, HEAP_BASE + 0x200000]]) {
+    for (let i = a >>> 2, e = b >>> 2; i < e; i++) h = Math.imul(h ^ w[i], 0x01000193);
+  }
+  return h >>> 0;
+}
+function traceLine() { traceLines.push(`${yields} ${memHash().toString(16)} ${(dacHash >>> 0).toString(16)} ${(oplHash >>> 0).toString(16)}`); }
+if (traceFile) {
+  const card = await import('../src/platform/sound/soundcard.js');
+  card.setDigitalTap((bytes) => { for (const b of bytes) dacHash = fnv(dacHash, b); });
+  card.setOplTap((r, v) => { oplHash = fnv(fnv(oplHash, r), v); });
+}
+
 let yields = 0;
 class Stop extends Error {}
 setYieldHook(() => {
   yields++;
+  if (traceFile && (yields & 31) === 0) traceLine();
   if (!realtime) vms += stepMs;
   pc.pit.pump();
   if (t0 !== null) {
@@ -194,6 +219,7 @@ try {
 } catch (e) {
   crash = e;
 }
+if (traceFile) { traceLine(); writeFileSync(traceFile, traceLines.join('\n') + '\n'); console.log('trace:', traceFile, traceLines.length, 'lines'); }
 const elapsed = nowS();
 const ticks = tick() - tick0;
 if (crash && !(crash instanceof Stop)) {
