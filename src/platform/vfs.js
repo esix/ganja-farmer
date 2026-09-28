@@ -53,6 +53,7 @@ export async function mountFromUrl(baseUrl, manifestUrl, onProgress) {
 
 export function mountBytes(name, bytes) { files.set(name.toUpperCase(), bytes); }
 
+export function names() { return [...files.keys()]; }
 export function exists(name) { return files.has(name.toUpperCase()); }
 export function read(name) { return files.get(name.toUpperCase()) || null; }
 export function write(name, bytes) {

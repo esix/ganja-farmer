@@ -7,6 +7,7 @@ import './game/index.js';
 import * as pc from './platform/pc.js';
 import * as con from './platform/console.js';
 import * as textmode from './platform/textmode.js';
+import * as images from './platform/images.js';
 import './lib/index.js';
 import { cstart, runInitializers, beforeMain, exit_28bdc } from './lib/crt_startup.js';
 
@@ -40,6 +41,7 @@ export function powerOn({ dataInit, font, msSinceMidnight, onStkTick } = {}) {
 // 0x24f3b's set-up, main(argc, argv), exit(ret). Returns { exitCode, ret }.
 export async function runProgram({ tail = DEFAULT_TAIL, programPath = DEFAULT_PROGRAM_PATH, env = DEFAULT_ENV,
   dosVersion = DEFAULT_DOS_VERSION } = {}) {
+  await images.decodeAll();                // assets/game/*.PNG for PCX_Load (stage 2: pictures are PNG)
   cstart({ tail, env, programPath, dosVersion }); // cstart 0x23820..0x23a20
   runInitializers(env);                    // 0x23a26: 0x24fa4(0xff)
   beforeMain();                            // 0x23a32: 0x24f3b ([0x31128]; 0x28b80 [0x31794])
