@@ -234,13 +234,6 @@ test('DOS getch (AH=08h, CON CHRIN): grey keys give 00h + scan, E0h only as a ch
   pc.kbd.setOnBiosKey(null);
 });
 
-test('cooked CON input ignores extended keys (00h + scan is not inserted into the line)', () => {
-  fresh();
-  con.clearKeys(); con.clearOutput();
-  con.push(0x1e, 0x61); con.push(0x4b, 0xe0); con.push(0x30, 0x62); con.push(0x1c, 0x0d);
-  assert.deepEqual([...con.readCooked(10)], [0x61, 0x62, 0x0d, 0x0a]);
-});
-
 // Fake DOM targets (Node has EventTarget/Event).
 function domEvent(type, props = {}) {
   const e = new Event(type, { cancelable: true });

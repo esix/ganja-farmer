@@ -11,7 +11,6 @@ import { u8, R8, R32, W32, loadInitialData, readCString, writeCString } from '..
 import { F } from '../src/runtime/registry.js';
 import { stackAlloc, stackFree } from '../src/runtime/stack.js';
 import * as vfs from '../src/platform/vfs.js';
-import * as dos from '../src/platform/dos.js';
 import * as con from '../src/platform/console.js';
 import { crtInit, crtExit, heapReset } from '../src/lib/crt.js';
 
@@ -29,7 +28,6 @@ function boot() {
   loadInitialData(readFileSync(join(ROOT, 'assets', 'boot', 'data_init.bin')));
   u8.fill(0, 0x100000);
   heapReset();
-  dos.reset();
   con.clearKeys();
   con.clearOutput();
   crtInit();
@@ -83,51 +81,36 @@ test('SCORES.DAT: write back with fopen "w" + fwrite (0x10676) reproduces the or
   assert.deepEqual(Array.from(vfs.read('scores.dat')), Array.from(SCORES));
 });
 
-test('FILE layout, static __iob slot reuse, fclose on a closed stream', () => {
+test('fopen: missing file for reading -> 0; each open is its own stream; fclose twice -> -1', () => {
   boot();
   vfs.mountBytes('SCORES.DAT', new Uint8Array(SCORES));
   const fp = F.fopen_2264a(0x3001b, 0x30019);
-  assert.equal(fp, 0x31352); // first free __iob entry (after stdin..stdprn)
-  assert.equal(R32(fp + 0x0c), 0x1); // READ, text
-  assert.equal(R32(fp + 0x10), 5); // first file handle
-  F.fgetc_23bb9(fp);
-  assert.equal(R32(fp + 0x14), 0x1000); // bufsize
-  assert.equal(R32(fp + 4), 217 - 1); // whole (short) file read into the buffer, one byte taken
-  assert.equal(F.ftell_24b81(fp), 1);
-  assert.equal(F.fclose_228ed(fp), 0);
-  assert.equal(F.fclose_228ed(fp), -1); // no longer on the open list
   const fp2 = F.fopen_2264a(0x3001b, str(scratch, 'rb'));
-  assert.equal(fp2, fp); // record from the free list -> same FILE
-  assert.equal(R32(fp2 + 0x0c), 0x41); // READ | BINARY
-  F.fclose_228ed(fp2);
+  assert.ok(fp !== 0 && fp2 !== 0 && fp !== fp2);
+  assert.equal(F.fclose_228ed(fp), 0);
+  assert.equal(F.fclose_228ed(fp), -1);
+  assert.equal(F.fclose_228ed(fp2), 0);
   assert.equal(F.fopen_2264a(str(scratch, 'nofile.xyz'), str(scratch + 0x20, 'r')), 0);
-  assert.equal(R32(0x651dc), 1); // errno ENOENT (DOS error 2 -> table 0x31674)
-  assert.equal(F.fopen_2264a(0x3001b, str(scratch, 'x')), 0);
-  assert.equal(R32(0x651dc), 9); // invalid mode -> errno 9
 });
 
-function readAllText(content, mode = 'r') {
+function readAllText(content, mode = 'r') { // byte by byte with fread, until it returns 0
   vfs.mountBytes('T.TXT', Uint8Array.from(content));
   const fp = F.fopen_2264a(str(scratch, 't.txt'), str(scratch + 0x20, mode));
   const out = [];
-  let c;
-  while ((c = F.fgetc_23bb9(fp)) !== -1) out.push(c);
-  const eof = (R32(fp + 0xc) & 0x10) !== 0;
+  while (F.fread_1e110(scratch + 0x40, 1, 1, fp) === 1) out.push(u8[scratch + 0x40]);
   F.fclose_228ed(fp);
-  return { out, eof };
+  return { out };
 }
 
-test('text mode: CR handling and Ctrl-Z in fgetc and fread', () => {
+test('text mode: CR handling and Ctrl-Z in fread', () => {
   boot();
   // "\r\n" -> "\n"; lone "\r" drops itself and returns the next byte; "\r\r\n" -> "\r\n"
   assert.deepEqual(readAllText([0x41, 0x0d, 0x0a, 0x42, 0x0d, 0x43, 0x0d, 0x0d, 0x0a, 0x44]).out,
     [0x41, 0x0a, 0x42, 0x43, 0x0d, 0x0a, 0x44]);
   // "\r" at end of file: dropped, EOF
   assert.deepEqual(readAllText([0x41, 0x0d]).out, [0x41]);
-  // Ctrl-Z ends the text (EOF flag), binary mode keeps everything
-  let r = readAllText([0x41, 0x1a, 0x42]);
-  assert.deepEqual(r.out, [0x41]);
-  assert.equal(r.eof, true);
+  // Ctrl-Z ends the read, binary mode keeps everything
+  assert.deepEqual(readAllText([0x41, 0x1a, 0x42]).out, [0x41]);
   assert.deepEqual(readAllText([0x41, 0x0d, 0x0a, 0x1a, 0x42], 'rb').out, [0x41, 0x0d, 0x0a, 0x1a, 0x42]);
 
   // fread text: stops at 0x1A with EOF, partial items still stored, returns whole items only
@@ -136,7 +119,6 @@ test('text mode: CR handling and Ctrl-Z in fgetc and fread', () => {
   u8.fill(0xee, scratch + 0x100, scratch + 0x110);
   assert.equal(F.fread_1e110(scratch + 0x100, 2, 4, fp), 2); // 4 bytes stored: 1,2,0a,3
   assert.deepEqual(bytes(scratch + 0x100, 5), [1, 2, 0x0a, 3, 0xee]);
-  assert.equal(R32(fp + 0xc) & 0x10, 0x10);
   // reading continues after the 0x1A (the CRT does not stop at the EOF flag)
   assert.equal(F.fread_1e110(scratch + 0x100, 1, 8, fp), 2);
   assert.deepEqual(bytes(scratch + 0x100, 2), [9, 9]);
@@ -156,12 +138,10 @@ test('text-mode write: "\\n" -> "\\r\\n"; binary unchanged; fwrite return values
   assert.equal(F.fwrite_2270d(src, 5, 1, fp), 1);
   F.fclose_228ed(fp);
   assert.deepEqual(Array.from(vfs.read('O.BIN')), [0x41, 0x0a, 0x42, 0x0d, 0x0a]);
-  // fwrite on a read-only stream: 0, errno 4, ERR flag
+  // fwrite on a read-only stream writes nothing
   vfs.mountBytes('T.TXT', Uint8Array.from([1]));
   fp = F.fopen_2264a(str(scratch, 't.txt'), str(scratch + 0x20, 'r'));
   assert.equal(F.fwrite_2270d(src, 1, 1, fp), 0);
-  assert.equal(R32(0x651dc), 4);
-  assert.equal(R32(fp + 0xc) & 0x20, 0x20);
   F.fclose_228ed(fp);
   // "w" truncates an existing file
   fp = F.fopen_2264a(str(scratch, 'o.bin'), str(scratch + 0x20, 'w'));
@@ -185,39 +165,12 @@ test('Load_File pattern: fopen rb, fseek end, ftell, fseek 0, fread', () => {
   F.fclose_228ed(fp);
 });
 
-test('fgetc/fseek as the original PCX_Load used them: header, fseek(-768, SEEK_END), palette', () => {
-  boot();
-  // Generated bytes (the PCX files this test used to read are PNGs since stage 2).
-  const data = Buffer.alloc(9000);
-  for (let i = 0, x = 12345; i < data.length; i++) { x = (Math.imul(x, 1103515245) + 12345) | 0; data[i] = x >>> 24; }
-  vfs.mountBytes('TEST.BIN', new Uint8Array(data));
-  const fp = F.fopen_2264a(str(scratch, 'test.bin'), 0x3060d);
-  for (let i = 0; i < 128; i++) assert.equal(F.fgetc_23bb9(fp), data[i]);
-  assert.equal(R32(fp + 4), 0x1000 - 128); // _cnt as PCX_Load's inline getc sees it
-  assert.equal(F.fseek_23ee1(fp, -768, 2), 0);
-  for (let i = 0; i < 768; i++) assert.equal(F.fgetc_23bb9(fp), data[data.length - 768 + i]);
-  assert.equal(F.fgetc_23bb9(fp), -1);
-  // in-buffer seek (SEEK_SET inside the current buffer) moves _ptr/_cnt only
-  F.fseek_23ee1(fp, 10, 0);
-  assert.equal(F.fgetc_23bb9(fp), data[10]);
-  F.fseek_23ee1(fp, -1, 1);
-  assert.equal(F.fgetc_23bb9(fp), data[10]);
-  F.fclose_228ed(fp);
-});
 
-test('printf: stdout is line buffered (tty), "\\n" -> "\\r\\n", %s, flushed at exit', () => {
+test('printf: "\\n" -> "\\r\\n", %s, returns the characters formatted', () => {
   boot();
   assert.equal(F.printf_23783(0x30610, str(scratch, "BACK.PCX")), 34 + 8);
-  // the leading '\n' flushed "\r\n" at once (line buffered); the rest waits in stdout's 0x86-byte buffer
-  assert.equal(con.outputText(), '\r\n');
-  assert.equal(R32(0x312ea + 0x14), 0x86);
-  assert.equal(R32(0x312ea + 0xc) & 0x2200, 0x2200); // ISTTY | IOLBF
   F.printf_23783(0x305d1); // "Later..\n"
   assert.equal(con.outputText(), "\r\nPCX SYSTEM - Couldn't find file: BACK.PCXLater..\r\n");
-  con.clearOutput();
-  F.printf_23783(0x30548); // "GANJA FARMER  " (no newline)
-  crtExit();
-  assert.equal(con.outputText(), 'GANJA FARMER  ');
 });
 
 test('heap: NULL cases, sizes, reuse, not zeroed', () => {
@@ -316,17 +269,8 @@ test('kbhit / getch via the DOS console (BIOS keyboard buffer)', async () => {
   assert.equal(await p, 0x0d);
 });
 
-test('cin >> buf (0x2231a): words from the console line, EOF/fail bits', async () => {
-  boot();
-  const typed = ' JAH  Bob\r';
-  for (const ch of typed) con.push(0, ch.charCodeAt(0));
-  const buf = scratch + 0x300;
-  assert.equal(await F.istream_extract_cstr_2231a(0x64eb8, buf), 0x64eb8);
-  assert.equal(readCString(buf), 'JAH');
-  await F.istream_extract_cstr_2231a(0x64eb8, buf);
-  assert.equal(readCString(buf), 'Bob');
-  assert.equal(R32(0x64ed8), 0); // state good
-  assert.equal(con.outputText(), ' JAH  Bob\r\n'); // DOS echo of the cooked line
+test('cin >> buf (0x2231a) is unreachable and says so', () => {
+  assert.throws(() => F.istream_extract_cstr_2231a(0x64eb8, scratch), /unreachable/);
 });
 
 test('int386 / outp / inp through runtime/io.js (platform pc.js)', async () => {

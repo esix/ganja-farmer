@@ -3,17 +3,16 @@
 // What the binary does (evidence for why this layer exists):
 //   - kbhit 0x2328d: ungetch buffer 0x3112c, else INT 21h AH=0Bh, returns (int)(signed char)AL.
 //   - getch 0x232a4: ungetch buffer 0x3112c, else INT 21h AH=08h, returns AL zero-extended.
-//   - stdin reads (fgetc/fread on FILE 0x312d0, handle 0; also cin 0x64eb8 through its stdiobuf) end in
-//     INT 21h AH=3Fh on handle 0 (0x23b9a), i.e. DOS "cooked" line input from CON.
-//   - stdout/stderr writes (printf 0x23783 -> FILE 0x312ea, handle 1) end in INT 21h AH=40h (0x2477f).
+//   - printf output (0x23783; in the original through stdout, handle 1, INT 21h AH=40h) is written here
+//     (write), and drawn by the text screen at exit (textmode.js).
 // DOS itself gets keys from the BIOS keyboard buffer (filled by the BIOS INT 9 handler). While the
 // game's Keyboard_Driver (0x22b04) is installed as INT 9 it does NOT chain to the old handler (it ends
 // with EOI + IRETD, 0x22b5e..0x22bd6), so no keys reach the BIOS buffer then. The game removes its
 // driver (0x1098f: Keyboard_Remove_Driver before the kbhit/getch name-entry loop, Keyboard_Install_Driver
 // after), so the keyboard platform must call push() only while the BIOS INT 9 handler is the active vector.
 //
-// The DOS/BIOS details below (0xFF from AH=0Bh, two-call extended keys for AH=08h (MS-DOS CON CHRIN), line editing of
-// cooked CON input) are DOS/BIOS behaviour, not code in this binary.
+// The DOS/BIOS details below (0xFF from AH=0Bh, two-call extended keys for AH=08h (MS-DOS CON CHRIN)) are
+// DOS/BIOS behaviour, not code in this binary.
 
 const keys = []; // BIOS type-ahead buffer: {scan, ascii}
 const BIOS_BUFFER_SIZE = 15; // UNCERTAIN: the BIOS ring buffer at 40:1E holds 16 words = 15 keys; extra keys are dropped (beep).
@@ -93,50 +92,3 @@ export function write(bytes) {
 export function onOutput(fn) { listeners.add(fn); return () => listeners.delete(fn); }
 export function outputText() { return String.fromCharCode(...out); }
 export function clearOutput() { out.length = 0; }
-
-// ---- cooked CON input (INT 21h AH=3Fh on handle 0) ----
-// DOS reads a whole line (editing with Backspace, echo, terminated by Enter) and appends CR LF.
-// UNCERTAIN: DOS's line buffer is 128 bytes and it handles more editing keys (F1-F6, Esc, Ctrl-Z);
-// only printable keys, Backspace and Enter are modelled.
-let lineReady = null; // Uint8Array of a completed line (incl. CR LF) not yet returned
-let lineEdit = [];
-
-// Consume available keys into the line being edited. Returns true once a line is complete.
-function pumpLine() {
-  while (lineReady === null) {
-    const c = dosReadCharNoEcho();
-    if (c === null) return false;
-    if (c === 0x0d) {
-      lineReady = Uint8Array.from([...lineEdit, 0x0d, 0x0a]);
-      lineEdit = [];
-      write([0x0d, 0x0a]);
-    } else if (c === 0x08) {
-      if (lineEdit.length) { lineEdit.pop(); write([0x08, 0x20, 0x08]); }
-    } else if (c === 0) {
-      // Extended key (00h + scan): DOS's line editor uses these as editing keys (F1-F6, arrows ...),
-      // which are not modelled; they are not inserted into the line. The scan byte (ALTAH, set together
-      // with the 00h) is consumed here.
-      dosReadCharNoEcho();
-    } else {
-      lineEdit.push(c);
-      write([c]);
-    }
-  }
-  return true;
-}
-
-// Wait (asynchronously) until a line is available; used before a CRT read of handle 0 that would block.
-export async function waitLine(yieldFn) {
-  while (!pumpLine()) await yieldFn();
-}
-export function lineAvailable() { return pumpLine(); }
-
-// Synchronous part of the read: up to n bytes of the completed line. Throws if no line is ready
-// (a synchronous caller would have to block; callers must waitLine() first).
-export function readCooked(n) {
-  if (!pumpLine()) throw new Error('console: read of CON would block (call waitLine first)');
-  const r = lineReady.subarray(0, n);
-  const rest = lineReady.subarray(n);
-  lineReady = rest.length ? rest : null;
-  return r;
-}
