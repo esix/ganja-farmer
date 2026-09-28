@@ -84,8 +84,15 @@ export async function createAudioOut() {
       while (len - off > maxFrames && q.length > 1) { len -= q[0].length; q.shift(); off = 0; }
     };
   }
-  const resume = () => { if (ctx.state !== 'running') ctx.resume(); };
+  let hiddenSuspended = false;
+  const resume = () => { if (ctx.state !== 'running' && !globalThis.document?.hidden) ctx.resume(); };
   for (const ev of ['pointerdown', 'keydown']) globalThis.addEventListener?.(ev, resume, { capture: true });
+  // Hidden tab: the machine is paused (platform/pc.js), so the audio clock is paused too; otherwise the
+  // music recording (music-out.js) would play on while the sequencer that drives it stands still.
+  globalThis.document?.addEventListener('visibilitychange', () => {
+    if (document.hidden) { if (ctx.state === 'running') { hiddenSuspended = true; ctx.suspend(); } }
+    else if (hiddenSuspended) { hiddenSuspended = false; ctx.resume(); }
+  });
   return {
     rate,
     context: ctx,

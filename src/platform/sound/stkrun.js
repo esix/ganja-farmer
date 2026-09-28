@@ -45,6 +45,7 @@ import * as pit from '../pit.js';
 import * as card from './soundcard.js';
 import { DigiMixer, BLOCK_SIZE_BY_ENV } from './digi-mixer.js';
 import { STKMusic } from './dwm-player.js';
+import * as musicOut from './music-out.js';
 
 // ---- the machine STKRUN detects ------------------------------------------------------------------
 // UNCERTAIN (setup-dependent): what dws_DetectHardWare finds depends on the user's card and DOS
@@ -196,6 +197,7 @@ function fnKill() {
   if (S.mixerInit === 1) S.mixerInit = 0;                              // 0380:0a62..0a6e (07ac:002b: retf)
   if (S.fmOn === 1) {                                                  // 0380:0a74
     music.clear();                                                     // 068a:02ca
+    musicOut.stop();
     music.fmKill();                                                    // 05c1:05ad
     S.fmOn = 0;                                                        // 0380:0a85
   }
@@ -218,14 +220,14 @@ function fnXMaster(w) {
   const v = w[0];
   if (v === 0x6969) { S.errno = 0xde; return 0x0b; }                 // 0380:0b56..0b62 (client handshake)
   if (!xCheck(v)) return 0;
-  if (music) music.setMasterVolume(v);
+  if (music) { music.setMasterVolume(v); musicOut.setMusVol(music.musVol); }
   if (digi) digi.XMaster(v);
   return 1;                                                            // 0380:0b27
 }
 function fnXMusic(w) {
   const v = w[0];
   if (!xCheck(v)) return 0;
-  if (music) music.setMusicVolume(v);
+  if (music) { music.setMusicVolume(v); musicOut.setMusVol(music.musVol); }
   if (digi) digi.XMusic(v);
   return 1;                                                            // 0380:0bb7
 }
@@ -305,8 +307,9 @@ function fmCheck() {
 function fnMPlay(w) {
   if (!fmCheck()) return 0;
   const mp = farArg(w, 0);
-  const r = music.play(u8.subarray(rmLinear(R16(mp + 2), R16(mp))), R16(mp + 4));
-  if (r === 0) return 1;                                               // 0380:0ccc
+  const track = u8.subarray(rmLinear(R16(mp + 2), R16(mp)));
+  const r = music.play(track, R16(mp + 4));
+  if (r === 0) { musicSong = musicOut.songName(track); musicOut.start(musicSong); return 1; } // 0380:0ccc
   return fail(r === 1 ? 3 : r === 2 ? 0x10 : r === 3 ? 0x11 : 0x12);  // 0380:0cd1..0cef
 }
 // 13 dws_MSongStatus (0380:0d6a -> 0d2e, retf 4): *result = 068a:03e1.
@@ -316,10 +319,10 @@ function fnMSongStatus(w) {
   return 1;
 }
 // 14 dws_MClear (0380:0dd2 -> 0da2): 068a:02ca.
-function fnMClear() { if (!fmCheck()) return 0; music.clear(); return 1; }
+function fnMClear() { if (!fmCheck()) return 0; music.clear(); musicOut.stop(); return 1; }
 // 15/16 dws_MPause / dws_MUnPause (0380:0e30 -> 0dfe / 0380:0e8e -> 0e5c): 068a:0401(1 / 0).
-function fnMPause() { if (!fmCheck()) return 0; music.pause(); return 1; }
-function fnMUnPause() { if (!fmCheck()) return 0; music.unpause(); return 1; }
+function fnMPause() { if (!fmCheck()) return 0; music.pause(); musicOut.pause(); return 1; }
+function fnMUnPause() { if (!fmCheck()) return 0; music.unpause(); musicOut.resume(); return 1; }
 
 // ---- DWT timer (segment 0530) ----------------------------------------------------------------------
 // 17 dwt_Init (0530:009e, retf 2): pit.stkTimerInstall reproduces it (PIT 36h + divisor table
@@ -332,8 +335,15 @@ function fnDwtKill() { pit.stkTimerKill(); return 0; }
 
 // dws_Update as called by the STK timer ISR 0530:002a every tick (cs:[0xe] = 0380:1af2 -> 1ad0):
 // if [0x292] == 1 and [0x298] == 1: one sequencer step 068a:00cb.
+// The music itself is a recording (music-out.js): after a step that rewound a looping song (tickCount is
+// 0 only right after play/rewind), the recording restarts.
+let musicSong = null;
 function stkUpdate() {
-  if (S.initted === 1 && S.fmOn === 1) music.tick();
+  if (S.initted === 1 && S.fmOn === 1) {
+    const wasPlaying = music.playing;
+    music.tick();
+    if (wasPlaying && music.playing && music.tickCount === 0) musicOut.start(musicSong);
+  }
 }
 
 // ---- installation ----------------------------------------------------------------------------------
@@ -342,6 +352,7 @@ function stkUpdate() {
 export function install() {
   S.errno = 0; S.initted = 0; S.initBusy = 0; S.mixerInit = 0; S.fmOn = 0; S.digOn = 0;
   digi = null; music = null; everInit = false; memBuf = null; dwdViews.clear();
+  musicSong = null; musicOut.reset();
   card.reset();
   const fns = {
     0x00: fnErrNo, 0x02: fnDetectHardWare, 0x03: fnInit, 0x04: fnKill,

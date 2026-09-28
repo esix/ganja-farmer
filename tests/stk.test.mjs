@@ -13,7 +13,7 @@ import * as con from '../src/platform/console.js';
 import { crtInit } from '../src/lib/index.js';
 import * as stkrun from '../src/platform/sound/stkrun.js';
 import * as card from '../src/platform/sound/soundcard.js';
-import { createOpl2 } from '../src/platform/sound/opl2.js';
+import * as musicOut from '../src/platform/sound/music-out.js';
 import { DigiMixer } from '../src/platform/sound/digi-mixer.js';
 import { STKMusic } from '../src/platform/sound/dwm-player.js';
 import * as sounds from '../src/platform/sounds.js';
@@ -235,19 +235,28 @@ test('MPlay: OPL register writes equal re/music player output for the same file 
   assert.ok(ref.length > 1000);
 });
 
-test('sound card output: DBOPL synthesises the music, DAC and FM mixed to the host rate', async () => {
+test('sound card output: the DAC is resampled to the host rate; dws_MPlay names the recording to play', async () => {
   boot();
-  const chip = await createOpl2();
-  card.setOplChip(chip);
   const frames = [];
   card.setSink({ rate: 48000, write(f) { for (const x of f) frames.push(x); } });
   await gameInit();
+  W32(0x61280, loadFile('explo.dwd')); W16(0x61284, 1); W16(0x61286, 0x320); W16(0x61288, 0);
+  await F.dws_DPlay_1eff8(0x61280);
   const mp = F.malloc_23dab(0x10);
-  W32(mp, loadFile('f1.dwm')); W16(mp + 4, 1);
+  const song = loadFile('f1.dwm');
+  W32(mp, song); W16(mp + 4, 1);
   await F.dws_MPlay_1faa2(mp);
+  assert.equal(musicOut.songName(u8.subarray(song)), 'F1');
   runMs(2000);
   assert.ok(Math.abs(frames.length - 96000) <= 2, 'frames ' + frames.length);
   let peak = 0; for (const x of frames) peak = Math.max(peak, Math.abs(x));
   assert.ok(peak > 0.01 && peak <= 1, 'peak ' + peak);
-  card.setOplChip(null); card.setSink(null);
+  card.setSink(null);
+});
+
+test('music volume curve: silent at 0, unity at 255, rising in between', () => {
+  assert.equal(musicOut.gainFor(0), 0);
+  assert.equal(musicOut.gainFor(255), 1);
+  let last = 0;
+  for (let v = 1; v <= 255; v++) { const g = musicOut.gainFor(v); assert.ok(g > last, 'v ' + v); last = g; }
 });
