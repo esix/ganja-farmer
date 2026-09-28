@@ -8,8 +8,10 @@
 // real layout, because one bug (DDiscardAO, 0750:04e4) writes to DS:0x574+soundnum, i.e. anywhere.
 // All voice/sequence tables, [0x19] block size, [0x120] half index, [0x125] level, the volume table
 // at DS:0x1F, [0x674] #voices, [0x83A] last soundnum, [0x83C..0x83E] mixer levels are read from it.
-// Sample data is addressed as real-mode seg:off; DWD buffers are placed in a simulated linear
-// address space (registerBuffer). Bytes outside any registered buffer read as 0 (unknown in reality).
+// Sample data is addressed as seg:off. Stage 2: a "segment" is an opaque 16-bit buffer number, each with
+// its own 64 KiB page (registerBuffer), instead of a real-mode paragraph: the game's DWDs live in the heap
+// above 1 MiB, where no real-mode segment reaches, and every DWD is < 64 KiB, so the driver's 16-bit
+// offset arithmetic (si wraps at 0xFFFF) is unchanged. Bytes outside the buffer read as 0.
 //
 // Output: unsigned 8-bit mono DAC bytes at sbRate(requested) Hz; render() gives (u-128)/128.
 
@@ -110,9 +112,9 @@ export class DigiMixer {
     this.errno = 0;                                      // [0x290] in DS(0A0F)
     this.stats = { aoStrayWrites: 0, aoStrayOutsideFlags: 0 }; // diagnostics only
     this.mixerType = o.mixerType ?? 'software';
-    this.bufs = [];                                      // simulated linear memory: {lin, snd}
+    this.bufBySeg = new Map();                           // seg (buffer number) -> {snd, off}
     this.bufInfo = new Map();                            // snd -> {seg, off}
-    this.nextSeg = 0x2000;
+    this.nextSeg = 1;
     const B = o.blockSize ?? 0x100;
     this.w16(BLOCK, B);                                  // 02f1:082e
     // DMA buffer: two halves of B bytes, auto-init. 02f1:0004 sets [0xF]=buf, [0x11]=buf+B.
@@ -138,19 +140,15 @@ export class DigiMixer {
   f(base, i) { return this.r16(base + 2 * i); }            // word array element
   sf(base, i, v) { this.w16(base + 2 * i, v); }
 
-  /** Place a DWD buffer at seg:off in the simulated address space (default: auto). */
+  /** Give a DWD buffer its own page: buffer number seg (default: the next free one), at offset off. */
   registerBuffer(snd, seg, off = 0) {
-    if (seg === undefined) { seg = this.nextSeg; this.nextSeg += 0x1000; }
+    if (seg === undefined) { seg = this.nextSeg; this.nextSeg = (this.nextSeg + 1) & 0xffff || 1; }
     this.bufInfo.set(snd, { seg, off });
-    this.bufs.push({ lin: seg * 16 + off, snd });
+    this.bufBySeg.set(seg, { snd, off });
     return { seg, off };
   }
   _ptr(snd) { return this.bufInfo.get(snd) ?? this.registerBuffer(snd); }
-  _readLin(lin) {
-    for (const b of this.bufs) { const d = lin - b.lin; if (d >= 0 && d < b.snd.length) return b.snd[d]; }
-    return 0;
-  }
-  _bufAt(seg) { for (const b of this.bufs) if (b.lin === seg * 16 || (b.lin >> 4) === seg) return b.snd; return null; }
+  _bufAt(seg) { const b = this.bufBySeg.get(seg); return b ? b.snd : null; }
 
   // Compatibility views (read-only snapshots) of the tables.
   get slots() {
@@ -432,8 +430,12 @@ export class DigiMixer {
 
   // byte add of n sample bytes from seg:si into the DMA half (02f1:0205..029a / 02bf..0354)
   _add(o, seg, si, n) {
-    const base = seg * 16;
-    for (let i = 0; i < n; i++) this.dma[o + i] = (this.dma[o + i] + this._readLin(base + ((si + i) & 0xffff))) & 0xff;
+    const b = this.bufBySeg.get(seg);
+    const snd = b ? b.snd : null, off = b ? b.off : 0, len = snd ? snd.length : 0;
+    for (let i = 0; i < n; i++) {
+      const a = ((si + i) & 0xffff) - off;
+      this.dma[o + i] = (this.dma[o + i] + (a >= 0 && a < len ? snd[a] : 0)) & 0xff;
+    }
   }
 
   // 02f1:012e — mix every slot into half h (which already holds 0x80)
