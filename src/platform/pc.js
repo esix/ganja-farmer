@@ -88,11 +88,11 @@ export function install(opts = {}) {
   return setIoBackend(backend);
 }
 
-// Browser: keyboard on the window, mouse on the canvas, timer running.
+// Browser: keyboard on the window, mouse on the canvas, clock running (pumped by boot.js's yield hook).
 export function attachBrowser(canvas) {
   const offK = kbd.attach(globalThis);
   const offM = mouse.attach(canvas);
-  pit.start(1);
+  pit.start(0);
   return () => { offK(); offM(); pit.stop(); };
 }
 

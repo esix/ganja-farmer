@@ -178,12 +178,21 @@ export function pump() {
   return n;
 }
 
+// Milliseconds of wall-clock time until the next IRQ0 falls due (0 if it is already overdue). The browser
+// host sleeps this long when the program busy-waits, instead of polling (boot.js).
+export function msUntilNextIrq() {
+  const elapsed = lastMs === null ? 0 : Math.max(0, clock() - lastMs);
+  return Math.max(0, (divisor - phase) * 1000 / PIT_HZ - elapsed);
+}
+
+// Starts the clock from now. intervalMs > 0 also pumps on a timer (headless realtime runs); the browser
+// passes 0 and pumps from its yield hook and input events only.
 let timer = null;
 export function start(intervalMs = 1) {
   stop();
   lastMs = null;
   pump();
-  timer = setInterval(pump, intervalMs);
+  if (intervalMs > 0) timer = setInterval(pump, intervalMs);
 }
 export function stop() { if (timer) clearInterval(timer); timer = null; }
 
