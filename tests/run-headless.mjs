@@ -15,6 +15,9 @@
 //                      of the emulated stack (below the stack pointer) is not hashed.
 //   --trace-skip A-B,… hex address ranges [A, B) left out of the memory hash (state the game never reads,
 //                      e.g. a removed layer's private variables)
+//   --trace-visible    hash only what the player perceives instead of memory: VGA memory + the DAC palette
+//                      (plus the DAC/OPL hashes as always). For refactors that move heap addresses. The last
+//                      line also hashes every file the program wrote (e.g. SCORES.DAT).
 //
 // Virtual clock: the PIT scheduler (pit.setClock) and the VGA retrace (vga.setVgaClock) read a virtual
 // millisecond counter. Every yieldCpu() (the game's busy-wait loops, runtime/cpu.js) advances it by
@@ -46,6 +49,7 @@ const maxS = +opt('--max', 600);
 const everyS = opt('--every', null);
 const stepMs = +opt('--step', 1);
 const traceFile = opt('--trace', null);
+const traceVisible = flag('--trace-visible');
 const traceSkip = (opt('--trace-skip', '') || '').split(',').filter(Boolean).map((r) => r.split('-').map((x) => parseInt(x, 16)));
 const realtime = flag('--realtime');
 mkdirSync(outDir, { recursive: true });
@@ -161,10 +165,19 @@ function runEvents() {
 
 // ---- trace (--trace) ------------------------------------------------------------------------------
 const traceLines = [];
+const writtenFiles = new Set();
+if (traceFile) {
+  vfs.setStore({ load: () => null, save: (name) => writtenFiles.add(name) });
+}
 const fnv = (h, b) => Math.imul(h ^ b, 0x01000193);
 let dacHash = 0x811c9dc5 | 0, oplHash = 0x811c9dc5 | 0;
 function memHash() {
   let h = 0x811c9dc5 | 0;
+  if (traceVisible) {
+    for (let x = VGA_BASE; x < VGA_BASE + 64000; x++) h = Math.imul(h ^ u8[x], 0x01000193);
+    for (const b of display.dac) h = Math.imul(h ^ b, 0x01000193);
+    return h >>> 0;
+  }
   const skip = [[STACK_LIMIT, stackPointer()], ...traceSkip].sort((p, q) => p[0] - q[0]);
   for (const [a, b] of [[DATA_BASE, DATA_END], [VGA_BASE, VGA_BASE + 64000], [HEAP_BASE, HEAP_BASE + 0x200000]]) {
     let x = a;
@@ -207,7 +220,12 @@ try {
 } catch (e) {
   crash = e;
 }
-if (traceFile) { traceLine(); writeFileSync(traceFile, traceLines.join('\n') + '\n'); console.log('trace:', traceFile, traceLines.length, 'lines'); }
+if (traceFile) {
+  traceLine();
+  let fh = 0x811c9dc5 | 0;
+  for (const n of [...writtenFiles].sort()) { for (const c of n) fh = fnv(fh, c.charCodeAt(0)); for (const b of vfs.read(n)) fh = fnv(fh, b); }
+  traceLines.push(`files ${[...writtenFiles].sort().join(',') || '-'} ${(fh >>> 0).toString(16)}`);
+  writeFileSync(traceFile, traceLines.join('\n') + '\n'); console.log('trace:', traceFile, traceLines.length, 'lines'); }
 const elapsed = nowS();
 const ticks = tick() - tick0;
 if (crash && !(crash instanceof Stop)) {
