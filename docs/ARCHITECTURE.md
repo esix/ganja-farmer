@@ -15,7 +15,8 @@ How the port is put together, as of stage 2. For the rules the game code was tra
 3. installs the sound layer, then `attachBrowserAudio` (AudioContext, the music recordings);
 4. attaches the display (canvas) and the browser input (`pc.attachBrowser`);
 5. runs the program (`machine.js` `runProgram`): decodes the PNG pictures, turns the WAVs back into
-   DWDs for the sound driver, runs the Watcom C start-up, then `main` (`F.sub_1aa02`), then `exit`.
+   DWDs for the sound driver, resets the C runtime's streams, calls `main` (`F.sub_1aa02`), then closes
+   files; the exit code is `main`'s return value.
 
 The headless runner (`tests/run-headless.mjs`) does the same in Node with a virtual clock.
 
@@ -34,9 +35,8 @@ The headless runner (`tests/run-headless.mjs`) does the same in Node with a virt
   Only the 24 functions that can reach such a loop are `async`.
 - `x87.js`: the 80-bit results of FPATAN/FSIN/FCOS, which the game's angle code depends on
   (PORTING.md, "Floating point").
-- `io.js`: IN/OUT/INT of the translated code, served by `platform/pc.js`. What remains: VGA DAC and
-  retrace ports, the PIT, INT 10h (video mode), INT 21h/31h (DOS extender, used by the C start-up)
-  and INT 33h (mouse).
+- There is no port/interrupt layer any more: where the original did IN/OUT/INT (palette, retrace, video
+  mode, mouse, timer, sound driver), the library calls the device modules directly.
 
 ## Game and library code
 
@@ -44,8 +44,8 @@ The headless runner (`tests/run-headless.mjs`) does the same in Node with a virt
   is split into chunks in `src/game/1aa02/`.
 - `src/lib/`: André LaMothe's graphics and input library as used by the game (PCX loading, sprites,
   palette, double buffer, keyboard driver, mouse wrapper, timer), the DiamondWare sound client
-  (`stk_client.js`) and the Watcom C runtime subset (`crt*.js`: stdio on DOS handles, heap, `rand`,
-  console input, start-up).
+  (`stk_client.js`) and the Watcom C runtime subset (`crt*.js`: file streams on the virtual file system
+  with the original text-mode rules, `printf`, heap, `rand`, math, console input).
 
 ## Platform (`src/platform/`)
 
@@ -56,8 +56,7 @@ The headless runner (`tests/run-headless.mjs`) does the same in Node with a virt
 | `kbd.js` | browser key → AT scan-code bytes → the game's key table (while its driver is installed) or the BIOS keyboard buffer |
 | `mouse.js` | INT 33h driver over pointer events |
 | `vga.js`, `display.js`, `textmode.js` | DAC, retrace, mode set; the picture drawn with WebGL when memory or palette changed (2D canvas fallback); the text screen at exit |
-| `vfs.js`, `dos.js`, `console.js` | virtual DOS files (writes persist to `localStorage`), DOS handle calls, DOS console / BIOS key buffer |
-| `dpmi.js`, `regs.js` | what is left of the PMODE/W DOS extender (DOS memory, selectors) for the C start-up; register helpers |
+| `vfs.js`, `console.js` | the game's files (writes persist to `localStorage`); the DOS console: BIOS key buffer for `kbhit`/`getch`, `printf` output |
 | `images.js`, `png.js` | decode the 8-bit indexed PNGs for `PCX_Load` |
 | `sounds.js` | rebuild each `NAME.DWD` from `NAME.WAV` in the DOS file system |
 

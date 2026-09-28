@@ -19,6 +19,9 @@ it is listed below.
 | keyboard | 8042 ports, IRQ1 through an emulated PIC, INT 9 vector hooked via the DOS extender | key bytes go straight to the game's key table or the BIOS buffer |
 | timer | IRQ0 through the PIC and the extender's vector table | the timer calls its INT 8 chain itself (BIOS tick, sound-driver timer) |
 | files | `STKRUN.EXE`, `GANJ5.ICO`, PCX/DWD originals, `viewer.html` | removed; the icon is the favicon |
+| C runtime stdio | Watcom FILE structures, buffers and stream lists in emulated memory, DOS handle calls | JS streams on the file system with the same text-mode rules (`\r` dropped on read, 0x1A ends a read, `\n` → `\r\n` on write) |
+| start-up | Watcom cstart + 16 initializers (argv, environment, code page, extender set-up) over an emulated PMODE/W | `main` is called directly |
+| ports / interrupts | `io.js`: every IN/OUT/INT through a device backend; INT 10h/33h with register blocks in memory | the library calls the VGA, mouse and timer functions directly |
 
 CPU on the main menu: the tab used more than a full core before; the main thread is now about 97% idle.
 
@@ -39,6 +42,11 @@ CPU on the main menu: the tab used more than a full core before; the main thread
     into the status word when the driver refused a status call.
   - A playing sound is read from the game's buffer, not from a per-play copy (the game never changes
     a sound while it plays).
+- **Unreachable C++ input**: `cin >> char*` throws (its only caller runs when 0x31ee0 is set, which never
+  happens).
+- **Heap addresses**: without the C runtime's FILE buffers and start-up allocations, heap blocks sit at
+  other addresses than in the original. Nothing in the game depends on them (checked with the visible
+  trace, below).
 - **Data the game never reads**: the 128-byte PCX header area in each picture struct is zero, a
   DWD's 4-byte id is zero, and the keyboard driver no longer saves the old INT 9 vector at
   0x64ef8/0x64efc.
@@ -63,7 +71,11 @@ After each step:
    - `61032-61040`: the stale bytes above;
    - `64ef8-64efe`: the saved INT 9 vector.
 
-   Every stage-2 code step gave an identical trace. The asset conversions were checked
+   Every stage-2 code step gave an identical trace. The steps that move heap addresses (C runtime stdio,
+   start-up) were checked with `--trace-visible` instead: it hashes only what the player perceives,
+   i.e. video memory, the palette, the sound output and the music commands, plus every file the game
+   writes. Those traces were identical too. The high-score file was checked separately: reading and
+   writing `SCORES.DAT` and a file with every byte value give the same bytes as the stage-1 runtime. The asset conversions were checked
    separately:
    - all 39 PNGs give the same pixels, palette and `buf[64000]` as the original PCX loader;
    - all 41 WAVs rebuild their DWD byte for byte (except the id).
