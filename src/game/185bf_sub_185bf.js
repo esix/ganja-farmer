@@ -6,6 +6,7 @@
 import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
+import { SPRITE, missileSmoke } from './data.js';
 
 register(0x185bf, 'sub_185bf', function sub_185bf() {
   let i; // [ebp-4]
@@ -14,14 +15,14 @@ register(0x185bf, 'sub_185bf', function sub_185bf() {
   for (i = 0; i < 0x3f; i++) {
     // 185ec..18609: ecx = i*0x18c; rand; edx = rand % 4 (idiv, signed) - 2; add [ecx+0x46218] (x), edx
     const r = F.rand_232c7();
-    W32(0x46218 + i * 0x18c, (R32(0x46218 + i * 0x18c) + (imod(r, 4) - 2)) | 0);
+    W32(missileSmoke + i * SPRITE.SIZE, (R32(missileSmoke + i * SPRITE.SIZE) + (imod(r, 4) - 2)) | 0);
     // 1860f..18616: second rand, EAX discarded (EDX = i*0x18c is dead)
     F.rand_232c7();
     // 1861b..1862f: dec [eax+0x46228] (counter_1); cmp 0; jge (signed)
-    W32(0x46228 + i * 0x18c, (R32(0x46228 + i * 0x18c) - 1) | 0);
-    if ((R32(0x46228 + i * 0x18c) | 0) < 0) {
+    W32((missileSmoke + SPRITE.counter1) + i * SPRITE.SIZE, (R32((missileSmoke + SPRITE.counter1) + i * SPRITE.SIZE) - 1) | 0);
+    if ((R32((missileSmoke + SPRITE.counter1) + i * SPRITE.SIZE) | 0) < 0) {
       // 18638: mov [eax+0x46388] (state), 0
-      W32(0x46388 + i * 0x18c, 0);
+      W32((missileSmoke + SPRITE.state) + i * SPRITE.SIZE, 0);
     }
   }
 });

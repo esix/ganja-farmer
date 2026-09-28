@@ -35,6 +35,7 @@
 import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 import { yieldCpu } from '../runtime/cpu.js';
+import { SPRITE, doubleBuffer, frameStartTime, gunSight, idleTimer, inLevelEndSequence, jah, jahReplantX, killsDigits, level, levelDigits, levelEndLoopState, messageBox, plants, rasta, rastaAnimDelay, scoreDigits, smokeGlowPhase, statusBar, van } from './data.js';
 
 register(0x15e15, 'sub_15e15', async function sub_15e15() {
   let i;    // [ebp-0x10]
@@ -46,42 +47,42 @@ register(0x15e15, 'sub_15e15', async function sub_15e15() {
   run = 0;                                                                    // 0x15e34
   best = 0;                                                                   // 0x15e3b
   F.sub_16c37();                                                        // 0x15e42
-  F.Draw_Sprite_Clip_212c0(0x33918, R32(0x64e7c), 1);                   // 0x15e47..0x15e57
+  F.Draw_Sprite_Clip_212c0(statusBar, R32(doubleBuffer), 1);                   // 0x15e47..0x15e57
   // 0x15e5c..0x15e8f (mov eax,[ebp-0x10] at 0x15e65 is a dead load, same in every loop below)
   for (i = 0; i < 7; i++) {
-    F.Draw_Sprite_Clip_212c0((0x44010 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
+    F.Draw_Sprite_Clip_212c0((scoreDigits + Math.imul(i, SPRITE.SIZE)) | 0, R32(doubleBuffer), 1);
   }
   for (i = 0; i < 4; i++) {                                                   // 0x15e91..0x15ec4
-    F.Draw_Sprite_Clip_212c0((0x44ae4 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
+    F.Draw_Sprite_Clip_212c0((killsDigits + Math.imul(i, SPRITE.SIZE)) | 0, R32(doubleBuffer), 1);
   }
   for (i = 0; i < 3; i++) {                                                   // 0x15ec6..0x15ef9
-    F.Draw_Sprite_Clip_212c0((0x452a0 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
+    F.Draw_Sprite_Clip_212c0((levelDigits + Math.imul(i, SPRITE.SIZE)) | 0, R32(doubleBuffer), 1);
   }
-  F.Draw_Sprite_Clip_212c0(0x33c30, R32(0x64e7c), 1);                   // 0x15efb..0x15f0b
-  W32(0x33f2c, 0x2b);                                                         // 0x15f10
-  W32(0x33f24, 0xa);                                                          // 0x15f1a
-  W32(0x60ee4, 0);                                                            // 0x15f24
-  W32(0x30be8, 0x64);                                                         // 0x15f2e
-  W32(0x30bf8, 2);                                                            // 0x15f38
-  W32(0x45d74, 0);                                                            // 0x15f42
-  W32(0x45d78, R32(0x45d80));                                                 // 0x15f4c..0x15f51
-  W32(0x45d78, -R32(0x45d78) | 0);                                            // 0x15f56 neg dword
-  W32(0x45ee4, 0x21);                                                         // 0x15f5c
-  W32(0x45d88, Math.imul(R32(0x30bec), 0xa));                                 // 0x15f66..0x15f6e
-  W32(0x3de78, 0);                                                            // 0x15f73
+  F.Draw_Sprite_Clip_212c0(van, R32(doubleBuffer), 1);                   // 0x15efb..0x15f0b
+  W32((rasta + SPRITE.state), 0x2b);                                                         // 0x15f10
+  W32((rasta + SPRITE.currFrame), 0xa);                                                          // 0x15f1a
+  W32(rastaAnimDelay, 0);                                                            // 0x15f24
+  W32(idleTimer, 0x64);                                                         // 0x15f2e
+  W32(smokeGlowPhase, 2);                                                            // 0x15f38
+  W32(jah, 0);                                                            // 0x15f42
+  W32((jah + SPRITE.y), R32((jah + SPRITE.height)));                                                 // 0x15f4c..0x15f51
+  W32((jah + SPRITE.y), -R32((jah + SPRITE.y)) | 0);                                            // 0x15f56 neg dword
+  W32((jah + SPRITE.state), 0x21);                                                         // 0x15f5c
+  W32((jah + SPRITE.counter2), Math.imul(R32(level), 0xa));                                 // 0x15f66..0x15f6e
+  W32((messageBox + SPRITE.currFrame), 0);                                                            // 0x15f73
   k = 0;                                                                      // 0x15f7d
   run = 0;                                                                    // 0x15f84
   best = 0;                                                                   // 0x15f8b
-  W32(0x60bcc, -1);                                                           // 0x15f92
+  W32(jahReplantX, -1);                                                           // 0x15f92
   // 0x15f9c..0x15ff9: for (i = 0; i < 0x1a; i++)
   for (i = 0; i < 0x1a; i++) {
-    if (R32((Math.imul(i, 0x18c) + 0x3a9e8) | 0) === 0) {                     // 0x15fb1..0x15fbf
+    if (R32((Math.imul(i, SPRITE.SIZE) + (plants + SPRITE.state)) | 0) === 0) {                     // 0x15fb1..0x15fbf
       run = (run + 1) | 0;                                                    // 0x15fc1..0x15fc4
     } else {
       if (run > best) {                                                       // 0x15fc9..0x15fcf (jle: signed)
         best = run;                                                           // 0x15fd1..0x15fd4
         k = (i - run) | 0;                                                    // 0x15fd7..0x15fdd
-        W32(0x60bcc, R32((Math.imul(k, 0x18c) + 0x3a878) | 0));               // 0x15fe0..0x15fed
+        W32(jahReplantX, R32((Math.imul(k, SPRITE.SIZE) + plants) | 0));               // 0x15fe0..0x15fed
       }
       run = 0;                                                                // 0x15ff2
     }
@@ -90,83 +91,83 @@ register(0x15e15, 'sub_15e15', async function sub_15e15() {
   if (run > best) {                                                           // 0x15ffb..0x16001 (jle: signed)
     best = run;                                                               // 0x16003..0x16006
     k = (i - run) | 0;                                                        // 0x16009..0x1600f
-    W32(0x60bcc, R32((Math.imul(k, 0x18c) + 0x3a878) | 0));                   // 0x16012..0x1601f
+    W32(jahReplantX, R32((Math.imul(k, SPRITE.SIZE) + plants) | 0));                   // 0x16012..0x1601f
   }
   run = 0;                                                                    // 0x16024
-  W32(0x30bf4, 0x22);                                                         // 0x1602b
+  W32(levelEndLoopState, 0x22);                                                         // 0x1602b
 
   // 0x16035: cmp dword [0x30bf4], 0x22; jne 0x16429
-  while (R32(0x30bf4) === 0x22) {
-    W32(0x60a64, F.Timer_Query_235f9());                                // 0x16042..0x16047
+  while (R32(levelEndLoopState) === 0x22) {
+    W32(frameStartTime, F.Timer_Query_235f9());                                // 0x16042..0x16047
     F.sub_14fba();                                                      // 0x1604c
-    F.Erase_Sprite_Clip_211fc(0x33c30, R32(0x64e7c));                   // 0x16051..0x1605c
-    F.Erase_Sprite_Clip_211fc(0x33dbc, R32(0x64e7c));                   // 0x16061..0x1606c
-    F.Erase_Sprite_Clip_211fc(0x33918, R32(0x64e7c));                   // 0x16071..0x1607c
-    F.Erase_Sprite_Clip_211fc(0x3dd10, R32(0x64e7c));                   // 0x16081..0x1608c
-    F.Erase_Sprite_Clip_211fc(0x33aa4, R32(0x64e7c));                   // 0x16091..0x1609c
-    F.Erase_Sprite_Clip_211fc(0x45d74, R32(0x64e7c));                   // 0x160a1..0x160ac
+    F.Erase_Sprite_Clip_211fc(van, R32(doubleBuffer));                   // 0x16051..0x1605c
+    F.Erase_Sprite_Clip_211fc(rasta, R32(doubleBuffer));                   // 0x16061..0x1606c
+    F.Erase_Sprite_Clip_211fc(statusBar, R32(doubleBuffer));                   // 0x16071..0x1607c
+    F.Erase_Sprite_Clip_211fc(messageBox, R32(doubleBuffer));                   // 0x16081..0x1608c
+    F.Erase_Sprite_Clip_211fc(gunSight, R32(doubleBuffer));                   // 0x16091..0x1609c
+    F.Erase_Sprite_Clip_211fc(jah, R32(doubleBuffer));                   // 0x160a1..0x160ac
     for (i = 0; i < 0x1a; i++) {                                              // 0x160b1..0x160df
-      F.Erase_Sprite_Clip_211fc((Math.imul(i, 0x18c) + 0x3a878) | 0, R32(0x64e7c));
+      F.Erase_Sprite_Clip_211fc((Math.imul(i, SPRITE.SIZE) + plants) | 0, R32(doubleBuffer));
     }
     for (i = 0; i < 7; i++) {                                                 // 0x160e1..0x1610f
-      F.Erase_Sprite_Clip_211fc((Math.imul(i, 0x18c) + 0x44010) | 0, R32(0x64e7c));
+      F.Erase_Sprite_Clip_211fc((Math.imul(i, SPRITE.SIZE) + scoreDigits) | 0, R32(doubleBuffer));
     }
     for (i = 0; i < 5; i++) {                                                 // 0x16111..0x1613f
-      F.Erase_Sprite_Clip_211fc((Math.imul(i, 0x18c) + 0x44ae4) | 0, R32(0x64e7c));
+      F.Erase_Sprite_Clip_211fc((Math.imul(i, SPRITE.SIZE) + killsDigits) | 0, R32(doubleBuffer));
     }
     for (i = 0; i < 3; i++) {                                                 // 0x16141..0x1616f
-      F.Erase_Sprite_Clip_211fc((Math.imul(i, 0x18c) + 0x452a0) | 0, R32(0x64e7c));
+      F.Erase_Sprite_Clip_211fc((Math.imul(i, SPRITE.SIZE) + levelDigits) | 0, R32(doubleBuffer));
     }
-    W32(0x60bc4, 1);                                                          // 0x16171
+    W32(inLevelEndSequence, 1);                                                          // 0x16171
     F.sub_18f27();                                                      // 0x1617b
     F.sub_15788();                                                      // 0x16180
     F.sub_16837();                                                      // 0x16185
     F.sub_14425();                                                      // 0x1618a
-    F.Behind_Sprite_Clip_2106f(0x33c30, R32(0x64e7c));                  // 0x1618f..0x1619a
-    F.Behind_Sprite_Clip_2106f(0x33dbc, R32(0x64e7c));                  // 0x1619f..0x161aa
-    F.Behind_Sprite_Clip_2106f(0x33918, R32(0x64e7c));                  // 0x161af..0x161ba
-    F.Behind_Sprite_Clip_2106f(0x3dd10, R32(0x64e7c));                  // 0x161bf..0x161ca
-    F.Behind_Sprite_Clip_2106f(0x45d74, R32(0x64e7c));                  // 0x161cf..0x161da
-    F.Behind_Sprite_Clip_2106f(0x33aa4, R32(0x64e7c));                  // 0x161df..0x161ea
+    F.Behind_Sprite_Clip_2106f(van, R32(doubleBuffer));                  // 0x1618f..0x1619a
+    F.Behind_Sprite_Clip_2106f(rasta, R32(doubleBuffer));                  // 0x1619f..0x161aa
+    F.Behind_Sprite_Clip_2106f(statusBar, R32(doubleBuffer));                  // 0x161af..0x161ba
+    F.Behind_Sprite_Clip_2106f(messageBox, R32(doubleBuffer));                  // 0x161bf..0x161ca
+    F.Behind_Sprite_Clip_2106f(jah, R32(doubleBuffer));                  // 0x161cf..0x161da
+    F.Behind_Sprite_Clip_2106f(gunSight, R32(doubleBuffer));                  // 0x161df..0x161ea
     for (i = 0; i < 0x1a; i++) {                                              // 0x161ef..0x1621d
-      F.Behind_Sprite_Clip_2106f((Math.imul(i, 0x18c) + 0x3a878) | 0, R32(0x64e7c));
+      F.Behind_Sprite_Clip_2106f((Math.imul(i, SPRITE.SIZE) + plants) | 0, R32(doubleBuffer));
     }
     for (i = 0; i < 7; i++) {                                                 // 0x1621f..0x1624d
-      F.Behind_Sprite_Clip_2106f((Math.imul(i, 0x18c) + 0x44010) | 0, R32(0x64e7c));
+      F.Behind_Sprite_Clip_2106f((Math.imul(i, SPRITE.SIZE) + scoreDigits) | 0, R32(doubleBuffer));
     }
     for (i = 0; i < 5; i++) {                                                 // 0x1624f..0x1627d
-      F.Behind_Sprite_Clip_2106f((Math.imul(i, 0x18c) + 0x44ae4) | 0, R32(0x64e7c));
+      F.Behind_Sprite_Clip_2106f((Math.imul(i, SPRITE.SIZE) + killsDigits) | 0, R32(doubleBuffer));
     }
     for (i = 0; i < 3; i++) {                                                 // 0x1627f..0x162ad
-      F.Behind_Sprite_Clip_2106f((Math.imul(i, 0x18c) + 0x452a0) | 0, R32(0x64e7c));
+      F.Behind_Sprite_Clip_2106f((Math.imul(i, SPRITE.SIZE) + levelDigits) | 0, R32(doubleBuffer));
     }
     for (i = 0; i < 0x1a; i++) {                                              // 0x162af..0x162e2
-      F.Draw_Sprite_Clip_212c0((0x3a878 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
+      F.Draw_Sprite_Clip_212c0((plants + Math.imul(i, SPRITE.SIZE)) | 0, R32(doubleBuffer), 1);
     }
-    F.Draw_Sprite_Clip_212c0(0x3dd10, R32(0x64e7c), 1);                 // 0x162e4..0x162f4
-    F.Draw_Sprite_Clip_212c0(0x45d74, R32(0x64e7c), 1);                 // 0x162f9..0x16309
-    F.Draw_Sprite_Clip_212c0(0x33c30, R32(0x64e7c), 1);                 // 0x1630e..0x1631e
-    F.Draw_Sprite_Clip_212c0(0x33dbc, R32(0x64e7c), 1);                 // 0x16323..0x16333
-    F.Draw_Sprite_Clip_212c0(0x33918, R32(0x64e7c), 1);                 // 0x16338..0x16348
+    F.Draw_Sprite_Clip_212c0(messageBox, R32(doubleBuffer), 1);                 // 0x162e4..0x162f4
+    F.Draw_Sprite_Clip_212c0(jah, R32(doubleBuffer), 1);                 // 0x162f9..0x16309
+    F.Draw_Sprite_Clip_212c0(van, R32(doubleBuffer), 1);                 // 0x1630e..0x1631e
+    F.Draw_Sprite_Clip_212c0(rasta, R32(doubleBuffer), 1);                 // 0x16323..0x16333
+    F.Draw_Sprite_Clip_212c0(statusBar, R32(doubleBuffer), 1);                 // 0x16338..0x16348
     for (i = 0; i < 7; i++) {                                                 // 0x1634d..0x16380
-      F.Draw_Sprite_Clip_212c0((0x44010 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
+      F.Draw_Sprite_Clip_212c0((scoreDigits + Math.imul(i, SPRITE.SIZE)) | 0, R32(doubleBuffer), 1);
     }
     for (i = 0; i < 4; i++) {                                                 // 0x16382..0x163b5
-      F.Draw_Sprite_Clip_212c0((0x44ae4 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
+      F.Draw_Sprite_Clip_212c0((killsDigits + Math.imul(i, SPRITE.SIZE)) | 0, R32(doubleBuffer), 1);
     }
     for (i = 0; i < 3; i++) {                                                 // 0x163b7..0x163ea
-      F.Draw_Sprite_Clip_212c0((0x452a0 + Math.imul(i, 0x18c)) | 0, R32(0x64e7c), 1);
+      F.Draw_Sprite_Clip_212c0((levelDigits + Math.imul(i, SPRITE.SIZE)) | 0, R32(doubleBuffer), 1);
     }
-    F.Draw_Sprite_Clip_212c0(0x33aa4, R32(0x64e7c), 1);                 // 0x163ec..0x163fc
-    F.Show_Double_Buffer_21531(R32(0x64e7c), 0);                        // 0x16401..0x16408
+    F.Draw_Sprite_Clip_212c0(gunSight, R32(doubleBuffer), 1);                 // 0x163ec..0x163fc
+    F.Show_Double_Buffer_21531(R32(doubleBuffer), 0);                        // 0x16401..0x16408
     // 0x1640d..0x16422: while (Timer_Query() - [0x60a64] < 1) sub_10050();  (cmp eax,1; jge: signed)
     // Busy-wait on the clock; sub_10050 does not yield (see header), so the loop yields.
-    while ((((F.Timer_Query_235f9()) - R32(0x60a64)) | 0) < 1) {
+    while ((((F.Timer_Query_235f9()) - R32(frameStartTime)) | 0) < 1) {
       F.sub_10050();                                                    // 0x1641d
       await yieldCpu();
     }
   }                                                                           // 0x16424 jmp 0x16035
   F.sub_15c34();                                                        // 0x16429
-  W32(0x60bc4, 0);                                                            // 0x1642e
+  W32(inLevelEndSequence, 0);                                                            // 0x1642e
   F.sub_1a825();                                                        // 0x16438
 });

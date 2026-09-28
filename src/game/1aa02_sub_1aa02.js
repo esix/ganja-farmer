@@ -18,6 +18,7 @@ import { chunk_1d0c1 } from './1aa02/chunk_1d0c1.js';
 import { chunk_1d630 } from './1aa02/chunk_1d630.js';
 import { chunk_1db3a } from './1aa02/chunk_1db3a.js';
 import { chunk_1e018 } from './1aa02/chunk_1e018.js';
+import { SPRITE, gameState, jah } from './data.js';
 
 register(0x1aa02, 'sub_1aa02', async function sub_1aa02(a1, a2) {
   // 0x1aa02..0x1aa13: __CHK(0x50) omitted; push ebx,ecx,esi,edi,ebp; mov ebp,esp; sub esp,0x1c
@@ -32,17 +33,17 @@ register(0x1aa02, 'sub_1aa02', async function sub_1aa02(a1, a2) {
   chunk_1bed0();                                       // I5 0x1bed0..0x1c567
   await chunk_1c567();                                       // I6 0x1c567..0x1cbe4
   for (;;) {
-    if (R32(0x30be4) === 0x25) break;                        // 0x1cbe4 cmp [0x30be4],0x25; je 0x1e018
+    if (R32(gameState) === 0x25) break;                        // 0x1cbe4 cmp [0x30be4],0x25; je 0x1e018
     await F.sub_11659();                                     // 0x1cbf1
     F.Fill_Screen_20768(0);                            // 0x1cbf6 xor eax,eax; 0x1cbf8 call
-    if (R32(0x30be4) === 0x25) break;                        // 0x1cbfd cmp; 0x1cc04 jne; 0x1cc06 jmp 0x1e018
-    W32(0x45d74, 0);                                         // 0x1cc0b
-    W32(0x45d78, R32(0x45d80));                              // 0x1cc15..0x1cc1a
-    W32(0x45d78, -R32(0x45d78) | 0);                         // 0x1cc1f neg dword [0x45d78]
-    W32(0x45ee4, 0x21);                                      // 0x1cc25
-    while (R32(0x30be4) !== 0x1c) {                          // 0x1cc2f cmp [0x30be4],0x1c; je 0x1e013
+    if (R32(gameState) === 0x25) break;                        // 0x1cbfd cmp; 0x1cc04 jne; 0x1cc06 jmp 0x1e018
+    W32(jah, 0);                                         // 0x1cc0b
+    W32((jah + SPRITE.y), R32((jah + SPRITE.height)));                              // 0x1cc15..0x1cc1a
+    W32((jah + SPRITE.y), -R32((jah + SPRITE.y)) | 0);                         // 0x1cc1f neg dword [0x45d78]
+    W32((jah + SPRITE.state), 0x21);                                      // 0x1cc25
+    while (R32(gameState) !== 0x1c) {                          // 0x1cc2f cmp [0x30be4],0x1c; je 0x1e013
       chunk_1cc3c();                                   // L1 0x1cc3c..0x1d0b4
-      while (R32(0x30be4) !== 0x1c) {                        // 0x1d0b4 cmp [0x30be4],0x1c; je 0x1e002
+      while (R32(gameState) !== 0x1c) {                        // 0x1d0b4 cmp [0x30be4],0x1c; je 0x1e002
         await chunk_1d0c1();                                 // G1 0x1d0c1..0x1d630
         chunk_1d630();                                 // G2 0x1d630..0x1db3a
         await chunk_1db3a();                                 // G3 0x1db3a..0x1dffd

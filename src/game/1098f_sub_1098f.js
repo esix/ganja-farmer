@@ -29,6 +29,7 @@
 import { F, register } from '../runtime/registry.js';
 import { R8, R32, W8, W32 } from '../runtime/mem.js';
 import { stackAlloc, stackFree } from '../runtime/stack.js';
+import { HIGHSCORES_FIELD, doubleBuffer, highScores, level, score, sndClick, sndYaMon } from './data.js';
 
 register(0x1098f, 'sub_1098f', async function sub_1098f() {
   const frame = stackAlloc(0x10);              // 0x109a1 sub esp, 0x10
@@ -43,21 +44,21 @@ register(0x1098f, 'sub_1098f', async function sub_1098f() {
   // 0x109b3..0x109c6: for (i = 0; i < 9; i++) (jge: signed); 0x109bc mov eax,[ebp-0x10] is a dead load
   for (W32(I, 0); (R32(I) | 0) < 9; W32(I, R32(I) + 1)) {
     // 0x109cc..0x109dc: cmp [0x60a68], [i*0x18 + 0x60a70]; jle 0x10b6f (next i)
-    if ((R32(0x60a68) | 0) <= (R32((Math.imul(R32(I), 0x18) + 0x60a70) | 0) | 0)) continue;
+    if ((R32(score) | 0) <= (R32((Math.imul(R32(I), 0x18) + highScores) | 0) | 0)) continue;
 
     await F.Time_Delay_20404(1);                                          // 0x109e2
-    W32((Math.imul(R32(I), 0x18) + 0x60a70) | 0, R32(0x60a68));            // 0x109ec..0x109f6
-    W32((Math.imul(R32(I), 0x18) + 0x60a74) | 0, R32(0x30bec));            // 0x109fc..0x10a06
+    W32((Math.imul(R32(I), 0x18) + highScores) | 0, R32(score));            // 0x109ec..0x109f6
+    W32((Math.imul(R32(I), 0x18) + (highScores + HIGHSCORES_FIELD.level)) | 0, R32(level));            // 0x109fc..0x10a06
     F.Print_String_DB_221aa(0x55, 0x50, 0xfa, 0x30033 /* " !!!New Top Score!!! " */, 0);  // 0x10a0c..0x10a22
     F.Print_String_DB_221aa(5, 0x5a, 0xfb,
       0x30049 /* "Please type your name then press enter" */, 0);                             // 0x10a27..0x10a3d
-    F.Show_Double_Buffer_21531(R32(0x64e7c) /* double_buffer, LIBRARY.md */, 0);        // 0x10a42..0x10a49
+    F.Show_Double_Buffer_21531(R32(doubleBuffer) /* double_buffer, LIBRARY.md */, 0);        // 0x10a42..0x10a49
     await F.Time_Delay_20404(1);                                          // 0x10a4e
     F.Keyboard_Remove_Driver_22c58();                               // 0x10a58
     // 0x10a5d..0x10a80: for (j = 0; j < 15; j++) byte [i*0x18 + j + 0x60a78] = 0x20 (jge: signed);
     // 0x10a66 mov eax,[ebp-8] is a dead load
     for (W32(J, 0); (R32(J) | 0) < 0xf; W32(J, R32(J) + 1)) {
-      W8((Math.imul(R32(I), 0x18) + R32(J) + 0x60a78) | 0, 0x20);
+      W8((Math.imul(R32(I), 0x18) + R32(J) + (highScores + HIGHSCORES_FIELD.name)) | 0, 0x20);
     }
 
     // 0x10a82..0x10a8c: loop while pos < 15 (signed) and key byte != 0x0d
@@ -72,15 +73,15 @@ register(0x1098f, 'sub_1098f', async function sub_1098f() {
       if (R8(KEY) === 0x0d) break;                                         // 0x10aba..0x10ac0 jmp 0x10b55
 
       if (R8(KEY) === 0x08 && (R32(POS) | 0) >= 1) {                       // 0x10ac5..0x10acf (jge: signed)
-        W8((Math.imul(R32(I), 0x18) + R32(POS) + 0x60a77) | 0, 0x20);     // 0x10ad3..0x10ada
+        W8((Math.imul(R32(I), 0x18) + R32(POS) + (highScores + 0x7)) | 0, 0x20);     // 0x10ad3..0x10ada
         W32(POS, R32(POS) - 2);                                            // 0x10ae1 add [ebp-0xc], -2
       } else if (R8(KEY) !== 0x08) {                                       // 0x10ae7..0x10aeb
-        W8((Math.imul(R32(I), 0x18) + R32(POS) + 0x60a78) | 0, R8(KEY));  // 0x10aed..0x10af7
-        F.dws_DPlay_1eff8(0x61160);                                  // 0x10afd..0x10b08 (cdecl, add esp,4)
+        W8((Math.imul(R32(I), 0x18) + R32(POS) + (highScores + HIGHSCORES_FIELD.name)) | 0, R8(KEY));  // 0x10aed..0x10af7
+        F.dws_DPlay_1eff8(sndClick);                                  // 0x10afd..0x10b08 (cdecl, add esp,4)
       }
-      F.Show_Double_Buffer_21531(R32(0x64e7c), 0);                   // 0x10b0b..0x10b12
+      F.Show_Double_Buffer_21531(R32(doubleBuffer), 0);                   // 0x10b0b..0x10b12
       // 0x10b17..0x10b36: push 0; ecx = i*0x18 + 0x60a70 + 8; ebx = 0xfc; edx = 0x64; eax = 0x6c
-      F.Print_String_202cd(0x6c, 0x64, 0xfc, (Math.imul(R32(I), 0x18) + 0x60a70 + 8) | 0, 0);
+      F.Print_String_202cd(0x6c, 0x64, 0xfc, (Math.imul(R32(I), 0x18) + highScores + 8) | 0, 0);
       W32(POS, R32(POS) + 1);                                              // 0x10b3b..0x10b3e (eax load is dead)
       await F.Time_Delay_20404(1);                                         // 0x10b41
       F.sub_14fba();                                                 // 0x10b4b
@@ -88,7 +89,7 @@ register(0x1098f, 'sub_1098f', async function sub_1098f() {
     // 0x10b55
     F.Keyboard_Install_Driver_22bd7();                               // 0x10b55
     F.sub_10676();                                                   // 0x10b5a
-    F.dws_DPlay_1eff8(0x611c0);                                      // 0x10b5f..0x10b6a (cdecl, add esp,4)
+    F.dws_DPlay_1eff8(sndYaMon);                                      // 0x10b5f..0x10b6a (cdecl, add esp,4)
     break;                                                                 // 0x10b6d jmp 0x10b74
   }
   stackFree(0x10);                                                         // 0x10b74 epilogue

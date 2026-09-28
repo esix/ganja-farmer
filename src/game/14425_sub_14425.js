@@ -15,6 +15,7 @@
 // 0x15127 (no register args, signatures.json regs 0); signatures.json returns=false.
 import { F, register } from '../runtime/registry.js';
 import { R16, R32, W32 } from '../runtime/mem.js';
+import { DPLAY, SPRITE, plants, sndExplosion } from './data.js';
 
 register(0x14425, 'sub_14425', function sub_14425() {
   let i; // [ebp-8]
@@ -22,40 +23,40 @@ register(0x14425, 'sub_14425', function sub_14425() {
   // 0x1443d..0x14450: for (i = 0; i < 0x1a; i++)  (signed jge)
   for (i = 0; i < 0x1a; i++) {
     // 0x14456: if (state == 0x33)
-    if (R32(0x3a9e8 + Math.imul(i, 0x18c)) === 0x33) {
+    if (R32((plants + SPRITE.state) + Math.imul(i, SPRITE.SIZE)) === 0x33) {
       // 0x1446d: dec counter_3; cmp 0; jge
-      W32(0x3a890 + Math.imul(i, 0x18c), (R32(0x3a890 + Math.imul(i, 0x18c)) - 1) | 0);
-      if (R32(0x3a890 + Math.imul(i, 0x18c)) < 0) {
-        W32(0x3a9e8 + Math.imul(i, 0x18c), 1); // 0x14483: state = 1
-        W32(0x3a9e0 + Math.imul(i, 0x18c), 0); // 0x14494: curr_frame = 0
+      W32((plants + SPRITE.counter3) + Math.imul(i, SPRITE.SIZE), (R32((plants + SPRITE.counter3) + Math.imul(i, SPRITE.SIZE)) - 1) | 0);
+      if (R32((plants + SPRITE.counter3) + Math.imul(i, SPRITE.SIZE)) < 0) {
+        W32((plants + SPRITE.state) + Math.imul(i, SPRITE.SIZE), 1); // 0x14483: state = 1
+        W32((plants + SPRITE.currFrame) + Math.imul(i, SPRITE.SIZE), 0); // 0x14494: curr_frame = 0
       }
     }
     // 0x1449e: if (state == 0x29)
-    if (R32(0x3a9e8 + Math.imul(i, 0x18c)) === 0x29) {
+    if (R32((plants + SPRITE.state) + Math.imul(i, SPRITE.SIZE)) === 0x29) {
       // 0x144b5: inc curr_frame; cmp 4; jle (signed)
-      W32(0x3a9e0 + Math.imul(i, 0x18c), (R32(0x3a9e0 + Math.imul(i, 0x18c)) + 1) | 0);
-      if (R32(0x3a9e0 + Math.imul(i, 0x18c)) > 4) {
-        W32(0x3a9e0 + Math.imul(i, 0x18c), 2); // 0x144cb
+      W32((plants + SPRITE.currFrame) + Math.imul(i, SPRITE.SIZE), (R32((plants + SPRITE.currFrame) + Math.imul(i, SPRITE.SIZE)) + 1) | 0);
+      if (R32((plants + SPRITE.currFrame) + Math.imul(i, SPRITE.SIZE)) > 4) {
+        W32((plants + SPRITE.currFrame) + Math.imul(i, SPRITE.SIZE), 2); // 0x144cb
       }
       // 0x144dc: dec counter_1; cmp 0; jge
-      W32(0x3a888 + Math.imul(i, 0x18c), (R32(0x3a888 + Math.imul(i, 0x18c)) - 1) | 0);
-      if (R32(0x3a888 + Math.imul(i, 0x18c)) < 0) {
-        W32(0x3a9e8 + Math.imul(i, 0x18c), 0); // 0x144f2: state = 0
-        W32(0x3a9e0 + Math.imul(i, 0x18c), 5); // 0x14503: curr_frame = 5
+      W32((plants + SPRITE.counter1) + Math.imul(i, SPRITE.SIZE), (R32((plants + SPRITE.counter1) + Math.imul(i, SPRITE.SIZE)) - 1) | 0);
+      if (R32((plants + SPRITE.counter1) + Math.imul(i, SPRITE.SIZE)) < 0) {
+        W32((plants + SPRITE.state) + Math.imul(i, SPRITE.SIZE), 0); // 0x144f2: state = 0
+        W32((plants + SPRITE.currFrame) + Math.imul(i, SPRITE.SIZE), 5); // 0x14503: curr_frame = 5
       }
     }
     // 0x1450d: if (state == 0x32)
-    if (R32(0x3a9e8 + Math.imul(i, 0x18c)) === 0x32) {
+    if (R32((plants + SPRITE.state) + Math.imul(i, SPRITE.SIZE)) === 0x32) {
       // 0x14524: dec counter_2; cmp 0; jge
-      W32(0x3a88c + Math.imul(i, 0x18c), (R32(0x3a88c + Math.imul(i, 0x18c)) - 1) | 0);
-      if (R32(0x3a88c + Math.imul(i, 0x18c)) < 0) {
-        W32(0x3a9e8 + Math.imul(i, 0x18c), 0x29); // 0x1453a: state = 0x29
-        W32(0x3a888 + Math.imul(i, 0x18c), 0xb4); // 0x1454b: counter_1 = 180
-        W32(0x3a9e0 + Math.imul(i, 0x18c), 2);    // 0x1455c: curr_frame = 2
+      W32((plants + SPRITE.counter2) + Math.imul(i, SPRITE.SIZE), (R32((plants + SPRITE.counter2) + Math.imul(i, SPRITE.SIZE)) - 1) | 0);
+      if (R32((plants + SPRITE.counter2) + Math.imul(i, SPRITE.SIZE)) < 0) {
+        W32((plants + SPRITE.state) + Math.imul(i, SPRITE.SIZE), 0x29); // 0x1453a: state = 0x29
+        W32((plants + SPRITE.counter1) + Math.imul(i, SPRITE.SIZE), 0xb4); // 0x1454b: counter_1 = 180
+        W32((plants + SPRITE.currFrame) + Math.imul(i, SPRITE.SIZE), 2);    // 0x1455c: curr_frame = 2
         // 0x14566..0x14574: xor eax,eax; mov ax,[0x6128a]; push eax; call dws_DDiscard; add esp,4
-        F.dws_DDiscard_1f770(R16(0x6128a));
+        F.dws_DDiscard_1f770(R16((sndExplosion + DPLAY.soundnum)));
         // 0x14577..0x14582: push 0x61280; call dws_DPlay; add esp,4
-        F.dws_DPlay_1eff8(0x61280);
+        F.dws_DPlay_1eff8(sndExplosion);
       }
     }
   }

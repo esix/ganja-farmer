@@ -30,6 +30,7 @@
 import { F, register } from '../runtime/registry.js';
 import { R8, W8, W32, RF64, WF64 } from '../runtime/mem.js';
 import { stackAlloc, stackFree } from '../runtime/stack.js';
+import { PALETTEFADE_FIELD, fadeSteps, paletteFade, pcxScratch } from './data.js';
 
 // fistp dword of an integral value already in ST0 (__CHP output): in range -> the value, else 0x80000000.
 function fistp32(v) {
@@ -45,32 +46,32 @@ register(0x102d1, 'sub_102d1', async function sub_102d1(file, delay, effect) {
   const c = stackAlloc(4); // [ebp-4..ebp-1]: color bytes at [ebp-4], [ebp-3], [ebp-2] (address passed to callees)
 
   F.Fill_Screen_20768(0); // 102f0..102f2
-  F.PCX_Init_207a0(0x31ee4); // 102f7..102fc
-  F.PCX_Load_20806(file, 0x31ee4, 1); // 10301..1030e
+  F.PCX_Init_207a0(pcxScratch); // 102f7..102fc
+  F.PCX_Load_20806(file, pcxScratch, 1); // 10301..1030e
 
   // 10313..10373
   for (i = 1; i < 0xff; i++) {
-    W32(i * 0x38 + 0x616a0, 0);
-    W32(i * 0x38 + 0x616a4, 0);
-    W32(i * 0x38 + 0x61698, 0);
-    W32(i * 0x38 + 0x6169c, 0);
-    W32(i * 0x38 + 0x61690, 0);
-    W32(i * 0x38 + 0x61694, 0);
+    W32(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.accB), 0);
+    W32(i * 0x38 + (paletteFade + 0x34), 0);
+    W32(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.accG), 0);
+    W32(i * 0x38 + (paletteFade + 0x2c), 0);
+    W32(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.accR), 0);
+    W32(i * 0x38 + (paletteFade + 0x24), 0);
   }
 
   // 10375..1043a
   for (k = 0; k < 0x14; k++) {
     for (i = 1; i < 0xff; i++) {
-      F.Read_Color_Reg_205a8(i, (i * 0x38 + 0x61670) | 0); // 103aa..103b8
-      t = R8(i * 0x38 + 0x61670); // 103bd..103c9
+      F.Read_Color_Reg_205a8(i, (i * 0x38 + paletteFade) | 0); // 103aa..103b8
+      t = R8(i * 0x38 + paletteFade); // 103bd..103c9
       r = t; // 103cc..103cf: fild word; fstp qword [ebp-0x28]
-      t = R8(i * 0x38 + 0x61671); // 103d2..103de
+      t = R8(i * 0x38 + (paletteFade + 0x1)); // 103d2..103de
       g = t; // 103e1..103e4: [ebp-0x20]
-      t = R8(i * 0x38 + 0x61672); // 103e7..103f3
+      t = R8(i * 0x38 + (paletteFade + 0x2)); // 103e7..103f3
       b = t; // 103f6..103f9: [ebp-0x30]
-      WF64(i * 0x38 + 0x61678, r / RF64(0x30004)); // 103fc..10409
-      WF64(i * 0x38 + 0x61680, g / RF64(0x30004)); // 1040f..1041c
-      WF64(i * 0x38 + 0x61688, b / RF64(0x30004)); // 10422..1042f
+      WF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.stepR), r / RF64(fadeSteps)); // 103fc..10409
+      WF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.stepG), g / RF64(fadeSteps)); // 1040f..1041c
+      WF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.stepB), b / RF64(fadeSteps)); // 10422..1042f
     }
   }
 
@@ -86,7 +87,7 @@ register(0x102d1, 'sub_102d1', async function sub_102d1(file, delay, effect) {
     }
   }
 
-  F.PCX_Show_Buffer_20b9b(0x31ee4); // 10487..1048c
+  F.PCX_Show_Buffer_20b9b(pcxScratch); // 10487..1048c
 
   // 10491..1064a
   for (k = 0; k < 0x14; k++) {
@@ -94,42 +95,42 @@ register(0x102d1, 'sub_102d1', async function sub_102d1(file, delay, effect) {
       F.Read_Color_Reg_205a8(i, c); // 104c6..104cc
 
       // 104d1..104fd: ST1 = byte[+0] - [+8]; ST0 = c[0]; fcompp; ja
-      t = R8(i * 0x38 + 0x61670);
-      const d0 = t - RF64(i * 0x38 + 0x61678);
+      t = R8(i * 0x38 + paletteFade);
+      const d0 = t - RF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.stepR));
       t = R8(c);
       if (!(t > d0)) {
         // 104ff..10537
-        WF64(i * 0x38 + 0x61690, RF64(i * 0x38 + 0x61678) + RF64(i * 0x38 + 0x61690));
-        t = fistp32(F.__CHP_222a4(RF64(i * 0x38 + 0x61690)));
+        WF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.accR), RF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.stepR)) + RF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.accR)));
+        t = fistp32(F.__CHP_222a4(RF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.accR))));
         W8(c, t & 0xff); // 1052b..10534: low byte
       } else {
-        W8(c, R8(i * 0x38 + 0x61670)); // 10539..10543
+        W8(c, R8(i * 0x38 + paletteFade)); // 10539..10543
       }
 
       // 10546..10572: ST1 = byte[+1] - [+0x10]; ST0 = c[1]
-      t = R8(i * 0x38 + 0x61671);
-      const d1 = t - RF64(i * 0x38 + 0x61680);
+      t = R8(i * 0x38 + (paletteFade + 0x1));
+      const d1 = t - RF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.stepG));
       t = R8(c + 1);
       if (!(t > d1)) {
         // 10574..105ac
-        WF64(i * 0x38 + 0x61698, RF64(i * 0x38 + 0x61680) + RF64(i * 0x38 + 0x61698));
-        t = fistp32(F.__CHP_222a4(RF64(i * 0x38 + 0x61698)));
+        WF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.accG), RF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.stepG)) + RF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.accG)));
+        t = fistp32(F.__CHP_222a4(RF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.accG))));
         W8(c + 1, t & 0xff);
       } else {
-        W8(c + 1, R8(i * 0x38 + 0x61671)); // 105ae..105b8
+        W8(c + 1, R8(i * 0x38 + (paletteFade + 0x1))); // 105ae..105b8
       }
 
       // 105bb..105e7: ST1 = byte[+2] - [+0x18]; ST0 = c[2]
-      t = R8(i * 0x38 + 0x61672);
-      const d2 = t - RF64(i * 0x38 + 0x61688);
+      t = R8(i * 0x38 + (paletteFade + 0x2));
+      const d2 = t - RF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.stepB));
       t = R8(c + 2);
       if (!(t > d2)) {
         // 105e9..10621
-        WF64(i * 0x38 + 0x616a0, RF64(i * 0x38 + 0x61688) + RF64(i * 0x38 + 0x616a0));
-        t = fistp32(F.__CHP_222a4(RF64(i * 0x38 + 0x616a0)));
+        WF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.accB), RF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.stepB)) + RF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.accB)));
+        t = fistp32(F.__CHP_222a4(RF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.accB))));
         W8(c + 2, t & 0xff);
       } else {
-        W8(c + 2, R8(i * 0x38 + 0x61672)); // 10623..1062d
+        W8(c + 2, R8(i * 0x38 + (paletteFade + 0x2))); // 10623..1062d
       }
 
       F.Write_Color_Reg_20541(i, c); // 10630..10636
@@ -138,7 +139,7 @@ register(0x102d1, 'sub_102d1', async function sub_102d1(file, delay, effect) {
   }
 
   await F.Time_Delay_20404(delay); // 1064f..10652
-  F.PCX_Delete_20b69(0x31ee4); // 10657..1065c
+  F.PCX_Delete_20b69(pcxScratch); // 10657..1065c
   if (effect !== 0x34) {
     await F.Screen_Transition_21673(effect); // 10661..1066a
   }

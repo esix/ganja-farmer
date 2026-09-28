@@ -22,6 +22,7 @@
 import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 import { stackAlloc, stackFree } from '../runtime/stack.js';
+import { HIGHSCORES_FIELD, SPRITE, doubleBuffer, highScoreRowColors, highScores, level, levelDigits, score, scoreDigits } from './data.js';
 
 register(0x107ce, 'sub_107ce', function sub_107ce() {
   const frame = stackAlloc(0x38);              // sub esp, 0x38
@@ -32,34 +33,34 @@ register(0x107ce, 'sub_107ce', function sub_107ce() {
   const J = L(4);                               // [ebp-4]: loop counter
 
   W32(I, 0);                                                             // 0x107e6
-  for (let k = 0; k < 10; k++) W32(ARR + k * 4, R32(0x30c24 + k * 4));   // 0x107ed rep movsd (ecx=10)
+  for (let k = 0; k < 10; k++) W32(ARR + k * 4, R32(highScoreRowColors + k * 4));   // 0x107ed rep movsd (ecx=10)
   W32(FP, F.fopen_2264a(0x30028 /* "scores.dat" */, 0x30026 /* "r" */));  // 0x10806
   if (R32(FP) === 0) { stackFree(0x38); return; }                        // 0x1080e je 0x10986
 
   for (;;) {
     // 0x10818..0x1082d
-    if ((F.sub_10010(R32(FP), (0x60a70 + R32(I) * 0x18) | 0)) === 0) break;
-    W32(0x60a68, R32((R32(I) * 0x18 + 0x60a70) | 0));                    // 0x10833
-    W32(0x30bec, R32((R32(I) * 0x18 + 0x60a74) | 0));                    // 0x10842
+    if ((F.sub_10010(R32(FP), (highScores + R32(I) * 0x18) | 0)) === 0) break;
+    W32(score, R32((R32(I) * 0x18 + highScores) | 0));                    // 0x10833
+    W32(level, R32((R32(I) * 0x18 + (highScores + HIGHSCORES_FIELD.level)) | 0));                    // 0x10842
     F.sub_15788();                                                  // 0x10851
 
     for (W32(J, 0); (R32(J) | 0) < 7; W32(J, R32(J) + 1)) {              // 0x10856..0x10869 (jge: signed)
-      W32((R32(J) * 0x18c + 0x44010) | 0, ((R32(J) << 2) + 0xa8) | 0);   // 0x1086b
-      W32((R32(J) * 0x18c + 0x44014) | 0, (R32(I) * 0xd + 0x55) | 0);    // 0x10884
+      W32((R32(J) * SPRITE.SIZE + scoreDigits) | 0, ((R32(J) << 2) + 0xa8) | 0);   // 0x1086b
+      W32((R32(J) * SPRITE.SIZE + (scoreDigits + SPRITE.y)) | 0, (R32(I) * 0xd + 0x55) | 0);    // 0x10884
     }
     for (W32(J, 0); (R32(J) | 0) < 3; W32(J, R32(J) + 1)) {              // 0x1089a..0x108ad
-      W32((R32(J) * 0x18c + 0x452a0) | 0, ((R32(J) << 2) + 0x104) | 0);  // 0x108af
-      W32((R32(J) * 0x18c + 0x452a4) | 0, (R32(I) * 0xd + 0x55) | 0);    // 0x108c8
+      W32((R32(J) * SPRITE.SIZE + levelDigits) | 0, ((R32(J) << 2) + 0x104) | 0);  // 0x108af
+      W32((R32(J) * SPRITE.SIZE + (levelDigits + SPRITE.y)) | 0, (R32(I) * 0xd + 0x55) | 0);    // 0x108c8
     }
     for (W32(J, 0); (R32(J) | 0) < 7; W32(J, R32(J) + 1)) {              // 0x108de..0x108f1
-      F.Draw_Sprite_Clip_212c0((0x44010 + R32(J) * 0x18c) | 0, R32(0x64e7c), 1);  // 0x1090c
+      F.Draw_Sprite_Clip_212c0((scoreDigits + R32(J) * SPRITE.SIZE) | 0, R32(doubleBuffer), 1);  // 0x1090c
     }
     for (W32(J, 0); (R32(J) | 0) < 3; W32(J, R32(J) + 1)) {              // 0x10913..0x10926
-      F.Draw_Sprite_Clip_212c0((0x452a0 + R32(J) * 0x18c) | 0, R32(0x64e7c), 1);  // 0x10941
+      F.Draw_Sprite_Clip_212c0((levelDigits + R32(J) * SPRITE.SIZE) | 0, R32(doubleBuffer), 1);  // 0x10941
     }
     // 0x10948..0x1096e: push 1; ecx = 0x60a70 + i*0x18 + 8; ebx = [ebp-0x38 + i*4]; edx = i*0xd + 0x53; eax = 0x21
     F.Print_String_DB_221aa(0x21, (R32(I) * 0xd + 0x53) | 0, R32((ARR + (R32(I) << 2)) | 0),
-                                  (R32(I) * 0x18 + 0x60a70 + 8) | 0, 1);
+                                  (R32(I) * 0x18 + highScores + 8) | 0, 1);
     W32(I, R32(I) + 1);                                                   // 0x10976 inc [ebp-8]
   }
   F.fclose_228ed(R32(FP));                                          // 0x10981

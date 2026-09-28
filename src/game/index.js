@@ -44,3 +44,4 @@ import './1977e_sub_1977e.js';
 import './19ade_sub_19ade.js';
 import './1a825_sub_1a825.js';
 import './1aa02_sub_1aa02.js';
+import './data.js';

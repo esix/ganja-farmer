@@ -34,6 +34,7 @@
 // No x87 instructions in this function.
 import { F, register } from '../runtime/registry.js';
 import { R16, R32, W16, W32 } from '../runtime/mem.js';
+import { DPLAY, KEY, SPRITE, doubleBuffer, gunSight, keyboardState, masterVolume, mouseButtons, mouseX, mouseY, musicSamplesEnabled, musicVolume, sfxVolume, sndDoubleClick, sndYaMon, soundMenu, soundStatus, volumeSliders } from './data.js';
 
 register(0x10cac, 'sub_10cac', async function sub_10cac() {
   let done;  // [ebp-8]
@@ -41,126 +42,126 @@ register(0x10cac, 'sub_10cac', async function sub_10cac() {
 
   done = 0;                                                            // 10cc4
   latch = 0;                                                           // 10ccb
-  F.Behind_Sprite_Clip_2106f(0x33aa4, R32(0x64e7c));             // 10cd2..10cdd
-  F.Behind_Sprite_Clip_2106f(0x45be8, R32(0x64e7c));             // 10ce2..10ced
-  F.Erase_Sprite_Clip_211fc(0x33aa4, R32(0x64e7c));              // 10cf2..10cfd
-  F.Behind_Sprite_Clip_2106f(0x33aa4, R32(0x64e7c));             // 10d02..10d0d
-  F.Behind_Sprite_Clip_2106f(0x45744, R32(0x64e7c));             // 10d12..10d1d
-  F.Behind_Sprite_Clip_2106f(0x458d0, R32(0x64e7c));             // 10d22..10d2d
-  F.Behind_Sprite_Clip_2106f(0x45a5c, R32(0x64e7c));             // 10d32..10d3d
-  W32(0x33c0c, 1);                                                     // 10d42
+  F.Behind_Sprite_Clip_2106f(gunSight, R32(doubleBuffer));             // 10cd2..10cdd
+  F.Behind_Sprite_Clip_2106f(soundMenu, R32(doubleBuffer));             // 10ce2..10ced
+  F.Erase_Sprite_Clip_211fc(gunSight, R32(doubleBuffer));              // 10cf2..10cfd
+  F.Behind_Sprite_Clip_2106f(gunSight, R32(doubleBuffer));             // 10d02..10d0d
+  F.Behind_Sprite_Clip_2106f(volumeSliders, R32(doubleBuffer));             // 10d12..10d1d
+  F.Behind_Sprite_Clip_2106f((volumeSliders + 1 * SPRITE.SIZE), R32(doubleBuffer));             // 10d22..10d2d
+  F.Behind_Sprite_Clip_2106f((volumeSliders + 2 * SPRITE.SIZE), R32(doubleBuffer));             // 10d32..10d3d
+  W32((gunSight + SPRITE.currFrame), 1);                                                     // 10d42
 
   // 10d4c: cmp [ebp-8], 1; je 0x1121b. Busy-wait: the exit also depends on keyboard_state [0x64f08] /
   // [0x64fe8], written by the keyboard ISR Keyboard_Driver 0x22b04 (LIBRARY.md); no extra yieldCpu is added:
   // the body awaits Time_Delay(1), which always yields at least once while waiting for the BIOS tick
   // (20404_Time_Delay.js; same reasoning as 1098f_sub_1098f.js / 1128e_sub_1128e.js).
   while (done !== 1) {
-    if (R32(0x30c20) !== 0) {                                          // 10d56: cmp; je 10d6b
-      W32(0x45d50, 0);                                                 // 10d5f
+    if (R32(musicSamplesEnabled) !== 0) {                                          // 10d56: cmp; je 10d6b
+      W32((soundMenu + SPRITE.currFrame), 0);                                                 // 10d5f
     } else {
-      W32(0x45d50, 1);                                                 // 10d6b
+      W32((soundMenu + SPRITE.currFrame), 1);                                                 // 10d6b
     }
     F.sub_14fba();                                               // 10d75
-    F.Squeeze_Mouse_230df(3, 0x60b48, 0x60b4c, 0x60b50);         // 10d7a..10d8e (result not read)
-    W32(0x33aa4, ((R32(0x60b48) >> 1) - 0x10) | 0);                    // 10d93..10d9d: sar eax,1; sub eax,0x10
-    W32(0x33aa8, R32(0x60b4c));                                        // 10da2..10da7
+    F.Squeeze_Mouse_230df(3, mouseX, mouseY, mouseButtons);         // 10d7a..10d8e (result not read)
+    W32(gunSight, ((R32(mouseX) >> 1) - 0x10) | 0);                    // 10d93..10d9d: sar eax,1; sub eax,0x10
+    W32((gunSight + SPRITE.y), R32(mouseY));                                        // 10da2..10da7
 
     // 10dac..10dc9
-    if (R32(0x60b50) === 2 || R32(0x64f08) !== 0 || R32(0x64fe8) !== 0) {
+    if (R32(mouseButtons) === 2 || R32((keyboardState + 4 * KEY.esc)) !== 0 || R32((keyboardState + 4 * KEY.space)) !== 0) {
       done = 1;                                                        // 10dc9
     }
     // 10dd0..10e0e
-    if (R32(0x60b50) === 1 && R32(0x33aa4) > 0xab && R32(0x33aa4) < 0xb4 &&
-        R32(0x33aa8) > 0x7d && R32(0x33aa8) < 0x84) {
+    if (R32(mouseButtons) === 1 && R32(gunSight) > 0xab && R32(gunSight) < 0xb4 &&
+        R32((gunSight + SPRITE.y)) > 0x7d && R32((gunSight + SPRITE.y)) < 0x84) {
       done = 1;                                                        // 10e0e
     }
     // 10e15..10e4e
-    if (R32(0x60b50) === 1 && R32(0x33aa4) > 0x53 && R32(0x33aa4) < 0x63 &&
-        R32(0x33aa8) > 0x66 && R32(0x33aa8) < 0x70 && latch === 0) {
-      if (R32(0x30c20) !== 0) {                                        // 10e52: cmp; je 10e67
-        W32(0x30c20, 0);                                               // 10e5b
+    if (R32(mouseButtons) === 1 && R32(gunSight) > 0x53 && R32(gunSight) < 0x63 &&
+        R32((gunSight + SPRITE.y)) > 0x66 && R32((gunSight + SPRITE.y)) < 0x70 && latch === 0) {
+      if (R32(musicSamplesEnabled) !== 0) {                                        // 10e52: cmp; je 10e67
+        W32(musicSamplesEnabled, 0);                                               // 10e5b
       } else {
-        W32(0x30c20, 1);                                               // 10e67
+        W32(musicSamplesEnabled, 1);                                               // 10e67
       }
-      F.dws_DPlay_1eff8(0x61180);                                // 10e71..10e7c (cdecl)
+      F.dws_DPlay_1eff8(sndDoubleClick);                                // 10e71..10e7c (cdecl)
       latch = 1;                                                       // 10e7f
     }
-    if (R32(0x60b50) !== 1) {                                          // 10e86: cmp; je 10e96
+    if (R32(mouseButtons) !== 1) {                                          // 10e86: cmp; je 10e96
       latch = 0;                                                       // 10e8f
     }
 
     // 10e96..10ece
-    if (R32(0x60b50) === 1 && R32(0x33aa4) > 0x55 && R32(0x33aa4) < 0xaf &&
-        R32(0x33aa8) > 0x48 && R32(0x33aa8) < 0x52) {
-      W32(0x45744, (R32(0x33aa4) - 6) | 0);                            // 10ece..10ed6
+    if (R32(mouseButtons) === 1 && R32(gunSight) > 0x55 && R32(gunSight) < 0xaf &&
+        R32((gunSight + SPRITE.y)) > 0x48 && R32((gunSight + SPRITE.y)) < 0x52) {
+      W32(volumeSliders, (R32(gunSight) - 6) | 0);                            // 10ece..10ed6
     }
-    if (R32(0x45744) > 0xaf) W32(0x45744, 0xae);                       // 10edb..10ee7 (jle)
-    if (R32(0x45744) < 0x55) W32(0x45744, 0x56);                       // 10ef1..10efa (jge)
+    if (R32(volumeSliders) > 0xaf) W32(volumeSliders, 0xae);                       // 10edb..10ee7 (jle)
+    if (R32(volumeSliders) < 0x55) W32(volumeSliders, 0x56);                       // 10ef1..10efa (jge)
 
     // 10f04..10f3c
-    if (R32(0x60b50) === 1 && R32(0x33aa4) > 0x55 && R32(0x33aa4) < 0xaf &&
-        R32(0x33aa8) > 0x5c && R32(0x33aa8) < 0x66) {
-      W32(0x458d0, (R32(0x33aa4) - 6) | 0);                            // 10f3c..10f44
+    if (R32(mouseButtons) === 1 && R32(gunSight) > 0x55 && R32(gunSight) < 0xaf &&
+        R32((gunSight + SPRITE.y)) > 0x5c && R32((gunSight + SPRITE.y)) < 0x66) {
+      W32((volumeSliders + 1 * SPRITE.SIZE), (R32(gunSight) - 6) | 0);                            // 10f3c..10f44
     }
-    if (R32(0x458d0) > 0xaf) W32(0x458d0, 0xae);                       // 10f49..10f55
-    if (R32(0x458d0) < 0x55) W32(0x458d0, 0x56);                       // 10f5f..10f68
+    if (R32((volumeSliders + 1 * SPRITE.SIZE)) > 0xaf) W32((volumeSliders + 1 * SPRITE.SIZE), 0xae);                       // 10f49..10f55
+    if (R32((volumeSliders + 1 * SPRITE.SIZE)) < 0x55) W32((volumeSliders + 1 * SPRITE.SIZE), 0x56);                       // 10f5f..10f68
 
     // 10f72..10faa
-    if (R32(0x60b50) === 1 && R32(0x33aa4) > 0x55 && R32(0x33aa4) < 0xaf &&
-        R32(0x33aa8) > 0x70 && R32(0x33aa8) < 0x7a) {
-      W32(0x45a5c, (R32(0x33aa4) - 6) | 0);                            // 10faa..10fb2
+    if (R32(mouseButtons) === 1 && R32(gunSight) > 0x55 && R32(gunSight) < 0xaf &&
+        R32((gunSight + SPRITE.y)) > 0x70 && R32((gunSight + SPRITE.y)) < 0x7a) {
+      W32((volumeSliders + 2 * SPRITE.SIZE), (R32(gunSight) - 6) | 0);                            // 10faa..10fb2
     }
-    if (R32(0x45a5c) > 0xaf) W32(0x45a5c, 0xae);                       // 10fb7..10fc3
-    if (R32(0x45a5c) < 0x55) W32(0x45a5c, 0x56);                       // 10fcd..10fd6
+    if (R32((volumeSliders + 2 * SPRITE.SIZE)) > 0xaf) W32((volumeSliders + 2 * SPRITE.SIZE), 0xae);                       // 10fb7..10fc3
+    if (R32((volumeSliders + 2 * SPRITE.SIZE)) < 0x55) W32((volumeSliders + 2 * SPRITE.SIZE), 0x56);                       // 10fcd..10fd6
 
     // 10fe0..10ff0: mov ax, word [0x45744]; sub eax,0x55; add eax,eax; add eax,0x4a; mov word [0x60f0e], ax
     // (only AX is stored, so the upper EAX bits left from before do not matter)
-    W16(0x60f0e, (R16(0x45744) - 0x55) * 2 + 0x4a);
-    if (R32(0x45744) < 0x5a) W16(0x60f0e, 0);                          // 10ff6..10fff
-    if (R32(0x45744) > 0xaa) W16(0x60f0e, 0xff);                       // 11008..11014
+    W16(sfxVolume, (R16(volumeSliders) - 0x55) * 2 + 0x4a);
+    if (R32(volumeSliders) < 0x5a) W16(sfxVolume, 0);                          // 10ff6..10fff
+    if (R32(volumeSliders) > 0xaa) W16(sfxVolume, 0xff);                       // 11008..11014
 
-    W16(0x60f10, (R16(0x458d0) - 0x55) * 2 + 0x4a);                    // 1101d..1102d
-    if (R32(0x458d0) < 0x5a) W16(0x60f10, 0);                          // 11033..1103c
-    if (R32(0x458d0) > 0xaa) W16(0x60f10, 0xff);                       // 11045..11051
-    if (R16(0x60f10) < 0x96) {                                         // 1105a..11067 (zero-extended word, jge)
-      W32(0x30c20, 0);                                                 // 11069
+    W16(musicVolume, (R16((volumeSliders + 1 * SPRITE.SIZE)) - 0x55) * 2 + 0x4a);                    // 1101d..1102d
+    if (R32((volumeSliders + 1 * SPRITE.SIZE)) < 0x5a) W16(musicVolume, 0);                          // 11033..1103c
+    if (R32((volumeSliders + 1 * SPRITE.SIZE)) > 0xaa) W16(musicVolume, 0xff);                       // 11045..11051
+    if (R16(musicVolume) < 0x96) {                                         // 1105a..11067 (zero-extended word, jge)
+      W32(musicSamplesEnabled, 0);                                                 // 11069
     }
 
-    W16(0x60f12, (R16(0x45a5c) - 0x55) * 2 + 0x4a);                    // 11073..11083
-    if (R32(0x45a5c) < 0x5a) W16(0x60f12, 0);                          // 11089..11092
-    if (R32(0x45a5c) > 0xaa) W16(0x60f12, 0xff);                       // 1109b..110a7
+    W16(masterVolume, (R16((volumeSliders + 2 * SPRITE.SIZE)) - 0x55) * 2 + 0x4a);                    // 11073..11083
+    if (R32((volumeSliders + 2 * SPRITE.SIZE)) < 0x5a) W16(masterVolume, 0);                          // 11089..11092
+    if (R32((volumeSliders + 2 * SPRITE.SIZE)) > 0xaa) W16(masterVolume, 0xff);                       // 1109b..110a7
 
-    F.dws_XDig_1ef64(R16(0x60f0e));                              // 110b0..110be (cdecl)
-    F.dws_XMusic_1eed0(R16(0x60f10));                            // 110c1..110cf (cdecl)
-    F.dws_XMaster_1ee3c(R16(0x60f12));                           // 110d2..110e0 (cdecl)
-    F.dws_DSoundStatus_1f348(R16(0x611ca), 0x60f14);             // 110e3..110f7 (cdecl)
-    if (R16(0x60f14) === 0) {                                          // 110fa: cmp word; jne 11112
-      F.dws_DPlay_1eff8(0x611c0);                                // 11104..1110f (cdecl)
+    F.dws_XDig_1ef64(R16(sfxVolume));                              // 110b0..110be (cdecl)
+    F.dws_XMusic_1eed0(R16(musicVolume));                            // 110c1..110cf (cdecl)
+    F.dws_XMaster_1ee3c(R16(masterVolume));                           // 110d2..110e0 (cdecl)
+    F.dws_DSoundStatus_1f348(R16((sndYaMon + DPLAY.soundnum)), soundStatus);             // 110e3..110f7 (cdecl)
+    if (R16(soundStatus) === 0) {                                          // 110fa: cmp word; jne 11112
+      F.dws_DPlay_1eff8(sndYaMon);                                // 11104..1110f (cdecl)
     }
 
-    F.Erase_Sprite_Clip_211fc(0x33aa4, R32(0x64e7c));            // 11112..1111d
-    F.Erase_Sprite_Clip_211fc(0x45744, R32(0x64e7c));            // 11122..1112d
-    F.Erase_Sprite_Clip_211fc(0x458d0, R32(0x64e7c));            // 11132..1113d
-    F.Erase_Sprite_Clip_211fc(0x45a5c, R32(0x64e7c));            // 11142..1114d
-    F.Behind_Sprite_Clip_2106f(0x33aa4, R32(0x64e7c));           // 11152..1115d
-    F.Behind_Sprite_Clip_2106f(0x45744, R32(0x64e7c));           // 11162..1116d
-    F.Behind_Sprite_Clip_2106f(0x458d0, R32(0x64e7c));           // 11172..1117d
-    F.Behind_Sprite_Clip_2106f(0x45a5c, R32(0x64e7c));           // 11182..1118d
-    F.Draw_Sprite_Clip_212c0(0x45be8, R32(0x64e7c), 1);          // 11192..111a2
-    F.Draw_Sprite_Clip_212c0(0x45744, R32(0x64e7c), 1);          // 111a7..111b7
-    F.Draw_Sprite_Clip_212c0(0x458d0, R32(0x64e7c), 1);          // 111bc..111cc
-    F.Draw_Sprite_Clip_212c0(0x45a5c, R32(0x64e7c), 1);          // 111d1..111e1
-    F.Draw_Sprite_Clip_212c0(0x33aa4, R32(0x64e7c), 1);          // 111e6..111f6
-    F.Show_Double_Buffer_21531(R32(0x64e7c), 0);                 // 111fb..11202
+    F.Erase_Sprite_Clip_211fc(gunSight, R32(doubleBuffer));            // 11112..1111d
+    F.Erase_Sprite_Clip_211fc(volumeSliders, R32(doubleBuffer));            // 11122..1112d
+    F.Erase_Sprite_Clip_211fc((volumeSliders + 1 * SPRITE.SIZE), R32(doubleBuffer));            // 11132..1113d
+    F.Erase_Sprite_Clip_211fc((volumeSliders + 2 * SPRITE.SIZE), R32(doubleBuffer));            // 11142..1114d
+    F.Behind_Sprite_Clip_2106f(gunSight, R32(doubleBuffer));           // 11152..1115d
+    F.Behind_Sprite_Clip_2106f(volumeSliders, R32(doubleBuffer));           // 11162..1116d
+    F.Behind_Sprite_Clip_2106f((volumeSliders + 1 * SPRITE.SIZE), R32(doubleBuffer));           // 11172..1117d
+    F.Behind_Sprite_Clip_2106f((volumeSliders + 2 * SPRITE.SIZE), R32(doubleBuffer));           // 11182..1118d
+    F.Draw_Sprite_Clip_212c0(soundMenu, R32(doubleBuffer), 1);          // 11192..111a2
+    F.Draw_Sprite_Clip_212c0(volumeSliders, R32(doubleBuffer), 1);          // 111a7..111b7
+    F.Draw_Sprite_Clip_212c0((volumeSliders + 1 * SPRITE.SIZE), R32(doubleBuffer), 1);          // 111bc..111cc
+    F.Draw_Sprite_Clip_212c0((volumeSliders + 2 * SPRITE.SIZE), R32(doubleBuffer), 1);          // 111d1..111e1
+    F.Draw_Sprite_Clip_212c0(gunSight, R32(doubleBuffer), 1);          // 111e6..111f6
+    F.Show_Double_Buffer_21531(R32(doubleBuffer), 0);                 // 111fb..11202
     F.sub_10050();                                               // 11207
     await F.Time_Delay_20404(1);                                       // 1120c..11211
   }                                                                    // 11216: jmp 0x10d4c
 
-  W32(0x33c0c, 0);                                                     // 1121b
-  F.Erase_Sprite_Clip_211fc(0x33aa4, R32(0x64e7c));              // 11225..11230
-  F.Erase_Sprite_Clip_211fc(0x45744, R32(0x64e7c));              // 11235..11240
-  F.Erase_Sprite_Clip_211fc(0x458d0, R32(0x64e7c));              // 11245..11250
-  F.Erase_Sprite_Clip_211fc(0x45a5c, R32(0x64e7c));              // 11255..11260
-  F.Erase_Sprite_Clip_211fc(0x45be8, R32(0x64e7c));              // 11265..11270
-  F.Behind_Sprite_Clip_2106f(0x33aa4, R32(0x64e7c));             // 11275..11280
+  W32((gunSight + SPRITE.currFrame), 0);                                                     // 1121b
+  F.Erase_Sprite_Clip_211fc(gunSight, R32(doubleBuffer));              // 11225..11230
+  F.Erase_Sprite_Clip_211fc(volumeSliders, R32(doubleBuffer));              // 11235..11240
+  F.Erase_Sprite_Clip_211fc((volumeSliders + 1 * SPRITE.SIZE), R32(doubleBuffer));              // 11245..11250
+  F.Erase_Sprite_Clip_211fc((volumeSliders + 2 * SPRITE.SIZE), R32(doubleBuffer));              // 11255..11260
+  F.Erase_Sprite_Clip_211fc(soundMenu, R32(doubleBuffer));              // 11265..11270
+  F.Behind_Sprite_Clip_2106f(gunSight, R32(doubleBuffer));             // 11275..11280
 });

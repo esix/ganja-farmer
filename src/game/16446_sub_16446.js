@@ -23,31 +23,32 @@
 import { F, register } from '../runtime/registry.js';
 import { R32, R32u, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
+import { SPRITE, bongState, currentWeapon, hasAutoGun, hasBong, hasMissileLauncher, jah, level, powerupDrop, rasta, score, sndAutomatic, sndBongDeath, sndRastaRocket } from './data.js';
 
 register(0x16446, 'sub_16446', function sub_16446() {
   let sel; // [ebp-4]
   let sel2; // [ebp-8]
 
-  sel = R32u(0x30bec);                                                    // 1645e/16463
+  sel = R32u(level);                                                    // 1645e/16463
   // 16519..165a3: compare tree with unsigned jb/jbe on [ebp-4]
   switch (sel) {
     case 5:                                                               // 1646b
-      if (R32(0x45d98) !== 0x43) {
-        W32(0x45d98, 0x41);
+      if (R32((jah + SPRITE.threshold3)) !== 0x43) {
+        W32((jah + SPRITE.threshold3), 0x41);
       }
-      W32(0x5fbe0, 0);
+      W32((powerupDrop + SPRITE.currFrame), 0);
       break;
     case 10:                                                              // 1648d
-      if (R32(0x45d98) !== 0x43) {
-        W32(0x45d98, 0x41);
+      if (R32((jah + SPRITE.threshold3)) !== 0x43) {
+        W32((jah + SPRITE.threshold3), 0x41);
       }
-      W32(0x5fbe0, 1);
+      W32((powerupDrop + SPRITE.currFrame), 1);
       break;
     case 15:                                                              // 164af
-      if (R32(0x45d98) !== 0x43) {
-        W32(0x45d98, 0x41);
+      if (R32((jah + SPRITE.threshold3)) !== 0x43) {
+        W32((jah + SPRITE.threshold3), 0x41);
       }
-      W32(0x5fbe0, 2);
+      W32((powerupDrop + SPRITE.currFrame), 2);
       break;
     case 20:                                                              // 164d1
     case 25:
@@ -56,85 +57,85 @@ register(0x16446, 'sub_16446', function sub_16446() {
     case 40:
     case 45:
     case 50:
-      if (R32(0x45d98) !== 0x43) {
-        W32(0x45d98, 0x41);
+      if (R32((jah + SPRITE.threshold3)) !== 0x43) {
+        W32((jah + SPRITE.threshold3), 0x41);
       }
-      W32(0x5fbe0, 3);
+      W32((powerupDrop + SPRITE.currFrame), 3);
       break;
     default:                                                              // 164f3
-      if (R32(0x45d98) === 0x41) {
+      if (R32((jah + SPRITE.threshold3)) === 0x41) {
         break;                                                            // 164fc
       }
-      if (R32(0x45d98) === 0x43) {                                        // 16501
-        W32(0x45d98, 0x42);
+      if (R32((jah + SPRITE.threshold3)) === 0x43) {                                        // 16501
+        W32((jah + SPRITE.threshold3), 0x42);
       }
       break;
   }
 
-  if (R32(0x45ee4) === 0x20 && R32(0x45d98) === 0x41) {                   // 165a8..165b8
-    W32(0x45d78, 0x14);                                                   // 165bc
+  if (R32((jah + SPRITE.state)) === 0x20 && R32((jah + SPRITE.threshold3)) === 0x41) {                   // 165a8..165b8
+    W32((jah + SPRITE.y), 0x14);                                                   // 165bc
     if (imod(F.rand_232c7(), 2) === 0) {                            // 165c6..165db
-      W32(0x45ee4, 0x1c);                                                 // 165dd
-      W32(0x45d74, imod(-(F.rand_232c7()) | 0, 0x12c));             // 165e7..165fc (neg; cdq; idiv)
+      W32((jah + SPRITE.state), 0x1c);                                                 // 165dd
+      W32(jah, imod(-(F.rand_232c7()) | 0, 0x12c));             // 165e7..165fc (neg; cdq; idiv)
     } else {
-      W32(0x45ee4, 0x1b);                                                 // 16604
-      W32(0x45d74, (imod(F.rand_232c7(), 0x12c) + 0x140) | 0);      // 1660e..16627
+      W32((jah + SPRITE.state), 0x1b);                                                 // 16604
+      W32(jah, (imod(F.rand_232c7(), 0x12c) + 0x140) | 0);      // 1660e..16627
     }
   }
 
-  if (R32(0x45ee4) === 0x1c) {                                            // 1662d
-    W32(0x45d74, (R32(0x45d74) + 3) | 0);                                 // 1663a
-    if (((R32(0x45d74) + 0x28) | 0) > R32(0x33dbc) && R32(0x5fbe8) === 0 && R32(0x45d98) === 0x41) { // 16641..16663 (jle / je / je)
-      W32(0x5fa78, (R32(0x45d74) + 0x1e) | 0);                            // 16667
-      W32(0x5fa7c, (R32(0x45d78) + 0x32) | 0);                            // 16674
-      W32(0x5fbe8, 1);                                                    // 16681
-      W32(0x45d98, 0x43);                                                 // 1668b
+  if (R32((jah + SPRITE.state)) === 0x1c) {                                            // 1662d
+    W32(jah, (R32(jah) + 3) | 0);                                 // 1663a
+    if (((R32(jah) + 0x28) | 0) > R32(rasta) && R32((powerupDrop + SPRITE.state)) === 0 && R32((jah + SPRITE.threshold3)) === 0x41) { // 16641..16663 (jle / je / je)
+      W32(powerupDrop, (R32(jah) + 0x1e) | 0);                            // 16667
+      W32((powerupDrop + SPRITE.y), (R32((jah + SPRITE.y)) + 0x32) | 0);                            // 16674
+      W32((powerupDrop + SPRITE.state), 1);                                                    // 16681
+      W32((jah + SPRITE.threshold3), 0x43);                                                 // 1668b
     }
-    if (R32(0x45d74) > 0x154) {                                           // 16695 (jle)
-      W32(0x45ee4, 0x20);                                                 // 166a1
-    }
-  }
-
-  if (R32(0x45ee4) === 0x1b) {                                            // 166ab
-    W32(0x45d74, (R32(0x45d74) - 3) | 0);                                 // 166b8
-    if (((R32(0x45d74) + 0x28) | 0) < ((R32(0x33dbc) + 0xf) | 0) && R32(0x5fbe8) === 0 && R32(0x45d98) === 0x41) { // 166bf..166e6 (jge / je / je)
-      W32(0x5fa78, (R32(0x45d74) + 0x1e) | 0);                            // 166ea
-      W32(0x5fa7c, (R32(0x45d78) + 0x32) | 0);                            // 166f7
-      W32(0x5fbe8, 1);                                                    // 16704
-      W32(0x45d98, 0x43);                                                 // 1670e
-    }
-    if (((((R32(0x45d74) + R32(0x45d7c)) | 0) + 0x28) | 0) < 0) {         // 16718..16728 (test; jge)
-      W32(0x45ee4, 0x20);                                                 // 1672a
+    if (R32(jah) > 0x154) {                                           // 16695 (jle)
+      W32((jah + SPRITE.state), 0x20);                                                 // 166a1
     }
   }
 
-  if (R32(0x5fbe8) === 1) {                                               // 16734
-    W32(0x5fa7c, (R32(0x5fa7c) + 3) | 0);                                 // 16741
-    if (R32(0x5fa7c) > R32(0x33dc0)) {                                    // 16748..16753 (jle)
-      W32(0x5fbe8, 0);                                                    // 16759
-      sel2 = R32(0x5fbe0);                                                // 16763/16768
+  if (R32((jah + SPRITE.state)) === 0x1b) {                                            // 166ab
+    W32(jah, (R32(jah) - 3) | 0);                                 // 166b8
+    if (((R32(jah) + 0x28) | 0) < ((R32(rasta) + 0xf) | 0) && R32((powerupDrop + SPRITE.state)) === 0 && R32((jah + SPRITE.threshold3)) === 0x41) { // 166bf..166e6 (jge / je / je)
+      W32(powerupDrop, (R32(jah) + 0x1e) | 0);                            // 166ea
+      W32((powerupDrop + SPRITE.y), (R32((jah + SPRITE.y)) + 0x32) | 0);                            // 166f7
+      W32((powerupDrop + SPRITE.state), 1);                                                    // 16704
+      W32((jah + SPRITE.threshold3), 0x43);                                                 // 1670e
+    }
+    if (((((R32(jah) + R32((jah + SPRITE.width))) | 0) + 0x28) | 0) < 0) {         // 16718..16728 (test; jge)
+      W32((jah + SPRITE.state), 0x20);                                                 // 1672a
+    }
+  }
+
+  if (R32((powerupDrop + SPRITE.state)) === 1) {                                               // 16734
+    W32((powerupDrop + SPRITE.y), (R32((powerupDrop + SPRITE.y)) + 3) | 0);                                 // 16741
+    if (R32((powerupDrop + SPRITE.y)) > R32((rasta + SPRITE.y))) {                                    // 16748..16753 (jle)
+      W32((powerupDrop + SPRITE.state), 0);                                                    // 16759
+      sel2 = R32((powerupDrop + SPRITE.currFrame));                                                // 16763/16768
       // 1681c..16828: cmp [ebp-8],3; ja 0x16809 (-> RET); jmp [eax*4 + 0x1680c]
       switch (sel2 >>> 0) {
         case 0:                                                           // 16770
-          W32(0x60bb0, 1);
-          W32(0x60ee8, 0x37);
-          W32(0x33f2c, 1);
-          W32(0x33f24, 0);
-          F.dws_DPlay_1eff8(0x61440);                               // 16798..167a3 (cdecl, 1 stack arg)
+          W32(hasAutoGun, 1);
+          W32(currentWeapon, 0x37);
+          W32((rasta + SPRITE.state), 1);
+          W32((rasta + SPRITE.currFrame), 0);
+          F.dws_DPlay_1eff8(sndAutomatic);                               // 16798..167a3 (cdecl, 1 stack arg)
           break;
         case 1:                                                           // 167ab
-          W32(0x60bb4, 1);
-          W32(0x60ee8, 0x35);
-          F.dws_DPlay_1eff8(0x61460);                               // 167bf..167ca
+          W32(hasMissileLauncher, 1);
+          W32(currentWeapon, 0x35);
+          F.dws_DPlay_1eff8(sndRastaRocket);                               // 167bf..167ca
           break;
         case 2:                                                           // 167cf
-          W32(0x60bb8, 1);
-          W32(0x60ee8, 0x38);
-          W32(0x60ef4, 0x39);
-          F.dws_DPlay_1eff8(0x61480);                               // 167ed..167f8
+          W32(hasBong, 1);
+          W32(currentWeapon, 0x38);
+          W32(bongState, 0x39);
+          F.dws_DPlay_1eff8(sndBongDeath);                               // 167ed..167f8
           break;
         case 3:                                                           // 167fd
-          W32(0x60a68, (R32(0x60a68) + 0xa410) | 0);
+          W32(score, (R32(score) + 0xa410) | 0);
           break;
         default:                                                          // 16809
           break;

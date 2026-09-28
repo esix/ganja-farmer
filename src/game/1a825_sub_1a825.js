@@ -10,42 +10,43 @@
 // (signatures.json returns=false), so nothing is returned.
 import { register } from '../runtime/registry.js';
 import { W32 } from '../runtime/mem.js';
+import { SPRITE, a10Jets, bombs, bongSmoke, choppers, cropDusters, cruiseMissile, dusterSpray, explosions, groundTroops, missile, missileTarget, paratroopers, ufo } from './data.js';
 
 register(0x1a825, 'sub_1a825', function sub_1a825() {
   let i; // [ebp-4]
 
   i = 0; // 0x1a83d (dead store)
   for (i = 0; i < 0x19; i++) {
-    W32(0x35c90 + i * 0x18c, 0);
-    W32(0x35b24 + i * 0x18c, -70); // 0xffffffba
+    W32((paratroopers + SPRITE.state) + i * SPRITE.SIZE, 0);
+    W32((paratroopers + SPRITE.y) + i * SPRITE.SIZE, -70); // 0xffffffba
   }
   for (i = 0; i < 0x19; i++) {
-    W32(0x3833c + i * 0x18c, 0);
-    W32(0x381d0 + i * 0x18c, -70); // 0xffffffba
+    W32((groundTroops + SPRITE.state) + i * SPRITE.SIZE, 0);
+    W32((groundTroops + SPRITE.y) + i * SPRITE.SIZE, -70); // 0xffffffba
   }
   for (i = 0; i < 4; i++) {
-    W32(0x3d3ac + i * 0x18c, 0);
+    W32((bombs + SPRITE.state) + i * SPRITE.SIZE, 0);
   }
   for (i = 0; i < 1; i++) {
-    W32(0x3d220 + i * 0x18c, 0);
+    W32((a10Jets + SPRITE.state) + i * SPRITE.SIZE, 0);
   }
   for (i = 0; i < 3; i++) {
-    W32(0x3d9dc + i * 0x18c, 0);
+    W32((cropDusters + SPRITE.state) + i * SPRITE.SIZE, 0);
   }
   for (i = 0; i < 0x3f; i++) {
-    W32(0x3e00c + i * 0x18c, 0);
+    W32((dusterSpray + SPRITE.state) + i * SPRITE.SIZE, 0);
   }
   for (i = 0; i < 0xd; i++) {
-    W32(0x34874 + i * 0x18c, 0);
+    W32((explosions + SPRITE.state) + i * SPRITE.SIZE, 0);
   }
   for (i = 0; i < 200; i++) {
-    W32(0x4c688 + i * 0x18c, 0);
+    W32((bongSmoke + SPRITE.state) + i * SPRITE.SIZE, 0);
   }
   for (i = 0; i < 5; i++) {
-    W32(0x340b8 + i * 0x18c, 0);
+    W32((choppers + SPRITE.state) + i * SPRITE.SIZE, 0);
   }
-  W32(0x46070, 0);
-  W32(0x461fc, 0);
-  W32(0x5fd74, 0);
-  W32(0x4c4fc, 0);
+  W32((missile + SPRITE.state), 0);
+  W32((missileTarget + SPRITE.state), 0);
+  W32((cruiseMissile + SPRITE.state), 0);
+  W32((ufo + SPRITE.state), 0);
 });

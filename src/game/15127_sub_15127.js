@@ -22,6 +22,7 @@
 import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
+import { SPRITE, cropDusters, dusterSpray, dusterSprayNext, levelEnding } from './data.js';
 
 register(0x15127, 'sub_15127', function sub_15127() {
   let i; // [ebp-4]
@@ -30,79 +31,79 @@ register(0x15127, 'sub_15127', function sub_15127() {
 
   i = 0;                                                            // 1513f
   for (i = 0; i < 3; i++) {                                         // 15146..15159, 1514f..15152
-    o = Math.imul(i, 0x18c);
-    if (R32(0x3d87c + o) < 0) {                                     // 15166: cmp ..,0; jge 15198
-      W32(0x3d9d4 + o, (R32(0x3d9d4 + o) + 1) | 0);                 // 15176: inc
-      if (R32(0x3d9d4 + o) > 1) {                                   // 1517c: cmp ..,1; jle
-        W32(0x3d9d4 + o, 0);                                        // 1518c
+    o = Math.imul(i, SPRITE.SIZE);
+    if (R32((cropDusters + SPRITE.counter1) + o) < 0) {                                     // 15166: cmp ..,0; jge 15198
+      W32((cropDusters + SPRITE.currFrame) + o, (R32((cropDusters + SPRITE.currFrame) + o) + 1) | 0);                 // 15176: inc
+      if (R32((cropDusters + SPRITE.currFrame) + o) > 1) {                                   // 1517c: cmp ..,1; jle
+        W32((cropDusters + SPRITE.currFrame) + o, 0);                                        // 1518c
       }
     } else {
-      W32(0x3d9d4 + o, (R32(0x3d9d4 + o) + 1) | 0);                 // 1519f: inc
-      if (R32(0x3d9d4 + o) > 3) {                                   // 151a5: cmp ..,3; jle
-        W32(0x3d9d4 + o, 2);                                        // 151b5
+      W32((cropDusters + SPRITE.currFrame) + o, (R32((cropDusters + SPRITE.currFrame) + o) + 1) | 0);                 // 1519f: inc
+      if (R32((cropDusters + SPRITE.currFrame) + o) > 3) {                                   // 151a5: cmp ..,3; jle
+        W32((cropDusters + SPRITE.currFrame) + o, 2);                                        // 151b5
       }
     }
 
-    if (R32(0x3d9dc + o) !== 0) {                                   // 151c6: cmp ..,0; je 15328
-      W32(0x3d86c + o, (R32(0x3d86c + o) + R32(0x3d87c + o)) | 0);  // 151e1..151e7: add
-      if (R32(0x3d86c + o) < -200 && R32(0x3d87c + o) < 0) {        // 151f4: jge ->skip; 15207: jl 15215
+    if (R32((cropDusters + SPRITE.state) + o) !== 0) {                                   // 151c6: cmp ..,0; je 15328
+      W32(cropDusters + o, (R32(cropDusters + o) + R32((cropDusters + SPRITE.counter1) + o)) | 0);  // 151e1..151e7: add
+      if (R32(cropDusters + o) < -200 && R32((cropDusters + SPRITE.counter1) + o) < 0) {        // 151f4: jge ->skip; 15207: jl 15215
         if (imod(F.rand_232c7(), 3) === 1) {                  // 15215..1522b
-          W32(0x3d86c + o, (imod(F.rand_232c7(), 500) + 0x190) | 0);   // 1522d..1524d
-          W32(0x3d87c + o, (-2 - imod(F.rand_232c7(), 2)) | 0);         // 15253..15276
-          W32(0x3d880 + o, 4);                                                // 15283
+          W32(cropDusters + o, (imod(F.rand_232c7(), 500) + 0x190) | 0);   // 1522d..1524d
+          W32((cropDusters + SPRITE.counter1) + o, (-2 - imod(F.rand_232c7(), 2)) | 0);         // 15253..15276
+          W32((cropDusters + SPRITE.counter2) + o, 4);                                                // 15283
         } else {
-          W32(0x3d87c + o, (imod(F.rand_232c7(), 2) + 2) | 0);          // 1528f..152ac
-          W32(0x3d9d4 + o, 2);                                                // 152b9
-          W32(0x3d86c + o, (-100 - imod(F.rand_232c7(), 500)) | 0);     // 152c3..152e6
-          W32(0x3d880 + o, 4);                                                // 152f3
+          W32((cropDusters + SPRITE.counter1) + o, (imod(F.rand_232c7(), 2) + 2) | 0);          // 1528f..152ac
+          W32((cropDusters + SPRITE.currFrame) + o, 2);                                                // 152b9
+          W32(cropDusters + o, (-100 - imod(F.rand_232c7(), 500)) | 0);     // 152c3..152e6
+          W32((cropDusters + SPRITE.counter2) + o, 4);                                                // 152f3
         }
-        if (R32(0x60bbc) !== 0) {                                   // 152fd: cmp [0x60bbc],0; je 15328
-          W32(0x3d9dc + o, 0);                                      // 1530d
-          W32(0x3d86c + o, -200);                                   // 1531e: 0xffffff38
+        if (R32(levelEnding) !== 0) {                                   // 152fd: cmp [0x60bbc],0; je 15328
+          W32((cropDusters + SPRITE.state) + o, 0);                                      // 1530d
+          W32(cropDusters + o, -200);                                   // 1531e: 0xffffff38
         }
       }
     }
 
-    if (R32(0x3d9dc + o) === 0) {                                   // 1532f: cmp ..,0; jne 1542e
-      W32(0x3d870 + o, 0x6b);                                       // 15343
-      if (R32(0x60bbc) === 0) {                                     // 1534d: jne 15367
-        W32(0x3d9dc + o, 1);                                        // 1535d
+    if (R32((cropDusters + SPRITE.state) + o) === 0) {                                   // 1532f: cmp ..,0; jne 1542e
+      W32((cropDusters + SPRITE.y) + o, 0x6b);                                       // 15343
+      if (R32(levelEnding) === 0) {                                     // 1534d: jne 15367
+        W32((cropDusters + SPRITE.state) + o, 1);                                        // 1535d
       }
-      W32(0x3d880 + o, 4);                                          // 1536e
+      W32((cropDusters + SPRITE.counter2) + o, 4);                                          // 1536e
       if (imod(F.rand_232c7(), 3) === 1) {                    // 15378..1538e
-        W32(0x3d86c + o, (imod(F.rand_232c7(), 500) + 0x190) | 0);     // 15390..153b1
-        W32(0x3d87c + o, (-2 - imod(F.rand_232c7(), 2)) | 0);           // 153b7..153da
+        W32(cropDusters + o, (imod(F.rand_232c7(), 500) + 0x190) | 0);     // 15390..153b1
+        W32((cropDusters + SPRITE.counter1) + o, (-2 - imod(F.rand_232c7(), 2)) | 0);           // 153b7..153da
       } else {
-        W32(0x3d86c + o, (-100 - imod(F.rand_232c7(), 500)) | 0);       // 153e2..15403
-        W32(0x3d87c + o, (imod(F.rand_232c7(), 2) + 2) | 0);            // 15409..15428
+        W32(cropDusters + o, (-100 - imod(F.rand_232c7(), 500)) | 0);       // 153e2..15403
+        W32((cropDusters + SPRITE.counter1) + o, (imod(F.rand_232c7(), 2) + 2) | 0);            // 15409..15428
       }
     }
 
-    if (R32(0x3d9dc + o) === 0x2d) {                                // 15435: cmp ..,0x2d; jne 154d8
-      W32(0x3d884 + o, (R32(0x3d884 + o) - 1) | 0);                 // 15449: dec
-      if (R32(0x3d884 + o) > 0) {                                   // 1544f: cmp ..,0; jle 154c7
-        W32(0x60bac, (R32(0x60bac) + 1) | 0);                       // 15458: inc [0x60bac]
-        if (R32(0x60bac) > 0x3e) {                                  // 1545e: cmp ..,0x3e; jle
-          W32(0x60bac, 0);                                          // 15467
+    if (R32((cropDusters + SPRITE.state) + o) === 0x2d) {                                // 15435: cmp ..,0x2d; jne 154d8
+      W32((cropDusters + SPRITE.counter3) + o, (R32((cropDusters + SPRITE.counter3) + o) - 1) | 0);                 // 15449: dec
+      if (R32((cropDusters + SPRITE.counter3) + o) > 0) {                                   // 1544f: cmp ..,0; jle 154c7
+        W32(dusterSprayNext, (R32(dusterSprayNext) + 1) | 0);                       // 15458: inc [0x60bac]
+        if (R32(dusterSprayNext) > 0x3e) {                                  // 1545e: cmp ..,0x3e; jle
+          W32(dusterSprayNext, 0);                                          // 15467
         }
-        k = Math.imul(R32(0x60bac), 0x18c);                          // 15471: imul [0x60bac]
-        W32(0x3e00c + k, 1);                                        // 1547b
-        k = Math.imul(R32(0x60bac), 0x18c);                          // 15495: re-read [0x60bac] (store above may alias it)
-        W32(0x3de9c + k, (R32(0x3d86c + o) + 0x19) | 0);            // 1548c..1549f
-        k = Math.imul(R32(0x60bac), 0x18c);
-        W32(0x3dea0 + k, (R32(0x3d870 + o) + 0xf) | 0);             // 154ac..154bf
+        k = Math.imul(R32(dusterSprayNext), SPRITE.SIZE);                          // 15471: imul [0x60bac]
+        W32((dusterSpray + SPRITE.state) + k, 1);                                        // 1547b
+        k = Math.imul(R32(dusterSprayNext), SPRITE.SIZE);                          // 15495: re-read [0x60bac] (store above may alias it)
+        W32(dusterSpray + k, (R32(cropDusters + o) + 0x19) | 0);            // 1548c..1549f
+        k = Math.imul(R32(dusterSprayNext), SPRITE.SIZE);
+        W32((dusterSpray + SPRITE.y) + k, (R32((cropDusters + SPRITE.y) + o) + 0xf) | 0);             // 154ac..154bf
       } else {
-        W32(0x3d9dc + o, 1);                                        // 154ce
+        W32((cropDusters + SPRITE.state) + o, 1);                                        // 154ce
       }
     }
 
     // 154df..15525: short-circuit chain; rand() is called only when state == 1.
-    if (R32(0x3d9dc + o) === 1 &&
+    if (R32((cropDusters + SPRITE.state) + o) === 1 &&
         imod(F.rand_232c7(), 0x4b) === 4 &&                   // 154e8..154fe
-        R32(0x3d86c + o) > -0x14 &&                                 // 15509: cmp ..,-0x14; jg
-        R32(0x3d86c + o) < 0x140) {                                 // 1551b: cmp ..,0x140; jl
-      W32(0x3d9dc + o, 0x2d);                                       // 15530
-      W32(0x3d884 + o, imod(F.rand_232c7(), 0x3f));           // 1553a..15556
+        R32(cropDusters + o) > -0x14 &&                                 // 15509: cmp ..,-0x14; jg
+        R32(cropDusters + o) < 0x140) {                                 // 1551b: cmp ..,0x140; jl
+      W32((cropDusters + SPRITE.state) + o, 0x2d);                                       // 15530
+      W32((cropDusters + SPRITE.counter3) + o, imod(F.rand_232c7(), 0x3f));           // 1553a..15556
     }
   }
 });

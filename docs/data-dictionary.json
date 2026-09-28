@@ -1,0 +1,2396 @@
+{
+ "structArrays": [
+  {
+   "name": "pcxScratch",
+   "type": "pcx_picture",
+   "base": "0x31ee4",
+   "stride": "0x398",
+   "count": 1,
+   "meaning": "scratch pcx_picture reused by every PCX_Init/PCX_Load/PCX_Delete group (sprite sheets, back.pcx, blank.pcx, howto.pcx, titp.pcx, hiscore.pcx, xlogo/evilx)",
+   "source": "many files",
+   "evidence": "src/game/1aa02/chunk_1aa26.js:42; src/game/102d1_sub_102d1.js:49; src/game/1aa02/chunk_1cc3c.js:16",
+   "confidence": "high"
+  },
+  {
+   "name": "mainMenuPcx",
+   "type": "pcx_picture",
+   "base": "0x329ac",
+   "stride": "0x398",
+   "count": 1,
+   "meaning": "main menu animation frame loaded from mainmnb.pcx (copied to the double buffer in the menu loop)",
+   "source": "mainmnb.pcx",
+   "evidence": "src/game/11659_sub_11659.js:8; src/game/11659_sub_11659.js:100",
+   "confidence": "high"
+  },
+  {
+   "name": "mainMenuPcx2",
+   "type": "pcx_picture",
+   "base": "0x3227c",
+   "stride": "0x398",
+   "count": 1,
+   "meaning": "main menu animation frame loaded from mainmnb2.pcx (copied to the double buffer in the menu loop)",
+   "source": "mainmnb2.pcx",
+   "evidence": "src/game/11659_sub_11659.js:9; src/game/11659_sub_11659.js:90",
+   "confidence": "high"
+  },
+  {
+   "name": "mainMenuPcx3",
+   "type": "pcx_picture",
+   "base": "0x32614",
+   "stride": "0x398",
+   "count": 1,
+   "meaning": "main menu animation frame loaded from mainmnb3.pcx (copied to the double buffer in the menu loop)",
+   "source": "mainmnb3.pcx",
+   "evidence": "src/game/11659_sub_11659.js:9; src/game/11659_sub_11659.js:95",
+   "confidence": "high"
+  },
+  {
+   "name": "mainMenuPcx4",
+   "type": "pcx_picture",
+   "base": "0x32d44",
+   "stride": "0x398",
+   "count": 1,
+   "meaning": "main menu animation frame loaded from mainmnb4.pcx (copied to the double buffer in the menu loop)",
+   "source": "mainmnb4.pcx",
+   "evidence": "src/game/11659_sub_11659.js:9; src/game/11659_sub_11659.js:105",
+   "confidence": "high"
+  },
+  {
+   "name": "mainMenuPcx5",
+   "type": "pcx_picture",
+   "base": "0x330dc",
+   "stride": "0x398",
+   "count": 1,
+   "meaning": "main menu animation frame loaded from mainmnb5.pcx (copied to the double buffer in the menu loop)",
+   "source": "mainmnb5.pcx",
+   "evidence": "src/game/11659_sub_11659.js:10; src/game/11659_sub_11659.js:110",
+   "confidence": "high"
+  },
+  {
+   "name": "statusBar",
+   "type": "sprite",
+   "base": "0x33918",
+   "stride": "0x18c",
+   "count": 1,
+   "meaning": "top status bar (\"Score  Kills  Level  Ganja Farmer\", REGBAR.PNG)",
+   "source": "regbar.pcx",
+   "evidence": "src/game/1aa02/chunk_1aa26.js:58; src/game/1aa02/chunk_1aa26.js:61; src/game/15e15_sub_15e15.js:49",
+   "confidence": "high"
+  },
+  {
+   "name": "gunSight",
+   "type": "sprite",
+   "base": "0x33aa4",
+   "stride": "0x18c",
+   "count": 1,
+   "meaning": "mouse-driven aiming cursor (crosshair); x = mouseX/2 - 16, y = mouseY; also the menu pointer. curr_frame (0x33c0c) = 1 in menus, 0 in game; visible (0x33c2c)",
+   "source": "gunsite.pcx",
+   "evidence": "src/game/1aa02/chunk_1aa26.js:40; src/game/1aa02/chunk_1d0c1.js:41; src/game/11659_sub_11659.js:119; src/game/1aa02/chunk_1cc3c.js:39",
+   "confidence": "high",
+   "fieldUse": {
+    "0x0": "x",
+    "0x4": "y",
+    "0x168": "curr_frame (0x33c0c)",
+    "0x188": "visible (0x33c2c)"
+   }
+  },
+  {
+   "name": "van",
+   "type": "sprite",
+   "base": "0x33c30",
+   "stride": "0x18c",
+   "count": 1,
+   "meaning": "John's 1969 VW microbus (static, drawn under the rasta)",
+   "source": "van.pcx",
+   "evidence": "src/game/1aa02/chunk_1aa26.js:49; src/game/1aa02/chunk_1aa26.js:52",
+   "confidence": "high"
+  },
+  {
+   "name": "rasta",
+   "type": "sprite",
+   "base": "0x33dbc",
+   "stride": "0x18c",
+   "count": 1,
+   "meaning": "John Parker, the player (rasta with the gun on the van roof). curr_frame (0x33f24) = aim direction / weapon pose; state (0x33f2c): 1 aiming, 0x2b/0x2c idle joint-smoking animation, 0x3a/0x3b bong loading",
+   "source": "rasta.pcx (40 frames, 4 rows: one row per weapon)",
+   "evidence": "src/game/1aa02/chunk_1b9a9.js:16; src/game/18f27_sub_18f27.js:134; src/game/11c2a_sub_11c2a.js:120",
+   "confidence": "high",
+   "fieldUse": {
+    "0x0": "x",
+    "0x4": "y",
+    "0x168": "curr_frame = pose (0x33f24)",
+    "0x170": "state (0x33f2c)"
+   }
+  },
+  {
+   "name": "choppers",
+   "type": "sprite",
+   "base": "0x33f48",
+   "stride": "0x18c",
+   "count": 5,
+   "meaning": "enemy helicopters; drop paratroopers. counter_1 (+0x10) = x velocity, counter_2 (+0x14) = hit points (10), counter_3 (+0x18) = crash timer, state 0x1c/0x1b = flying right/left, 0x1a = crashing, 0 = respawn",
+   "source": "chopper2.pcx",
+   "evidence": "src/game/1aa02/chunk_1aa26.js:67; src/game/1aa02/chunk_1aa26.js:86; src/game/12130_sub_12130.js:139; src/game/12e85_sub_12e85.js:126 (spawns paratrooper)",
+   "confidence": "high",
+   "fieldUse": {
+    "0x10": "vx",
+    "0x14": "hitPoints",
+    "0x18": "crashTimer",
+    "0x168": "curr_frame",
+    "0x170": "state"
+   }
+  },
+  {
+   "name": "explosions",
+   "type": "sprite",
+   "base": "0x34704",
+   "stride": "0x18c",
+   "count": 13,
+   "meaning": "explosion animations (ring buffer, next slot = explosionNext 0x60b8c); state 0x26 = pending, 1 = animating, 0 = idle",
+   "source": "exp2.pcx",
+   "evidence": "src/game/1aa02/chunk_1b4b9.js:85; src/game/1352c_sub_1352c.js:23; src/game/135bb_sub_135bb.js:26",
+   "confidence": "high"
+  },
+  {
+   "name": "paratroopers",
+   "type": "sprite",
+   "base": "0x35b20",
+   "stride": "0x18c",
+   "count": 25,
+   "meaning": "paratroopers descending under a parachute (dropped by choppers). state 0x1c/0x1b swinging down, 0x27 landing, 0x28 landed -> becomes a groundTroops entry, 0x21 chute shot (free fall, counter_2 = fall speed), 2/3/4 shot dying; 0 unused",
+   "source": "ptroop.pcx (frames cut into entry 0, frame pointers copied to entries 1..24)",
+   "evidence": "src/game/1aa02/chunk_1aa26.js:90; src/game/136a5_sub_136a5.js:51; src/game/136a5_sub_136a5.js:260",
+   "confidence": "high",
+   "fieldUse": {
+    "0x14": "fallSpeed (state 0x21)",
+    "0x168": "curr_frame",
+    "0x170": "state"
+   }
+  },
+  {
+   "name": "groundTroops",
+   "type": "sprite",
+   "base": "0x381cc",
+   "stride": "0x18c",
+   "count": 25,
+   "meaning": "landed paratroopers walking on the ground toward the herb (state 0x2f walk, 0x30 attacking a plant -> plant state 0x32, 0x2e/0x31 walking away); counter_3 (+0x18) = walk direction (1 right, 0 left)",
+   "source": "pt2.pcx",
+   "evidence": "src/game/1aa02/chunk_1af47.js:17; src/game/136a5_sub_136a5.js:259; src/game/136a5_sub_136a5.js:213",
+   "confidence": "high",
+   "fieldUse": {
+    "0x10": "counter_1 (written, see ORIGINAL BUG note in 136a5)",
+    "0x18": "walkDirection",
+    "0x168": "curr_frame",
+    "0x170": "state"
+   }
+  },
+  {
+   "name": "plants",
+   "type": "sprite",
+   "base": "0x3a878",
+   "stride": "0x18c",
+   "count": 26,
+   "meaning": "the herb (ganja plants) row at y=0x96, x = i*12. state 1 = growing, 0x32 = charge planted by a ground trooper (counter_2 fuse), 0x29 = burning (counter_1 = 180), 0x33 = regrowing (counter_3 timer, set by Jah / the \"420\" cheat), 0 = dead (frame 5) or abducted (frame 7). Game over when all states are 0",
+   "source": "plant.pcx",
+   "evidence": "src/game/1aa02/chunk_1af47.js:76; src/game/14425_sub_14425.js:25; src/game/1aa02/chunk_1d0c1.js:30; src/game/1aa02/chunk_1db3a.js:112",
+   "confidence": "high",
+   "fieldUse": {
+    "0x10": "burnTimer",
+    "0x14": "fuseTimer",
+    "0x18": "regrowTimer",
+    "0x168": "curr_frame",
+    "0x170": "state"
+   }
+  },
+  {
+   "name": "a10Jets",
+   "type": "sprite",
+   "base": "0x3d0b0",
+   "stride": "0x18c",
+   "count": 1,
+   "meaning": "A-10 jet that crosses the sky dropping bombs; threshold_1 (+0x1c) = hit points (4), counter_1 = x velocity, counter_2 = entered-screen flag, counter_3 = bomb drop delay, state 1 flying / 0x2a bombing run",
+   "source": "a-10.pcx (array loop with count 1)",
+   "evidence": "src/game/1aa02/chunk_1b4b9.js:28; src/game/14690_sub_14690.js:8; src/game/12130_sub_12130.js:201",
+   "confidence": "high",
+   "fieldUse": {
+    "0x10": "vx",
+    "0x14": "onScreenFlag",
+    "0x18": "bombDelay",
+    "0x1c": "hitPoints",
+    "0x168": "curr_frame",
+    "0x170": "state"
+   }
+  },
+  {
+   "name": "bombs",
+   "type": "sprite",
+   "base": "0x3d23c",
+   "stride": "0x18c",
+   "count": 4,
+   "meaning": "bombs dropped by the A-10 (next slot = bombNext 0x60b9c); state 1 falling (counter_1 = vx, counter_2 = vy), explode at y >= 0xa0 burning plants; shooting one scores 501",
+   "source": "bomb.pcx",
+   "evidence": "src/game/1aa02/chunk_1b4b9.js:43; src/game/14c6a_sub_14c6a.js:9; src/game/12130_sub_12130.js:173",
+   "confidence": "high",
+   "fieldUse": {
+    "0x10": "vx",
+    "0x14": "vy",
+    "0x168": "curr_frame",
+    "0x170": "state"
+   }
+  },
+  {
+   "name": "cropDusters",
+   "type": "sprite",
+   "base": "0x3d86c",
+   "stride": "0x18c",
+   "count": 3,
+   "meaning": "crop-duster planes that spray herbicide on the plants; counter_1 = x velocity, counter_2 = hit points (4), counter_3 = spray duration, state 1 flying / 0x2d spraying",
+   "source": "duster.pcx",
+   "evidence": "src/game/1aa02/chunk_1af47.js:62; src/game/15127_sub_15127.js:16; src/game/12130_sub_12130.js:245",
+   "confidence": "high",
+   "fieldUse": {
+    "0x10": "vx",
+    "0x14": "hitPoints",
+    "0x18": "sprayTimer",
+    "0x168": "curr_frame",
+    "0x170": "state"
+   }
+  },
+  {
+   "name": "messageBox",
+   "type": "sprite",
+   "base": "0x3dd10",
+   "stride": "0x18c",
+   "count": 1,
+   "meaning": "dialog box; curr_frame (0x3de78): 0 \"Level Done Mon\", 1 \"Praise Jah!!! more herb\", 2 \"GAME OVER\", 3 \"Jah say: Fight the power mon!\" (RGDIABOX.PNG)",
+   "source": "rgdiabox.pcx",
+   "evidence": "src/game/1aa02/chunk_1b9a9.js:34; src/game/16b96_sub_16b96.js:11 (game over); src/game/16837_sub_16837.js:28",
+   "confidence": "high",
+   "fieldUse": {
+    "0x4": "y (0x3dd14)",
+    "0x168": "curr_frame = message (0x3de78)"
+   }
+  },
+  {
+   "name": "dusterSpray",
+   "type": "sprite",
+   "base": "0x3de9c",
+   "stride": "0x18c",
+   "count": 63,
+   "meaning": "herbicide spray droplets emitted by the crop dusters (ring, next slot = sprayNext 0x60bac); a droplet reaching the plant row kills a plant",
+   "source": "cloud.pcx frame (0,0) (yellow puff)",
+   "evidence": "src/game/1aa02/chunk_1af47.js:89; src/game/15127_sub_15127.js:17; src/game/1556a_sub_1556a.js:13",
+   "confidence": "high"
+  },
+  {
+   "name": "scoreDigits",
+   "type": "sprite",
+   "base": "0x44010",
+   "stride": "0x18c",
+   "count": 7,
+   "meaning": "7 digit sprites showing score (0x60a68) in the status bar / high-score table; curr_frame = digit",
+   "source": "nums.pcx",
+   "evidence": "src/game/1aa02/chunk_1b4b9.js:5; src/game/15788_sub_15788.js:7",
+   "confidence": "high"
+  },
+  {
+   "name": "killsDigits",
+   "type": "sprite",
+   "base": "0x44ae4",
+   "stride": "0x18c",
+   "count": 5,
+   "meaning": "digit sprites showing kills (0x60a6c); 5 initialised, only 4 used",
+   "source": "nums.pcx",
+   "evidence": "src/game/1aa02/chunk_1b4b9.js:69; src/game/15788_sub_15788.js:9",
+   "confidence": "high"
+  },
+  {
+   "name": "levelDigits",
+   "type": "sprite",
+   "base": "0x452a0",
+   "stride": "0x18c",
+   "count": 3,
+   "meaning": "3 digit sprites showing the level (0x30bec)",
+   "source": "nums.pcx",
+   "evidence": "src/game/1aa02/chunk_1b4b9.js:77; src/game/15788_sub_15788.js:10",
+   "confidence": "high"
+  },
+  {
+   "name": "volumeSliders",
+   "type": "sprite",
+   "base": "0x45744",
+   "stride": "0x18c",
+   "count": 3,
+   "meaning": "sound-menu slider knobs: [0] F/X volume (0x45744 -> dws_XDig), [1] music volume (0x458d0 -> dws_XMusic), [2] master volume (0x45a5c -> dws_XMaster). Separate Sprite_Init calls but contiguous",
+   "source": "sndbuts.pcx",
+   "evidence": "src/game/1aa02/chunk_1af47.js:51; src/game/10cac_sub_10cac.js:118; src/game/10cac_sub_10cac.js:133",
+   "confidence": "high"
+  },
+  {
+   "name": "soundMenu",
+   "type": "sprite",
+   "base": "0x45be8",
+   "stride": "0x18c",
+   "count": 1,
+   "meaning": "sound options panel; curr_frame (0x45d50) shows the music-samples checkbox (= musicSamplesEnabled == 0)",
+   "source": "sndmenu.pcx",
+   "evidence": "src/game/1aa02/chunk_1af47.js:42; src/game/10cac_sub_10cac.js:59",
+   "confidence": "high"
+  },
+  {
+   "name": "jah",
+   "type": "sprite",
+   "base": "0x45d74",
+   "stride": "0x18c",
+   "count": 1,
+   "meaning": "Jah on a cloud: bounces on the high-score screen; in game flies across every 5 levels dropping a powerup (state 0x1c/0x1b, 0x20 idle, threshold_3 0x45d98 = drop pass state 0x41/0x42/0x43); at level end descends and replants the herb (counter_2 0x45d88 = replant time = level*10 frames). threshold_1/2 = dx/dy on the high-score screen",
+   "source": "jah.pcx",
+   "evidence": "src/game/1aa02/chunk_1b9a9.js:55; src/game/1128e_sub_1128e.js:43; src/game/16446_sub_16446.js:88; src/game/16837_sub_16837.js:81",
+   "confidence": "high",
+   "fieldUse": {
+    "0x14": "replantTimer (0x45d88)",
+    "0x1c": "dx on hiscore screen (0x45d90)",
+    "0x20": "dy (0x45d94)",
+    "0x24": "powerupPassState (0x45d98)",
+    "0x168": "curr_frame",
+    "0x170": "state"
+   }
+  },
+  {
+   "name": "missile",
+   "type": "sprite",
+   "base": "0x45f00",
+   "stride": "0x18c",
+   "count": 1,
+   "meaning": "homing rocket fired by the missile-launcher weapon (0x35); 5 direction frames; threshold_3 (0x45f24) = lifetime; state (0x46070) 1 = flying",
+   "source": "missle.pcx",
+   "evidence": "src/game/1aa02/chunk_1b9a9.js:92; src/game/173a2_sub_173a2.js:8; src/game/18f27_sub_18f27.js:266",
+   "confidence": "high",
+   "fieldUse": {
+    "0x24": "lifetime",
+    "0x170": "state (0x46070)"
+   }
+  },
+  {
+   "name": "missileTarget",
+   "type": "sprite",
+   "base": "0x4608c",
+   "stride": "0x18c",
+   "count": 1,
+   "meaning": "\"DIE MON\" lock-on marker placed at the gunsight when a missile is fired; follows the locked enemy (counter_2/counter_3 = dx/dy copied from the target)",
+   "source": "diemon.pcx",
+   "evidence": "src/game/1aa02/chunk_1b9a9.js:102; src/game/1864d_sub_1864d.js:25",
+   "confidence": "high",
+   "fieldUse": {
+    "0x14": "dx",
+    "0x18": "dy",
+    "0x170": "state (0x461fc)"
+   }
+  },
+  {
+   "name": "missileSmoke",
+   "type": "sprite",
+   "base": "0x46218",
+   "stride": "0x18c",
+   "count": 63,
+   "meaning": "smoke-trail puffs left by the missile (ring, next slot = missileSmokeNext 0x60eec); counter_1 = lifetime",
+   "source": "cloud.pcx frame (1,0) (white puff)",
+   "evidence": "src/game/1aa02/chunk_1af47.js:98; src/game/173a2_sub_173a2.js:16; src/game/185bf_sub_185bf.js:4",
+   "confidence": "high"
+  },
+  {
+   "name": "ufo",
+   "type": "sprite",
+   "base": "0x4c38c",
+   "stride": "0x18c",
+   "count": 1,
+   "meaning": "UFO that abducts a plant with a beam (target plant index 0x60bd0); threshold_2 (0x4c3ac) = hit points, counter_2 = vx, counter_3 = beam timer; 1000 points",
+   "source": "ufo.pcx",
+   "evidence": "src/game/1aa02/chunk_1b9a9.js:64; src/game/18a58_sub_18a58.js:137; src/game/12130_sub_12130.js:299",
+   "confidence": "high",
+   "fieldUse": {
+    "0x10": "counter_1",
+    "0x14": "vx",
+    "0x18": "beamTimer",
+    "0x20": "hitPoints",
+    "0x168": "curr_frame",
+    "0x170": "state"
+   }
+  },
+  {
+   "name": "bongSmoke",
+   "type": "sprite",
+   "base": "0x4c518",
+   "stride": "0x18c",
+   "count": 200,
+   "meaning": "smoke clouds shot by the bong weapon (0x38): counter_1/counter_2 = velocity, state 1 = flying; hit enemies",
+   "source": "cloud.pcx frame (2,0) (grey puff)",
+   "evidence": "src/game/1aa02/chunk_1b4b9.js:20; src/game/1977e_sub_1977e.js:14; src/game/18f27_sub_18f27.js:276",
+   "confidence": "high",
+   "fieldUse": {
+    "0x10": "vx",
+    "0x14": "vy",
+    "0x170": "state"
+   }
+  },
+  {
+   "name": "powerupDrop",
+   "type": "sprite",
+   "base": "0x5fa78",
+   "stride": "0x18c",
+   "count": 1,
+   "meaning": "weapon / bonus crate on a parachute dropped by Jah; curr_frame (0x5fbe0) = kind: 0 auto gun, 1 missile launcher, 2 bong, 3 +42000 points; state (0x5fbe8) 1 = falling",
+   "source": "drpshoot.pcx",
+   "evidence": "src/game/1aa02/chunk_1b9a9.js:82; src/game/16446_sub_16446.js:115; src/game/16446_sub_16446.js:137",
+   "confidence": "high",
+   "fieldUse": {
+    "0x168": "kind (0x5fbe0)",
+    "0x170": "falling (0x5fbe8)"
+   }
+  },
+  {
+   "name": "cruiseMissile",
+   "type": "sprite",
+   "base": "0x5fc04",
+   "stride": "0x18c",
+   "count": 1,
+   "meaning": "cruise missile carrying a nuke; state 0x46/0x45 flying right/left, 0x44 detonated (threshold_1 0x5fc20 = flash countdown, burns every plant); appears from level 25 (sub_159e7)",
+   "source": "crusmis.pcx",
+   "evidence": "src/game/1aa02/chunk_1b9a9.js:73; src/game/16fbb_sub_16fbb.js:47; src/game/159e7_sub_159e7.js:51",
+   "confidence": "high",
+   "fieldUse": {
+    "0x14": "fallSpeed",
+    "0x1c": "flashTimer",
+    "0x168": "curr_frame",
+    "0x170": "state (0x5fd74)"
+   }
+  },
+  {
+   "name": "nukeCloud",
+   "type": "sprite",
+   "base": "0x5fd90",
+   "stride": "0x18c",
+   "count": 1,
+   "meaning": "mushroom cloud shown when the cruise missile detonates; state (0x5ff00) 1 = visible",
+   "source": "nuke.pcx",
+   "evidence": "src/game/1aa02/chunk_1b9a9.js:43; src/game/16fbb_sub_16fbb.js:50; src/game/1aa02/chunk_1d630.js:147",
+   "confidence": "high"
+  },
+  {
+   "name": "musicTrack0",
+   "type": "dws_MPLAY",
+   "base": "0x610a0",
+   "stride": "0x10",
+   "count": 1,
+   "meaning": "music track f0.dwm (played in sequence by sub_10050)",
+   "source": "f0.dwm",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:19; src/game/10050_sub_10050.js:33",
+   "confidence": "high"
+  },
+  {
+   "name": "musicTrack1",
+   "type": "dws_MPLAY",
+   "base": "0x61070",
+   "stride": "0x10",
+   "count": 1,
+   "meaning": "music track f1.dwm (played in sequence by sub_10050)",
+   "source": "f1.dwm",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:22; src/game/10050_sub_10050.js:36",
+   "confidence": "high"
+  },
+  {
+   "name": "musicTrack2",
+   "type": "dws_MPLAY",
+   "base": "0x61080",
+   "stride": "0x10",
+   "count": 1,
+   "meaning": "music track f2.dwm (played in sequence by sub_10050)",
+   "source": "f2.dwm",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:25; src/game/10050_sub_10050.js:42",
+   "confidence": "high"
+  },
+  {
+   "name": "musicTrack3",
+   "type": "dws_MPLAY",
+   "base": "0x61090",
+   "stride": "0x10",
+   "count": 1,
+   "meaning": "music track f3.dwm (played in sequence by sub_10050)",
+   "source": "f3.dwm",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:28; src/game/10050_sub_10050.js:48",
+   "confidence": "high"
+  },
+  {
+   "name": "musicTrack4",
+   "type": "dws_MPLAY",
+   "base": "0x610b0",
+   "stride": "0x10",
+   "count": 1,
+   "meaning": "music track f4.dwm (played in sequence by sub_10050)",
+   "source": "f4.dwm",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:31; src/game/10050_sub_10050.js:54",
+   "confidence": "high"
+  },
+  {
+   "name": "musicTrack5",
+   "type": "dws_MPLAY",
+   "base": "0x610c0",
+   "stride": "0x10",
+   "count": 1,
+   "meaning": "music track f5.dwm (played in sequence by sub_10050)",
+   "source": "f5.dwm",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:34; src/game/10050_sub_10050.js:60",
+   "confidence": "high"
+  },
+  {
+   "name": "musicTrack6",
+   "type": "dws_MPLAY",
+   "base": "0x610d0",
+   "stride": "0x10",
+   "count": 1,
+   "meaning": "music track f6.dwm (played in sequence by sub_10050)",
+   "source": "f6.dwm",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:37; src/game/10050_sub_10050.js:66",
+   "confidence": "high"
+  },
+  {
+   "name": "musicTrack7",
+   "type": "dws_MPLAY",
+   "base": "0x610e0",
+   "stride": "0x10",
+   "count": 1,
+   "meaning": "music track f7.dwm (played in sequence by sub_10050)",
+   "source": "f7.dwm",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:40; src/game/10050_sub_10050.js:72",
+   "confidence": "high"
+  },
+  {
+   "name": "musicTrack8",
+   "type": "dws_MPLAY",
+   "base": "0x610f0",
+   "stride": "0x10",
+   "count": 1,
+   "meaning": "music track f8.dwm (played in sequence by sub_10050)",
+   "source": "f8.dwm",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:43; src/game/10050_sub_10050.js:78",
+   "confidence": "high"
+  },
+  {
+   "name": "musicTrack9",
+   "type": "dws_MPLAY",
+   "base": "0x61100",
+   "stride": "0x10",
+   "count": 1,
+   "meaning": "music track f9.dwm (played in sequence by sub_10050)",
+   "source": "f9.dwm",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:46; src/game/10050_sub_10050.js:84",
+   "confidence": "high"
+  },
+  {
+   "name": "musicTrack10",
+   "type": "dws_MPLAY",
+   "base": "0x61110",
+   "stride": "0x10",
+   "count": 1,
+   "meaning": "music track f10.dwm (played in sequence by sub_10050)",
+   "source": "f10.dwm",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:49; src/game/10050_sub_10050.js:90",
+   "confidence": "high"
+  },
+  {
+   "name": "sndGameOver",
+   "type": "dws_DPLAY",
+   "base": "0x61360",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "game over (sub_16b96)",
+   "source": "gameover.dwd",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:52",
+   "confidence": "high"
+  },
+  {
+   "name": "sndClick",
+   "type": "dws_DPLAY",
+   "base": "0x61160",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "menu click / name typing",
+   "source": "click.dwd",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:59",
+   "confidence": "high"
+  },
+  {
+   "name": "sndLogo",
+   "type": "dws_DPLAY",
+   "base": "0x613c0",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "played once at start-up before the xlogo/evilx logo screens (name from Undlogo.dwd)",
+   "source": "Undlogo.dwd",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:65",
+   "confidence": "medium"
+  },
+  {
+   "name": "sndMissile",
+   "type": "dws_DPLAY",
+   "base": "0x613a0",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "missile launch (weapon 0x35)",
+   "source": "missle.dwd",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:71",
+   "confidence": "high"
+  },
+  {
+   "name": "sndChopper",
+   "type": "dws_DPLAY",
+   "base": "0x61240",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "helicopter rotor loop",
+   "source": "chopper.dwd",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:77",
+   "confidence": "high"
+  },
+  {
+   "name": "sndProtect",
+   "type": "dws_DPLAY",
+   "base": "0x61380",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "played when Jah flies off after replanting (with message \"Jah say: Fight the power mon!\")",
+   "source": "protect.dwd",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:83",
+   "confidence": "high"
+  },
+  {
+   "name": "sndNuke",
+   "type": "dws_DPLAY",
+   "base": "0x614a0",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "nuke detonation",
+   "source": "nuke.dwd",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:89",
+   "confidence": "high"
+  },
+  {
+   "name": "sndBongBubble",
+   "type": "dws_DPLAY",
+   "base": "0x613e0",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "bong loading (rasta state 0x3a->0x3b)",
+   "source": "bongbub.dwd",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:95",
+   "confidence": "high"
+  },
+  {
+   "name": "sndBongBlow",
+   "type": "dws_DPLAY",
+   "base": "0x61400",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "bong weapon fire start",
+   "source": "bongblow.dwd",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:101",
+   "confidence": "high"
+  },
+  {
+   "name": "sndBong",
+   "type": "dws_DPLAY",
+   "base": "0x61420",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "bong weapon loop",
+   "source": "bong.dwd",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:107",
+   "confidence": "high"
+  },
+  {
+   "name": "sndRastaRocket",
+   "type": "dws_DPLAY",
+   "base": "0x61460",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "missile-launcher pickup voice",
+   "source": "rastarok.dwd",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:113",
+   "confidence": "high"
+  },
+  {
+   "name": "sndBongDeath",
+   "type": "dws_DPLAY",
+   "base": "0x61480",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "bong pickup voice",
+   "source": "bongdth.dwd",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:119",
+   "confidence": "high"
+  },
+  {
+   "name": "sndAutomatic",
+   "type": "dws_DPLAY",
+   "base": "0x61440",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "automatic-gun pickup voice",
+   "source": "automan.dwd",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:125",
+   "confidence": "high"
+  },
+  {
+   "name": "sndParaDie1",
+   "type": "dws_DPLAY",
+   "base": "0x612a0",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "paratrooper scream (chute shot), random 1 of 3",
+   "source": "pdie1.dwd",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:131",
+   "confidence": "high"
+  },
+  {
+   "name": "sndParaDie2",
+   "type": "dws_DPLAY",
+   "base": "0x612c0",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "paratrooper scream, random 2 of 3",
+   "source": "pdie2.dwd",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:137",
+   "confidence": "high"
+  },
+  {
+   "name": "sndParaDie3",
+   "type": "dws_DPLAY",
+   "base": "0x612e0",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "paratrooper scream, random 3 of 3",
+   "source": "pdie3.dwd",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:143",
+   "confidence": "high"
+  },
+  {
+   "name": "sndPdie4",
+   "type": "dws_DPLAY",
+   "base": "0x61300",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "played when the idle joint-smoking animation completes (+1000)",
+   "source": "pdie4.dwd",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:149",
+   "confidence": "medium"
+  },
+  {
+   "name": "sndParaDie5",
+   "type": "dws_DPLAY",
+   "base": "0x61320",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "paratrooper body hit",
+   "source": "pdie5.dwd",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:155",
+   "confidence": "high"
+  },
+  {
+   "name": "sndParaSquish",
+   "type": "dws_DPLAY",
+   "base": "0x61340",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "falling paratrooper hits the ground",
+   "source": "psquish.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:20",
+   "confidence": "high"
+  },
+  {
+   "name": "sndExplosion",
+   "type": "dws_DPLAY",
+   "base": "0x61280",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "explosions",
+   "source": "explo.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:28",
+   "confidence": "high"
+  },
+  {
+   "name": "sndDoubleClick",
+   "type": "dws_DPLAY",
+   "base": "0x61180",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "menu button / sound-menu toggle",
+   "source": "dclick.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:36",
+   "confidence": "high"
+  },
+  {
+   "name": "sndGunShot",
+   "type": "dws_DPLAY",
+   "base": "0x611a0",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "gun weapons fire",
+   "source": "gewtshot.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:44",
+   "confidence": "high"
+  },
+  {
+   "name": "sndRicochet",
+   "type": "dws_DPLAY",
+   "base": "0x61260",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "bullet hits an armoured enemy (chopper, A-10, duster, UFO)",
+   "source": "riq.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:52",
+   "confidence": "high"
+  },
+  {
+   "name": "sndIShot",
+   "type": "dws_DPLAY",
+   "base": "0x61220",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "random firing voice 4 of 4",
+   "source": "ishot.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:60",
+   "confidence": "high"
+  },
+  {
+   "name": "sndYaMon",
+   "type": "dws_DPLAY",
+   "base": "0x611c0",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "\"ya mon\" voice: title, sound menu, random firing voice 1 of 4, high score entered",
+   "source": "yamon.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:68",
+   "confidence": "high"
+  },
+  {
+   "name": "sndSmokin",
+   "type": "dws_DPLAY",
+   "base": "0x611e0",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "random firing voice 2 of 4",
+   "source": "smokin.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:76",
+   "confidence": "high"
+  },
+  {
+   "name": "sndGetSome",
+   "type": "dws_DPLAY",
+   "base": "0x61200",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "random firing voice 3 of 4; also when Jah arrives to replant (message \"Praise Jah!!! more herb\")",
+   "source": "getsome.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:84",
+   "confidence": "high"
+  },
+  {
+   "name": "sndMusicSample1",
+   "type": "dws_DPLAY",
+   "base": "0x614c0",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "digital sample f1.dwd played together with a music track by sub_10050 when musicSamplesEnabled",
+   "source": "f1.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:92",
+   "confidence": "high"
+  },
+  {
+   "name": "sndMusicSample2",
+   "type": "dws_DPLAY",
+   "base": "0x614e0",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "digital sample f2.dwd played together with a music track by sub_10050 when musicSamplesEnabled",
+   "source": "f2.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:100",
+   "confidence": "high"
+  },
+  {
+   "name": "sndMusicSample3",
+   "type": "dws_DPLAY",
+   "base": "0x61500",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "digital sample f3.dwd played together with a music track by sub_10050 when musicSamplesEnabled",
+   "source": "f3.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:108",
+   "confidence": "high"
+  },
+  {
+   "name": "sndMusicSample4",
+   "type": "dws_DPLAY",
+   "base": "0x61520",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "digital sample f4.dwd played together with a music track by sub_10050 when musicSamplesEnabled",
+   "source": "f4.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:116",
+   "confidence": "high"
+  },
+  {
+   "name": "sndMusicSample5",
+   "type": "dws_DPLAY",
+   "base": "0x61540",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "digital sample f5.dwd played together with a music track by sub_10050 when musicSamplesEnabled",
+   "source": "f5.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:124",
+   "confidence": "high"
+  },
+  {
+   "name": "sndMusicSample6",
+   "type": "dws_DPLAY",
+   "base": "0x61560",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "digital sample f6.dwd played together with a music track by sub_10050 when musicSamplesEnabled",
+   "source": "f6.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:132",
+   "confidence": "high"
+  },
+  {
+   "name": "sndMusicSample65",
+   "type": "dws_DPLAY",
+   "base": "0x61580",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "digital sample f65.dwd played together with a music track by sub_10050 when musicSamplesEnabled",
+   "source": "f65.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:140",
+   "confidence": "high"
+  },
+  {
+   "name": "sndMusicSample7",
+   "type": "dws_DPLAY",
+   "base": "0x615a0",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "digital sample f7.dwd played together with a music track by sub_10050 when musicSamplesEnabled",
+   "source": "f7.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:148",
+   "confidence": "high"
+  },
+  {
+   "name": "sndMusicSample8",
+   "type": "dws_DPLAY",
+   "base": "0x615c0",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "digital sample f8.dwd played together with a music track by sub_10050 when musicSamplesEnabled",
+   "source": "f8.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:156",
+   "confidence": "high"
+  },
+  {
+   "name": "sndMusicSample9",
+   "type": "dws_DPLAY",
+   "base": "0x615e0",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "digital sample f9.dwd played together with a music track by sub_10050 when musicSamplesEnabled",
+   "source": "f9.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:164",
+   "confidence": "high"
+  },
+  {
+   "name": "sndMusicSample10",
+   "type": "dws_DPLAY",
+   "base": "0x61600",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "digital sample f10.dwd played together with a music track by sub_10050 when musicSamplesEnabled",
+   "source": "f10.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:172",
+   "confidence": "high"
+  },
+  {
+   "name": "sndUfo",
+   "type": "dws_DPLAY",
+   "base": "0x61620",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "UFO beam",
+   "source": "ufo.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:180",
+   "confidence": "high"
+  },
+  {
+   "name": "sndUfo2",
+   "type": "dws_DPLAY",
+   "base": "0x61640",
+   "stride": "0x20",
+   "count": 1,
+   "meaning": "UFO hum loop",
+   "source": "ufo2.dwd",
+   "evidence": "src/game/1aa02/chunk_1c567.js:188",
+   "confidence": "high"
+  },
+  {
+   "name": "sndDetectOverrides",
+   "type": "dws_DETECTOVERRIDES",
+   "base": "0x60ff0",
+   "stride": "0x10",
+   "count": 1,
+   "meaning": "STK hardware autodetect overrides (first 3 words 0xffff = autodetect)",
+   "source": "-",
+   "evidence": "src/game/1aa02/chunk_1aa26.js:31",
+   "confidence": "high"
+  },
+  {
+   "name": "sndDetectResults",
+   "type": "dws_DETECTRESULTS",
+   "base": "0x61000",
+   "stride": "0x40",
+   "count": 1,
+   "meaning": "STK detect results (opaque)",
+   "source": "-",
+   "evidence": "src/game/1aa02/chunk_1aa26.js:31",
+   "confidence": "high"
+  },
+  {
+   "name": "sndIdeal",
+   "type": "dws_IDEAL",
+   "base": "0x61040",
+   "stride": "0x10",
+   "count": 1,
+   "meaning": "STK ideal settings for dws_Init; +4 (0x61044) is reused as the rate output of dws_DGetRateFromDWD and passed to dws_DSetRate",
+   "source": "-",
+   "evidence": "src/game/1aa02/chunk_1aa26.js:37; src/game/1aa02/chunk_1bed0.js:58",
+   "confidence": "high"
+  },
+  {
+   "name": "savedPalette",
+   "type": "RGB_palette",
+   "base": "0x60bd4",
+   "stride": "0x308",
+   "count": 1,
+   "meaning": "palette saved before the nuke flash and restored afterwards",
+   "source": "-",
+   "evidence": "src/game/16fbb_sub_16fbb.js:49; src/game/16fbb_sub_16fbb.js:98",
+   "confidence": "high"
+  },
+  {
+   "name": "keyboardState",
+   "type": "keyboard_state",
+   "base": "0x64f04",
+   "stride": "0x4",
+   "count": 128,
+   "meaning": "library keyboard_state[scan] (1 while key held). Game uses: Esc 0x64f08 quit prompt, F2 0x64ff4 sound menu, P 0x64f68 pause, Space 0x64fe8, Enter 0x64f74, Y 0x64f58 / N 0x64fc8 quit prompt, and cheat keys (see notes)",
+   "source": "LIBRARY.md",
+   "evidence": "re/LIBRARY.md:25; src/game/1aa02/chunk_1d0c1.js:47",
+   "confidence": "high"
+  }
+ ],
+ "tables": [
+  {
+   "name": "bullets",
+   "base": "0x5ff20",
+   "stride": "0x30",
+   "count": 60,
+   "fields": [
+    {
+     "off": "0x0",
+     "name": "x",
+     "type": "int32"
+    },
+    {
+     "off": "0x4",
+     "name": "y",
+     "type": "int32"
+    },
+    {
+     "off": "0x8",
+     "name": "savedPixel",
+     "type": "int32 (colour under the tracer pixel, Read_Pixel_DB; restored with Write_Pixel_DB)"
+    },
+    {
+     "off": "0xc",
+     "name": "active",
+     "type": "int32 (0 free, 1 flying)"
+    },
+    {
+     "off": "0x10",
+     "name": "xStepTenths",
+     "type": "int32 (fractional part of vx in tenths)"
+    },
+    {
+     "off": "0x14",
+     "name": "yStepTenths",
+     "type": "int32"
+    },
+    {
+     "off": "0x18",
+     "name": "xStepCounter",
+     "type": "int32 (reloaded from +0x10 every 10 frames, adds 1px while >= 0)"
+    },
+    {
+     "off": "0x1c",
+     "name": "yStepCounter",
+     "type": "int32"
+    },
+    {
+     "off": "0x20",
+     "name": "vy",
+     "type": "double (sin*5)"
+    },
+    {
+     "off": "0x28",
+     "name": "vx",
+     "type": "double (cos*5)"
+    }
+   ],
+   "meaning": "machine-gun tracer bullets (single pixels) fired by the gun weapons (0x36/0x37) from the rasta toward the gunsight; each shot costs 1 point; hits damage choppers, bombs, A-10, dusters, cruise missile, UFO and paratroopers. sub_11c2a spawns (loops 59), sub_12130 moves/collides (60)",
+   "evidence": "src/game/11c2a_sub_11c2a.js:7; src/game/11c2a_sub_11c2a.js:145; src/game/11c2a_sub_11c2a.js:151; src/game/18f27_sub_18f27.js:259; src/game/12130_sub_12130.js:80",
+   "confidence": "high"
+  },
+  {
+   "name": "highScores",
+   "base": "0x60a70",
+   "stride": "0x18",
+   "count": 9,
+   "fields": [
+    {
+     "off": "0x0",
+     "name": "score",
+     "type": "int32"
+    },
+    {
+     "off": "0x4",
+     "name": "level",
+     "type": "int32"
+    },
+    {
+     "off": "0x8",
+     "name": "name",
+     "type": "char[16] (15 chars typed, space padded)"
+    }
+   ],
+   "meaning": "high-score table, read from / written to scores.dat",
+   "evidence": "src/game/10676_sub_10676.js:2; src/game/1098f_sub_1098f.js:49; src/game/1098f_sub_1098f.js:50; src/game/107ce_sub_107ce.js:61",
+   "confidence": "high"
+  },
+  {
+   "name": "explosionDelays",
+   "base": "0x60b58",
+   "stride": "0x4",
+   "count": 13,
+   "fields": [
+    {
+     "off": "0x0",
+     "name": "delay",
+     "type": "int32 (per explosions[] slot; incremented every frame, the explosion starts animating when > 0x32; set to 0x33 = start now, 0x30..0x36 staggered, 0xc = delayed)"
+    }
+   ],
+   "meaning": "start delay counters of the 13 explosions slots",
+   "evidence": "src/game/135bb_sub_135bb.js:19; src/game/12e85_sub_12e85.js:175",
+   "confidence": "high"
+  },
+  {
+   "name": "paletteFade",
+   "base": "0x61670",
+   "stride": "0x38",
+   "count": 255,
+   "fields": [
+    {
+     "off": "0x0",
+     "name": "rgb",
+     "type": "RGB_color (3 bytes, target colour)"
+    },
+    {
+     "off": "0x8",
+     "name": "stepR",
+     "type": "double"
+    },
+    {
+     "off": "0x10",
+     "name": "stepG",
+     "type": "double"
+    },
+    {
+     "off": "0x18",
+     "name": "stepB",
+     "type": "double"
+    },
+    {
+     "off": "0x20",
+     "name": "accR",
+     "type": "double"
+    },
+    {
+     "off": "0x28",
+     "name": "accG",
+     "type": "double"
+    },
+    {
+     "off": "0x30",
+     "name": "accB",
+     "type": "double"
+    }
+   ],
+   "meaning": "per-DAC-entry fade-in state used by the logo screen fade (sub_102d1); entries 1..254 used, step = component / 20.0",
+   "evidence": "src/game/102d1_sub_102d1.js:17; src/game/102d1_sub_102d1.js:71",
+   "confidence": "high"
+  },
+  {
+   "name": "cycleColors",
+   "base": "0x30c00",
+   "stride": "0x8",
+   "count": 4,
+   "fields": [
+    {
+     "off": "0x0",
+     "name": "rgb",
+     "type": "RGB_color (3 bytes, 6-bit)"
+    }
+   ],
+   "meaning": "the 4 colours rotated through DAC entries 0xf9..0xfc by sub_14fba (red 3f/0/0, yellow 3f/3d/0, green 1/3c/0, grey 9/9/9: rasta colours)",
+   "evidence": "src/game/14fba_sub_14fba.js:2; flat.bin 0x30c00 = 3f0000.. 3f3d00.. 013c00.. 090909",
+   "confidence": "high",
+   "extent": "0x1b"
+  },
+  {
+   "name": "highScoreRowColors",
+   "base": "0x30c24",
+   "stride": "0x4",
+   "count": 10,
+   "fields": [
+    {
+     "off": "0x0",
+     "name": "color",
+     "type": "int32 palette index (0xf9..0xfc, the cycling colours)"
+    }
+   ],
+   "meaning": "text colour of each high-score row (copied to a local array and passed to Print_String_DB)",
+   "evidence": "src/game/107ce_sub_107ce.js:29; src/game/107ce_sub_107ce.js:61; flat.bin 0x30c24 = f9 fa fb fc f9 fa fb fc f9 fa",
+   "confidence": "high"
+  },
+  {
+   "name": "chopperSoundStatus",
+   "base": "0x60f04",
+   "stride": "0x2",
+   "count": 5,
+   "fields": [
+    {
+     "off": "0x0",
+     "name": "status",
+     "type": "uint16 (dws_DSoundStatus result for sndChopper, per chopper)"
+    }
+   ],
+   "meaning": "dws_DSoundStatus result words, one per chopper; chopper.dwd is replayed when 0 and the chopper is near the screen",
+   "evidence": "src/game/12e85_sub_12e85.js:36",
+   "confidence": "high"
+  }
+ ],
+ "globals": [
+  {
+   "addr": "0x60a68",
+   "name": "score",
+   "type": "int32",
+   "meaning": "player score (7 digits in the status bar, saved in highScores); +kill points, -1 per bullet",
+   "evidence": "src/game/15788_sub_15788.js:7; src/game/1098f_sub_1098f.js:49; src/game/11c2a_sub_11c2a.js:151",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60a6c",
+   "name": "kills",
+   "type": "int32",
+   "meaning": "enemies killed (status bar \"Kills\", 4 digits)",
+   "evidence": "src/game/15788_sub_15788.js:9; src/game/12130_sub_12130.js:174; REGBAR.PNG",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x30bec",
+   "name": "level",
+   "type": "int32",
+   "meaning": "current level (status bar \"Level\", saved with the high score, drives enemy selection in sub_159e7/sub_16446); starts at 1, +1 when a level ends",
+   "evidence": "src/game/1aa02/chunk_1cc3c.js:42; src/game/15c7d_sub_15c7d.js:68; src/game/1098f_sub_1098f.js:50",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x30bf0",
+   "name": "levelTimer",
+   "type": "int32",
+   "meaning": "frames left in the current level (0x438 at start); below 0 -> levelEnding = 1; below -0x21c all enemies are cleared",
+   "evidence": "src/game/1aa02/chunk_1cc3c.js:48; src/game/15c7d_sub_15c7d.js:9",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60bbc",
+   "name": "levelEnding",
+   "type": "int32 (bool)",
+   "meaning": "set when levelTimer runs out: no new enemies spawn; when all enemies are gone the level-complete sequence runs and level++",
+   "evidence": "src/game/15c7d_sub_15c7d.js:29; src/game/12e85_sub_12e85.js:194",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x30be4",
+   "name": "gameState",
+   "type": "int32",
+   "meaning": "program/menu state: 0x22 = start game (menu \"play\" button), 0x1c = back to menu (game over or quit confirmed), 0x25 = exit program; initial 1",
+   "evidence": "src/game/11659_sub_11659.js:135; src/game/11659_sub_11659.js:142; src/game/1aa02_sub_1aa02.js:35; src/game/10c0b_sub_10c0b.js:29",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60bc0",
+   "name": "allHerbDead",
+   "type": "int32 (bool)",
+   "meaning": "1 when every plant state is 0 (computed each frame) -> game over",
+   "evidence": "src/game/1aa02/chunk_1d0c1.js:28; src/game/1aa02/chunk_1db3a.js:112",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x30bf4",
+   "name": "levelEndLoopState",
+   "type": "int32",
+   "meaning": "loop control of the level-complete sequence (sub_15e15): 0x22 running, set to 0x1c by sub_16837 when Jah has flown away",
+   "evidence": "src/game/15e15_sub_15e15.js:96; src/game/16837_sub_16837.js:31",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60bc4",
+   "name": "inLevelEndSequence",
+   "type": "int32 (bool)",
+   "meaning": "1 while the level-complete sequence runs (suppresses the rasta idle reset in sub_18f27)",
+   "evidence": "src/game/15e15_sub_15e15.js:120; src/game/18f27_sub_18f27.js:25",
+   "confidence": "medium"
+  },
+  {
+   "addr": "0x60bcc",
+   "name": "jahReplantX",
+   "type": "int32",
+   "meaning": "x of the first plant of the longest run of dead plants (-1 if none): where Jah flies to replant at level end",
+   "evidence": "src/game/15e15_sub_15e15.js:75; src/game/16837_sub_16837.js:46",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60a64",
+   "name": "frameStartTime",
+   "type": "uint32",
+   "meaning": "Timer_Query() at the start of a frame; frame pacing waits until the BIOS tick advances",
+   "evidence": "src/game/1aa02/chunk_1d0c1.js:27; src/game/11659_sub_11659.js:185",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60b48",
+   "name": "mouseX",
+   "type": "int32",
+   "meaning": "mouse x from Squeeze_Mouse(3) (0..639; gunsight x = mouseX/2 - 16)",
+   "evidence": "src/game/1aa02/chunk_1d0c1.js:40; re/LIBRARY.md:88",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60b4c",
+   "name": "mouseY",
+   "type": "int32",
+   "meaning": "mouse y from Squeeze_Mouse(3)",
+   "evidence": "src/game/1aa02/chunk_1d0c1.js:45",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60b50",
+   "name": "mouseButtons",
+   "type": "int32",
+   "meaning": "mouse buttons from Squeeze_Mouse(3): 1 = left (fire / menu click), 2 = right (switch weapon)",
+   "evidence": "src/game/1aa02/chunk_1d0c1.js:91; src/game/18f27_sub_18f27.js:220",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60ba4",
+   "name": "prevGunSightX",
+   "type": "int32",
+   "meaning": "gunsight x of the previous frame (idle detection)",
+   "evidence": "src/game/1aa02/chunk_1d0c1.js:39; src/game/18f27_sub_18f27.js:23",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60ba8",
+   "name": "prevGunSightY",
+   "type": "int32",
+   "meaning": "gunsight y of the previous frame",
+   "evidence": "src/game/1aa02/chunk_1d0c1.js:38",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60b54",
+   "name": "frameCounter10",
+   "type": "int32",
+   "meaning": "frame counter cycling 0..10; bullets reload their sub-pixel step counters when >= 10",
+   "evidence": "src/game/1aa02/chunk_1d0c1.js:34; src/game/12130_sub_12130.js:105",
+   "confidence": "medium"
+  },
+  {
+   "addr": "0x60ee8",
+   "name": "currentWeapon",
+   "type": "int32",
+   "meaning": "selected weapon: 0x36 default gun (semi-auto), 0x37 automatic gun, 0x35 missile launcher, 0x38 bong; right click cycles among owned ones",
+   "evidence": "src/game/1aa02/chunk_1cc3c.js:49; src/game/1aa02/chunk_1d0c1.js:92; src/game/18f27_sub_18f27.js:131",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60bb0",
+   "name": "hasAutoGun",
+   "type": "int32 (bool)",
+   "meaning": "automatic gun (weapon 0x37) collected (powerup kind 0 / cheat G+N)",
+   "evidence": "src/game/16446_sub_16446.js:119; src/game/1aa02/chunk_1d0c1.js:101",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60bb4",
+   "name": "hasMissileLauncher",
+   "type": "int32 (bool)",
+   "meaning": "missile launcher (weapon 0x35) collected",
+   "evidence": "src/game/16446_sub_16446.js:126; src/game/1aa02/chunk_1d0c1.js:110",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60bb8",
+   "name": "hasBong",
+   "type": "int32 (bool)",
+   "meaning": "bong weapon (0x38) collected",
+   "evidence": "src/game/16446_sub_16446.js:131; src/game/1aa02/chunk_1d0c1.js:114",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f00",
+   "name": "rightButtonHeld",
+   "type": "int32 (bool)",
+   "meaning": "latch so one right click switches weapon only once",
+   "evidence": "src/game/1aa02/chunk_1d0c1.js:162; src/game/1aa02/chunk_1d0c1.js:165",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60edc",
+   "name": "fireReady",
+   "type": "int32 (bool)",
+   "meaning": "gate for firing with the left button: default gun requires release between shots, the other weapons alternate every frame",
+   "evidence": "src/game/1aa02/chunk_1d630.js:72; src/game/18f27_sub_18f27.js:261",
+   "confidence": "medium"
+  },
+  {
+   "addr": "0x60ef4",
+   "name": "bongState",
+   "type": "int32",
+   "meaning": "bong weapon phase: 0x39 = needs (re)loading (rasta plays bong animation), 0x3c = loaded and firing",
+   "evidence": "src/game/18f27_sub_18f27.js:113; src/game/18f27_sub_18f27.js:290",
+   "confidence": "medium"
+  },
+  {
+   "addr": "0x60ef8",
+   "name": "bongShotsLeft",
+   "type": "int32",
+   "meaning": "frames of bong smoke left before reloading (0x3c)",
+   "evidence": "src/game/18f27_sub_18f27.js:114; src/game/18f27_sub_18f27.js:274",
+   "confidence": "medium"
+  },
+  {
+   "addr": "0x60efc",
+   "name": "bongBlowPending",
+   "type": "int32 (bool)",
+   "meaning": "play sndBongBlow on the next bong shot",
+   "evidence": "src/game/18f27_sub_18f27.js:115; src/game/18f27_sub_18f27.js:278",
+   "confidence": "medium"
+  },
+  {
+   "addr": "0x30be0",
+   "name": "bongHitTimer",
+   "type": "int32",
+   "meaning": "countdown (0x5a) of the bong-hit pose (rasta state 0x3b)",
+   "evidence": "src/game/18f27_sub_18f27.js:99; src/game/18f27_sub_18f27.js:109",
+   "confidence": "medium"
+  },
+  {
+   "addr": "0x30be8",
+   "name": "idleTimer",
+   "type": "int32",
+   "meaning": "frames without mouse movement/click before the rasta starts smoking (100)",
+   "evidence": "src/game/18f27_sub_18f27.js:34; src/game/18f27_sub_18f27.js:39",
+   "confidence": "medium"
+  },
+  {
+   "addr": "0x30bf8",
+   "name": "smokeGlowPhase",
+   "type": "int32",
+   "meaning": "phase of the idle smoking animation: 2 = joint glow brightening (DAC 0xb6), 0 = frames advancing, 1 = frames returning",
+   "evidence": "src/game/18f27_sub_18f27.js:46; src/game/15e15_sub_15e15.js:65",
+   "confidence": "low"
+  },
+  {
+   "addr": "0x60ee4",
+   "name": "rastaAnimDelay",
+   "type": "int32",
+   "meaning": "frame-delay counter of the rasta smoking / bong animations (advance every 5 frames)",
+   "evidence": "src/game/18f27_sub_18f27.js:53",
+   "confidence": "medium"
+  },
+  {
+   "addr": "0x61668",
+   "name": "jointGlowColor",
+   "type": "RGB_color (3 bytes)",
+   "meaning": "colour written to DAC entry 0xb6 during the idle smoking animation (red channel ramps up)",
+   "evidence": "src/game/18f27_sub_18f27.js:47",
+   "confidence": "medium"
+  },
+  {
+   "addr": "0x60ee0",
+   "name": "randomVoice",
+   "type": "int32",
+   "meaning": "rand()%4 (or %3) choosing a random voice / scream sample",
+   "evidence": "src/game/18f27_sub_18f27.js:230; src/game/19ade_sub_19ade.js:201",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60b8c",
+   "name": "explosionNext",
+   "type": "int32",
+   "meaning": "ring index (0..12) of the next explosions[] slot",
+   "evidence": "src/game/1352c_sub_1352c.js:14",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60b90",
+   "name": "explosionX",
+   "type": "int32",
+   "meaning": "x of the explosion to spawn (read by sub_1352c)",
+   "evidence": "src/game/1352c_sub_1352c.js:19",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60b94",
+   "name": "explosionY",
+   "type": "int32",
+   "meaning": "y of the explosion to spawn (+6 when stored)",
+   "evidence": "src/game/1352c_sub_1352c.js:21",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60b98",
+   "name": "paratrooperNext",
+   "type": "int32",
+   "meaning": "index (0..24) of the last paratroopers[] slot used by a chopper drop",
+   "evidence": "src/game/12e85_sub_12e85.js:120",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60b9c",
+   "name": "bombNext",
+   "type": "int32",
+   "meaning": "index (0..3) of the next bombs[] slot during an A-10 bombing run",
+   "evidence": "src/game/14690_sub_14690.js:17",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60bac",
+   "name": "dusterSprayNext",
+   "type": "int32",
+   "meaning": "ring index (0..62) of the next dusterSpray[] slot",
+   "evidence": "src/game/15127_sub_15127.js:16",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60eec",
+   "name": "missileSmokeNext",
+   "type": "int32",
+   "meaning": "ring index (0..62) of the next missileSmoke[] slot",
+   "evidence": "src/game/173a2_sub_173a2.js:113",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60bd0",
+   "name": "ufoTargetPlant",
+   "type": "int32",
+   "meaning": "index of the plant the UFO is abducting",
+   "evidence": "src/game/18a58_sub_18a58.js:82; src/game/18a58_sub_18a58.js:136",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60ba0",
+   "name": "colorCyclePhase",
+   "type": "int32",
+   "meaning": "phase 0..3 of the DAC 0xf9..0xfc colour rotation (sub_14fba)",
+   "evidence": "src/game/14fba_sub_14fba.js:15",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x30c1c",
+   "name": "musicTrack",
+   "type": "int32",
+   "meaning": "index 0..11 of the current music track (advanced when the song ends)",
+   "evidence": "src/game/10050_sub_10050.js:25",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x30c20",
+   "name": "musicSamplesEnabled",
+   "type": "int32 (bool)",
+   "meaning": "play the f*.dwd digital samples along with the music tracks; toggled by the sound-menu checkbox, forced off when music volume < 0x96",
+   "evidence": "src/game/10050_sub_10050.js:37; src/game/10cac_sub_10cac.js:81",
+   "confidence": "medium"
+  },
+  {
+   "addr": "0x60f0e",
+   "name": "sfxVolume",
+   "type": "uint16",
+   "meaning": "digital-effects volume 0..255 from the sound-menu slider (dws_XDig)",
+   "evidence": "src/game/10cac_sub_10cac.js:133",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f10",
+   "name": "musicVolume",
+   "type": "uint16",
+   "meaning": "music volume (dws_XMusic)",
+   "evidence": "src/game/10cac_sub_10cac.js:134",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f12",
+   "name": "masterVolume",
+   "type": "uint16",
+   "meaning": "master volume (dws_XMaster)",
+   "evidence": "src/game/10cac_sub_10cac.js:135",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f14",
+   "name": "soundStatus",
+   "type": "uint16",
+   "meaning": "result word of dws_DSoundStatus (bit 0 = still playing), shared scratch",
+   "evidence": "src/game/10cac_sub_10cac.js:136",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f16",
+   "name": "songStatus",
+   "type": "uint16",
+   "meaning": "result word of dws_MSongStatus (bit 0 = song playing)",
+   "evidence": "src/game/10050_sub_10050.js:23",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f18",
+   "name": "ufoSoundStatus",
+   "type": "uint16",
+   "meaning": "dws_DSoundStatus result for sndUfo2 (restart the loop when 0)",
+   "evidence": "src/game/18a58_sub_18a58.js:142",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x61660",
+   "name": "aimAngle",
+   "type": "double",
+   "meaning": "atan(dy/dx) from rasta to gunsight, used for bullet / bong-smoke velocity",
+   "evidence": "src/game/11c2a_sub_11c2a.js:72; src/game/1977e_sub_1977e.js:19",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x31ee0",
+   "name": "resetHighScores",
+   "type": "int32 (bool)",
+   "meaning": "if nonzero sub_10676 re-initialises the high-score table (reading names from cin) before saving; 0 in the binary and never written (debug leftover)",
+   "evidence": "src/game/10676_sub_10676.js:15; flat.bin 0x31ee0 = 0",
+   "confidence": "medium"
+  },
+  {
+   "addr": "0x64e7c",
+   "name": "doubleBuffer",
+   "type": "pointer",
+   "meaning": "library double_buffer (320x200 back buffer)",
+   "evidence": "re/LIBRARY.md:21",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x64eb8",
+   "name": "cin",
+   "type": "istream object",
+   "meaning": "Watcom C++ cin, passed to istream >> char* in sub_10676",
+   "evidence": "src/game/10676_sub_10676.js:17",
+   "confidence": "medium"
+  },
+  {
+   "addr": "0x30004",
+   "name": "fadeSteps",
+   "type": "double",
+   "meaning": "20.0: number of fade steps (divisor) in the logo fade sub_102d1",
+   "evidence": "src/game/102d1_sub_102d1.js:8",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f90",
+   "name": "musicTrack0Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f0.dwm (copied into musicTrack0.track)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:19",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f98",
+   "name": "musicTrack1Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f1.dwm (copied into musicTrack1.track)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:22",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f94",
+   "name": "musicTrack2Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f2.dwm (copied into musicTrack2.track)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:25",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f9c",
+   "name": "musicTrack3Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f3.dwm (copied into musicTrack3.track)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:28",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fcc",
+   "name": "musicTrack4Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f4.dwm (copied into musicTrack4.track)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:31",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fd0",
+   "name": "musicTrack5Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f5.dwm (copied into musicTrack5.track)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:34",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fd4",
+   "name": "musicTrack6Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f6.dwm (copied into musicTrack6.track)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:37",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fd8",
+   "name": "musicTrack7Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f7.dwm (copied into musicTrack7.track)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:40",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fdc",
+   "name": "musicTrack8Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f8.dwm (copied into musicTrack8.track)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:43",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fe0",
+   "name": "musicTrack9Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f9.dwm (copied into musicTrack9.track)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:46",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fe4",
+   "name": "musicTrack10Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f10.dwm (copied into musicTrack10.track)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:49",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f60",
+   "name": "sndGameOverData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of gameover.dwd (copied into sndGameOver.snd)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:52",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f20",
+   "name": "sndClickData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of click.dwd (copied into sndClick.snd)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:59",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f70",
+   "name": "sndLogoData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of Undlogo.dwd (copied into sndLogo.snd)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:65",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f6c",
+   "name": "sndMissileData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of missle.dwd (copied into sndMissile.snd)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:71",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f3c",
+   "name": "sndChopperData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of chopper.dwd (copied into sndChopper.snd)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:77",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f68",
+   "name": "sndProtectData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of protect.dwd (copied into sndProtect.snd)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:83",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f8c",
+   "name": "sndNukeData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of nuke.dwd (copied into sndNuke.snd)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:89",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f74",
+   "name": "sndBongBubbleData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of bongbub.dwd (copied into sndBongBubble.snd)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:95",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f78",
+   "name": "sndBongBlowData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of bongblow.dwd (copied into sndBongBlow.snd)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:101",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f7c",
+   "name": "sndBongData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of bong.dwd (copied into sndBong.snd)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:107",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f80",
+   "name": "sndRastaRocketData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of rastarok.dwd (copied into sndRastaRocket.snd)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:113",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f84",
+   "name": "sndBongDeathData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of bongdth.dwd (copied into sndBongDeath.snd)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:119",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f88",
+   "name": "sndAutomaticData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of automan.dwd (copied into sndAutomatic.snd)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:125",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f48",
+   "name": "sndParaDie1Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of pdie1.dwd (copied into sndParaDie1.snd)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:131",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f4c",
+   "name": "sndParaDie2Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of pdie2.dwd (copied into sndParaDie2.snd)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:137",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f50",
+   "name": "sndParaDie3Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of pdie3.dwd (copied into sndParaDie3.snd)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:143",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f54",
+   "name": "sndPdie4Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of pdie4.dwd (copied into sndPdie4.snd)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:149",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f58",
+   "name": "sndParaDie5Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of pdie5.dwd (copied into sndParaDie5.snd)",
+   "evidence": "src/game/1aa02/chunk_1bed0.js:155",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f5c",
+   "name": "sndParaSquishData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of psquish.dwd (copied into sndParaSquish.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:20",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f44",
+   "name": "sndExplosionData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of explo.dwd (copied into sndExplosion.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:28",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f24",
+   "name": "sndDoubleClickData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of dclick.dwd (copied into sndDoubleClick.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:36",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f28",
+   "name": "sndGunShotData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of gewtshot.dwd (copied into sndGunShot.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:44",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f40",
+   "name": "sndRicochetData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of riq.dwd (copied into sndRicochet.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:52",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f38",
+   "name": "sndIShotData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of ishot.dwd (copied into sndIShot.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:60",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f2c",
+   "name": "sndYaMonData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of yamon.dwd (copied into sndYaMon.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:68",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f30",
+   "name": "sndSmokinData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of smokin.dwd (copied into sndSmokin.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:76",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60f34",
+   "name": "sndGetSomeData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of getsome.dwd (copied into sndGetSome.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:84",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fa0",
+   "name": "sndMusicSample1Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f1.dwd (copied into sndMusicSample1.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:92",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fa4",
+   "name": "sndMusicSample2Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f2.dwd (copied into sndMusicSample2.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:100",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fa8",
+   "name": "sndMusicSample3Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f3.dwd (copied into sndMusicSample3.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:108",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fac",
+   "name": "sndMusicSample4Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f4.dwd (copied into sndMusicSample4.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:116",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fb0",
+   "name": "sndMusicSample5Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f5.dwd (copied into sndMusicSample5.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:124",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fb4",
+   "name": "sndMusicSample6Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f6.dwd (copied into sndMusicSample6.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:132",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fb8",
+   "name": "sndMusicSample65Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f65.dwd (copied into sndMusicSample65.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:140",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fbc",
+   "name": "sndMusicSample7Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f7.dwd (copied into sndMusicSample7.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:148",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fc0",
+   "name": "sndMusicSample8Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f8.dwd (copied into sndMusicSample8.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:156",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fc4",
+   "name": "sndMusicSample9Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f9.dwd (copied into sndMusicSample9.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:164",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fc8",
+   "name": "sndMusicSample10Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of f10.dwd (copied into sndMusicSample10.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:172",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fe8",
+   "name": "sndUfoData",
+   "type": "pointer",
+   "meaning": "Load_File buffer of ufo.dwd (copied into sndUfo.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:180",
+   "confidence": "high"
+  },
+  {
+   "addr": "0x60fec",
+   "name": "sndUfo2Data",
+   "type": "pointer",
+   "meaning": "Load_File buffer of ufo2.dwd (copied into sndUfo2.snd)",
+   "evidence": "src/game/1aa02/chunk_1c567.js:188",
+   "confidence": "high"
+  }
+ ],
+ "sounds": [
+  {
+   "struct": "0x610a0",
+   "file": "f0.dwm",
+   "name": "musicTrack0"
+  },
+  {
+   "struct": "0x61070",
+   "file": "f1.dwm",
+   "name": "musicTrack1"
+  },
+  {
+   "struct": "0x61080",
+   "file": "f2.dwm",
+   "name": "musicTrack2"
+  },
+  {
+   "struct": "0x61090",
+   "file": "f3.dwm",
+   "name": "musicTrack3"
+  },
+  {
+   "struct": "0x610b0",
+   "file": "f4.dwm",
+   "name": "musicTrack4"
+  },
+  {
+   "struct": "0x610c0",
+   "file": "f5.dwm",
+   "name": "musicTrack5"
+  },
+  {
+   "struct": "0x610d0",
+   "file": "f6.dwm",
+   "name": "musicTrack6"
+  },
+  {
+   "struct": "0x610e0",
+   "file": "f7.dwm",
+   "name": "musicTrack7"
+  },
+  {
+   "struct": "0x610f0",
+   "file": "f8.dwm",
+   "name": "musicTrack8"
+  },
+  {
+   "struct": "0x61100",
+   "file": "f9.dwm",
+   "name": "musicTrack9"
+  },
+  {
+   "struct": "0x61110",
+   "file": "f10.dwm",
+   "name": "musicTrack10"
+  },
+  {
+   "struct": "0x61360",
+   "file": "gameover.dwd",
+   "name": "sndGameOver"
+  },
+  {
+   "struct": "0x61160",
+   "file": "click.dwd",
+   "name": "sndClick"
+  },
+  {
+   "struct": "0x613c0",
+   "file": "Undlogo.dwd",
+   "name": "sndLogo"
+  },
+  {
+   "struct": "0x613a0",
+   "file": "missle.dwd",
+   "name": "sndMissile"
+  },
+  {
+   "struct": "0x61240",
+   "file": "chopper.dwd",
+   "name": "sndChopper"
+  },
+  {
+   "struct": "0x61380",
+   "file": "protect.dwd",
+   "name": "sndProtect"
+  },
+  {
+   "struct": "0x614a0",
+   "file": "nuke.dwd",
+   "name": "sndNuke"
+  },
+  {
+   "struct": "0x613e0",
+   "file": "bongbub.dwd",
+   "name": "sndBongBubble"
+  },
+  {
+   "struct": "0x61400",
+   "file": "bongblow.dwd",
+   "name": "sndBongBlow"
+  },
+  {
+   "struct": "0x61420",
+   "file": "bong.dwd",
+   "name": "sndBong"
+  },
+  {
+   "struct": "0x61460",
+   "file": "rastarok.dwd",
+   "name": "sndRastaRocket"
+  },
+  {
+   "struct": "0x61480",
+   "file": "bongdth.dwd",
+   "name": "sndBongDeath"
+  },
+  {
+   "struct": "0x61440",
+   "file": "automan.dwd",
+   "name": "sndAutomatic"
+  },
+  {
+   "struct": "0x612a0",
+   "file": "pdie1.dwd",
+   "name": "sndParaDie1"
+  },
+  {
+   "struct": "0x612c0",
+   "file": "pdie2.dwd",
+   "name": "sndParaDie2"
+  },
+  {
+   "struct": "0x612e0",
+   "file": "pdie3.dwd",
+   "name": "sndParaDie3"
+  },
+  {
+   "struct": "0x61300",
+   "file": "pdie4.dwd",
+   "name": "sndPdie4"
+  },
+  {
+   "struct": "0x61320",
+   "file": "pdie5.dwd",
+   "name": "sndParaDie5"
+  },
+  {
+   "struct": "0x61340",
+   "file": "psquish.dwd",
+   "name": "sndParaSquish"
+  },
+  {
+   "struct": "0x61280",
+   "file": "explo.dwd",
+   "name": "sndExplosion"
+  },
+  {
+   "struct": "0x61180",
+   "file": "dclick.dwd",
+   "name": "sndDoubleClick"
+  },
+  {
+   "struct": "0x611a0",
+   "file": "gewtshot.dwd",
+   "name": "sndGunShot"
+  },
+  {
+   "struct": "0x61260",
+   "file": "riq.dwd",
+   "name": "sndRicochet"
+  },
+  {
+   "struct": "0x61220",
+   "file": "ishot.dwd",
+   "name": "sndIShot"
+  },
+  {
+   "struct": "0x611c0",
+   "file": "yamon.dwd",
+   "name": "sndYaMon"
+  },
+  {
+   "struct": "0x611e0",
+   "file": "smokin.dwd",
+   "name": "sndSmokin"
+  },
+  {
+   "struct": "0x61200",
+   "file": "getsome.dwd",
+   "name": "sndGetSome"
+  },
+  {
+   "struct": "0x614c0",
+   "file": "f1.dwd",
+   "name": "sndMusicSample1"
+  },
+  {
+   "struct": "0x614e0",
+   "file": "f2.dwd",
+   "name": "sndMusicSample2"
+  },
+  {
+   "struct": "0x61500",
+   "file": "f3.dwd",
+   "name": "sndMusicSample3"
+  },
+  {
+   "struct": "0x61520",
+   "file": "f4.dwd",
+   "name": "sndMusicSample4"
+  },
+  {
+   "struct": "0x61540",
+   "file": "f5.dwd",
+   "name": "sndMusicSample5"
+  },
+  {
+   "struct": "0x61560",
+   "file": "f6.dwd",
+   "name": "sndMusicSample6"
+  },
+  {
+   "struct": "0x61580",
+   "file": "f65.dwd",
+   "name": "sndMusicSample65"
+  },
+  {
+   "struct": "0x615a0",
+   "file": "f7.dwd",
+   "name": "sndMusicSample7"
+  },
+  {
+   "struct": "0x615c0",
+   "file": "f8.dwd",
+   "name": "sndMusicSample8"
+  },
+  {
+   "struct": "0x615e0",
+   "file": "f9.dwd",
+   "name": "sndMusicSample9"
+  },
+  {
+   "struct": "0x61600",
+   "file": "f10.dwd",
+   "name": "sndMusicSample10"
+  },
+  {
+   "struct": "0x61620",
+   "file": "ufo.dwd",
+   "name": "sndUfo"
+  },
+  {
+   "struct": "0x61640",
+   "file": "ufo2.dwd",
+   "name": "sndUfo2"
+  }
+ ],
+ "notes": "Coverage: every inventory address is either a named global, inside a named struct/table (field of an element), a string literal, or listed here.\nLayout: the sprite structs are one contiguous block 0x33918..0x5ff1c (statusBar, gunSight, van, rasta, choppers[5], (gap 0x345c4..0x34704 unused by game code), explosions[13], paratroopers[25], groundTroops[25], plants[26], a10Jets[1], bombs[4], cropDusters[3], messageBox, dusterSpray[63], scoreDigits[7], killsDigits[5], levelDigits[3], volumeSliders[3], soundMenu, jah, missile, missileTarget, missileSmoke[63], ufo, bongSmoke[200], powerupDrop, cruiseMissile, nukeCloud), followed by bullets[60] 0x5ff20, frameStartTime, score, kills, highScores[9], mouseX/Y/buttons, ... The pcx_pictures pcxScratch + 5 menu frames are consecutive at stride 0x398 (0x31ee4..0x33474) but are used as separate objects.\nStruct-array element vs true array: choppers/paratroopers/groundTroops/plants/bombs/cropDusters/explosions/dusterSpray/missileSmoke/bongSmoke/score-kills-levelDigits are true arrays indexed in loops; volumeSliders are 3 separately initialised objects (fx, music, master) that happen to be contiguous; a10Jets is an array of 1 (all loops have bound 1). keyboardState, explosionDelays, chopperSoundStatus, highScoreRowColors are true arrays.\nORIGINAL BUG (known): sub_12e85 reads paratroopers[25].state = groundTroops[0].state (0x3833c) when paratrooperNext==24.\nWeapons (currentWeapon 0x60ee8): 0x36 default gun (semi-auto, bullets, sndGunShot), 0x37 automatic gun (hasAutoGun, pickup voice sndAutomatic), 0x35 missile launcher (hasMissileLauncher, fires missile+missileTarget, pickup voice sndRastaRocket), 0x38 bong (hasBong, fires bongSmoke, pickup voice sndBongDeath). Weapon names are inferred from DRPSHOOT/RASTA/MISSLE sprite sheets and sound names (medium confidence for the exact wording; roles are high).\nKill points: chopper crash 101, bomb 501, A-10 300, duster 100, UFO 1000, paratrooper chute 15, body 11, landed trooper squashed 100, Jah replant bonus 8000, powerup +42000, idle smoke +1000, cheat F3+F4 +5000; each bullet -1.\nKeyboard (keyboardState index = scancode): Esc quit prompt (Y/N), P pause, F2 sound menu, Space/Enter continue. Cheats: F3+F4 +5000; L+V+U level+1; L+V+D level-1; N+U+K clear all enemies (sub_1a825); 4+2+0 (\"420\") regrow all plants + sndYaMon; G+N auto gun, G+M missile launcher, G+B bong; J + arrow keys move Jah; debug level select keys 3,5..9 -> level 3,5..9 and A -> level 14 (chunk_1d630.js:40-66).\nPlant/enemy state values are the game's own codes (e.g. 0x1b/0x1c direction, 0x26 explosion pending); described in each entry, no names claimed for the numeric codes.\nNot named (left out): 0x3000c/0x30019/0x30026 fopen mode strings \"w\"/\"r\"/\"r\"; double constants 0x3014c=5.0, 0x30154=-5.0, 0x3015c=0.1, 0x30164=-5.0, 0x3016c=0.1 (bullet speed), 0x30184=7.0, 0x3018c=-7.0, 0x30194=-7.0 (bong smoke speed); 0x61669 = jointGlowColor.g (byte +1 of the RGB_color at 0x61668); 0x64e78..0x64e7a = 3 bytes (BSS, just before doubleBuffer) copied as the initialiser of a local RGB_color in sub_18a58 and immediately overwritten -> probably a compiler-emitted zero initialiser, no meaning.\nLoad_File buffers 0x60f20..0x60fec: the raw pointers returned by Load_File, each copied once into the .snd/.track field of its STK struct; named <struct>Data.\nMost uncertain: smokeGlowPhase, fireReady, bongState/bongShotsLeft/bongBlowPending, bongHitTimer, frameCounter10, inLevelEndSequence, musicSamplesEnabled, sndPdie4 (pdie4.dwd used only for the idle-smoke bonus), sndLogo, resetHighScores."
+}
