@@ -51,8 +51,8 @@ function __get_rand_state() { return F.__get_rand_state_232c1(); }
 // 0x2377c abs: test eax,eax; jge; neg eax. abs(INT_MIN) = INT_MIN (neg overflows).
 register(0x2377c, 'abs_2377c', function abs_2377c(x) { x |= 0; return x < 0 ? (-x | 0) : x; });
 // 0x23d7a: byte-identical to abs (85 c0 7d 02 f7 d8 c3). Not in re/names.tsv; LIBRARY.md: "labs (?)".
-// Called by Time_Delay 0x20436 as sub_23d7a (key kept as in names.tsv convention).
-register(0x23d7a, 'sub_23d7a', function sub_23d7a(x) { x |= 0; return x < 0 ? (-x | 0) : x; });
+// Called by Time_Delay 0x20436 as labs (key kept as in names.tsv convention).
+register(0x23d7a, 'labs_23d7a', function labs(x) { x |= 0; return x < 0 ? (-x | 0) : x; });
 
 // 0x23744 div(num, den) — Watcom returns the div_t struct through a hidden pointer in ESI
 // (caller: `lea esi,[ebp-0x18]; call 0x23744`, 0x157b8). The port passes it as a third argument:

@@ -14,21 +14,21 @@ export const PALETTE = { SIZE: 0x308, startReg: 0x0, endReg: 0x4, colors: 0x8 };
 // Scan codes (set 1) of the keys the game reads, for keyboardState slots.
 export const KEY = { esc: 0x1, d1: 0x2, d2: 0x3, d3: 0x4, d4: 0x5, d5: 0x6, d6: 0x7, d7: 0x8, d8: 0x9, d9: 0xa, d0: 0xb, q: 0x10, w: 0x11, e: 0x12, r: 0x13, t: 0x14, y: 0x15, u: 0x16, i: 0x17, o: 0x18, p: 0x19, enter: 0x1c, a: 0x1e, s: 0x1f, d: 0x20, f: 0x21, g: 0x22, h: 0x23, j: 0x24, k: 0x25, l: 0x26, z: 0x2c, x: 0x2d, c: 0x2e, v: 0x2f, b: 0x30, n: 0x31, m: 0x32, space: 0x39, f1: 0x3b, f2: 0x3c, f3: 0x3d, f4: 0x3e, f5: 0x3f, f6: 0x40, f7: 0x41, f8: 0x42, f9: 0x43, f10: 0x44, up: 0x48, left: 0x4b, right: 0x4d, down: 0x50 };
 
-export const fadeSteps = 0x30004;            // double: 20.0: number of fade steps (divisor) in the logo fade sub_102d1
+export const fadeSteps = 0x30004;            // double: 20.0: number of fade steps (divisor) in the logo fade showPictureFadeIn
 export const bongHitTimer = 0x30be0;         // int32: countdown (0x5a) of the bong-hit pose (rasta state 0x3b)
 export const gameState = 0x30be4;            // int32: program/menu state: 0x22 = start game (menu "play" button), 0x1c = back to menu (game over or quit confirmed), 0x25 = exit program; initial 1
 export const idleTimer = 0x30be8;            // int32: frames without mouse movement/click before the rasta starts smoking (100)
-export const level = 0x30bec;                // int32: current level (status bar "Level", saved with the high score, drives enemy selection in sub_159e7/sub_16446); starts at 1, +1 when a level ends
+export const level = 0x30bec;                // int32: current level (status bar "Level", saved with the high score, drives enemy selection in applyLevelEnemyLimits/updateJahPowerupDrop); starts at 1, +1 when a level ends
 export const levelTimer = 0x30bf0;           // int32: frames left in the current level (0x438 at start); below 0 -> levelEnding = 1; below -0x21c all enemies are cleared
-export const levelEndLoopState = 0x30bf4;    // int32: loop control of the level-complete sequence (sub_15e15): 0x22 running, set to 0x1c by sub_16837 when Jah has flown away
+export const levelEndLoopState = 0x30bf4;    // int32: loop control of the level-complete sequence (runLevelEndSequence): 0x22 running, set to 0x1c by updateJahReplant when Jah has flown away
 export const smokeGlowPhase = 0x30bf8;       // int32: phase of the idle smoking animation: 2 = joint glow brightening (DAC 0xb6), 0 = frames advancing, 1 = frames returning
 export const cycleColors = 0x30c00;
-export const CYCLECOLORS_FIELD = { SIZE: 0x8, rgb: 0x0 }; // 4 x 0x8-byte records: the 4 colours rotated through DAC entries 0xf9..0xfc by sub_14fba (red 3f/0/0, yellow 3f/3d/0, green 1/3c/0, grey 9/9/9: rasta colours)
+export const CYCLECOLORS_FIELD = { SIZE: 0x8, rgb: 0x0 }; // 4 x 0x8-byte records: the 4 colours rotated through DAC entries 0xf9..0xfc by cycleRastaColors (red 3f/0/0, yellow 3f/3d/0, green 1/3c/0, grey 9/9/9: rasta colours)
 export const musicTrack = 0x30c1c;           // int32: index 0..11 of the current music track (advanced when the song ends)
 export const musicSamplesEnabled = 0x30c20;  // int32 (bool): play the f*.dwd digital samples along with the music tracks; toggled by the sound-menu checkbox, forced off when music volume < 0x96
 export const highScoreRowColors = 0x30c24;
 export const HIGHSCOREROWCOLORS_FIELD = { SIZE: 0x4, color: 0x0 }; // 10 x 0x4-byte records: text colour of each high-score row (copied to a local array and passed to Print_String_DB)
-export const resetHighScores = 0x31ee0;      // int32 (bool): if nonzero sub_10676 re-initialises the high-score table (reading names from cin) before saving; 0 in the binary and never written (debug leftover)
+export const resetHighScores = 0x31ee0;      // int32 (bool): if nonzero saveHighScores re-initialises the high-score table (reading names from cin) before saving; 0 in the binary and never written (debug leftover)
 export const pcxScratch = 0x31ee4;           // pcx_picture: scratch pcx_picture reused by every PCX_Init/PCX_Load/PCX_Delete group (sprite sheets, back.pcx, blank.pcx, howto.pcx, titp.pcx, hiscore.pcx, xlogo/evilx) (many files)
 export const mainMenuPcx2 = 0x3227c;         // pcx_picture: main menu animation frame loaded from mainmnb2.pcx (copied to the double buffer in the menu loop) (mainmnb2.pcx)
 export const mainMenuPcx3 = 0x32614;         // pcx_picture: main menu animation frame loaded from mainmnb3.pcx (copied to the double buffer in the menu loop) (mainmnb3.pcx)
@@ -61,10 +61,10 @@ export const missileSmoke = 0x46218;         // 63 x sprite: smoke-trail puffs l
 export const ufo = 0x4c38c;                  // sprite: UFO that abducts a plant with a beam (target plant index 0x60bd0); threshold_2 (0x4c3ac) = hit points, counter_2 = vx, counter_3 = beam timer; 1000 points (ufo.pcx)
 export const bongSmoke = 0x4c518;            // 200 x sprite: smoke clouds shot by the bong weapon (0x38): counter_1/counter_2 = velocity, state 1 = flying; hit enemies (cloud.pcx frame (2,0) (grey puff))
 export const powerupDrop = 0x5fa78;          // sprite: weapon / bonus crate on a parachute dropped by Jah; curr_frame (0x5fbe0) = kind: 0 auto gun, 1 missile launcher, 2 bong, 3 +42000 points; state (0x5fbe8) 1 = falling (drpshoot.pcx)
-export const cruiseMissile = 0x5fc04;        // sprite: cruise missile carrying a nuke; state 0x46/0x45 flying right/left, 0x44 detonated (threshold_1 0x5fc20 = flash countdown, burns every plant); appears from level 25 (sub_159e7) (crusmis.pcx)
+export const cruiseMissile = 0x5fc04;        // sprite: cruise missile carrying a nuke; state 0x46/0x45 flying right/left, 0x44 detonated (threshold_1 0x5fc20 = flash countdown, burns every plant); appears from level 25 (applyLevelEnemyLimits) (crusmis.pcx)
 export const nukeCloud = 0x5fd90;            // sprite: mushroom cloud shown when the cruise missile detonates; state (0x5ff00) 1 = visible (nuke.pcx)
 export const bullets = 0x5ff20;
-export const BULLETS_FIELD = { SIZE: 0x30, x: 0x0, y: 0x4, savedPixel: 0x8, active: 0xc, xStepTenths: 0x10, yStepTenths: 0x14, xStepCounter: 0x18, yStepCounter: 0x1c, vy: 0x20, vx: 0x28 }; // 60 x 0x30-byte records: machine-gun tracer bullets (single pixels) fired by the gun weapons (0x36/0x37) from the rasta toward the gunsight; each shot costs 1 point; hits damage choppers, bombs, A-10, dusters, cruise missile, UFO and paratroopers. sub_11c2a spawns (loops 59), sub_12130 moves/collides (60)
+export const BULLETS_FIELD = { SIZE: 0x30, x: 0x0, y: 0x4, savedPixel: 0x8, active: 0xc, xStepTenths: 0x10, yStepTenths: 0x14, xStepCounter: 0x18, yStepCounter: 0x1c, vy: 0x20, vx: 0x28 }; // 60 x 0x30-byte records: machine-gun tracer bullets (single pixels) fired by the gun weapons (0x36/0x37) from the rasta toward the gunsight; each shot costs 1 point; hits damage choppers, bombs, A-10, dusters, cruise missile, UFO and paratroopers. fireBullet spawns (loops 59), updateBullets moves/collides (60)
 export const frameStartTime = 0x60a64;       // uint32: Timer_Query() at the start of a frame; frame pacing waits until the BIOS tick advances
 export const score = 0x60a68;                // int32: player score (7 digits in the status bar, saved in highScores); +kill points, -1 per bullet
 export const kills = 0x60a6c;                // int32: enemies killed (status bar "Kills", 4 digits)
@@ -77,11 +77,11 @@ export const frameCounter10 = 0x60b54;       // int32: frame counter cycling 0..
 export const explosionDelays = 0x60b58;
 export const EXPLOSIONDELAYS_FIELD = { SIZE: 0x4, delay: 0x0 }; // 13 x 0x4-byte records: start delay counters of the 13 explosions slots
 export const explosionNext = 0x60b8c;        // int32: ring index (0..12) of the next explosions[] slot
-export const explosionX = 0x60b90;           // int32: x of the explosion to spawn (read by sub_1352c)
+export const explosionX = 0x60b90;           // int32: x of the explosion to spawn (read by spawnExplosion)
 export const explosionY = 0x60b94;           // int32: y of the explosion to spawn (+6 when stored)
 export const paratrooperNext = 0x60b98;      // int32: index (0..24) of the last paratroopers[] slot used by a chopper drop
 export const bombNext = 0x60b9c;             // int32: index (0..3) of the next bombs[] slot during an A-10 bombing run
-export const colorCyclePhase = 0x60ba0;      // int32: phase 0..3 of the DAC 0xf9..0xfc colour rotation (sub_14fba)
+export const colorCyclePhase = 0x60ba0;      // int32: phase 0..3 of the DAC 0xf9..0xfc colour rotation (cycleRastaColors)
 export const prevGunSightX = 0x60ba4;        // int32: gunsight x of the previous frame (idle detection)
 export const prevGunSightY = 0x60ba8;        // int32: gunsight y of the previous frame
 export const dusterSprayNext = 0x60bac;      // int32: ring index (0..62) of the next dusterSpray[] slot
@@ -90,7 +90,7 @@ export const hasMissileLauncher = 0x60bb4;   // int32 (bool): missile launcher (
 export const hasBong = 0x60bb8;              // int32 (bool): bong weapon (0x38) collected
 export const levelEnding = 0x60bbc;          // int32 (bool): set when levelTimer runs out: no new enemies spawn; when all enemies are gone the level-complete sequence runs and level++
 export const allHerbDead = 0x60bc0;          // int32 (bool): 1 when every plant state is 0 (computed each frame) -> game over
-export const inLevelEndSequence = 0x60bc4;   // int32 (bool): 1 while the level-complete sequence runs (suppresses the rasta idle reset in sub_18f27)
+export const inLevelEndSequence = 0x60bc4;   // int32 (bool): 1 while the level-complete sequence runs (suppresses the rasta idle reset in updatePlayer)
 export const jahReplantX = 0x60bcc;          // int32: x of the first plant of the longest run of dead plants (-1 if none): where Jah flies to replant at level end
 export const ufoTargetPlant = 0x60bd0;       // int32: index of the plant the UFO is abducting
 export const savedPalette = 0x60bd4;         // RGB_palette: palette saved before the nuke flash and restored afterwards (-)
@@ -165,17 +165,17 @@ export const sndUfo2Data = 0x60fec;          // pointer: Load_File buffer of ufo
 export const sndDetectOverrides = 0x60ff0;   // dws_DETECTOVERRIDES: STK hardware autodetect overrides (first 3 words 0xffff = autodetect) (-)
 export const sndDetectResults = 0x61000;     // dws_DETECTRESULTS: STK detect results (opaque) (-)
 export const sndIdeal = 0x61040;             // dws_IDEAL: STK ideal settings for dws_Init; +4 (0x61044) is reused as the rate output of dws_DGetRateFromDWD and passed to dws_DSetRate (-)
-export const musicTrack1 = 0x61070;          // dws_MPLAY: music track f1.dwm (played in sequence by sub_10050) (f1.dwm)
-export const musicTrack2 = 0x61080;          // dws_MPLAY: music track f2.dwm (played in sequence by sub_10050) (f2.dwm)
-export const musicTrack3 = 0x61090;          // dws_MPLAY: music track f3.dwm (played in sequence by sub_10050) (f3.dwm)
-export const musicTrack0 = 0x610a0;          // dws_MPLAY: music track f0.dwm (played in sequence by sub_10050) (f0.dwm)
-export const musicTrack4 = 0x610b0;          // dws_MPLAY: music track f4.dwm (played in sequence by sub_10050) (f4.dwm)
-export const musicTrack5 = 0x610c0;          // dws_MPLAY: music track f5.dwm (played in sequence by sub_10050) (f5.dwm)
-export const musicTrack6 = 0x610d0;          // dws_MPLAY: music track f6.dwm (played in sequence by sub_10050) (f6.dwm)
-export const musicTrack7 = 0x610e0;          // dws_MPLAY: music track f7.dwm (played in sequence by sub_10050) (f7.dwm)
-export const musicTrack8 = 0x610f0;          // dws_MPLAY: music track f8.dwm (played in sequence by sub_10050) (f8.dwm)
-export const musicTrack9 = 0x61100;          // dws_MPLAY: music track f9.dwm (played in sequence by sub_10050) (f9.dwm)
-export const musicTrack10 = 0x61110;         // dws_MPLAY: music track f10.dwm (played in sequence by sub_10050) (f10.dwm)
+export const musicTrack1 = 0x61070;          // dws_MPLAY: music track f1.dwm (played in sequence by updateMusic) (f1.dwm)
+export const musicTrack2 = 0x61080;          // dws_MPLAY: music track f2.dwm (played in sequence by updateMusic) (f2.dwm)
+export const musicTrack3 = 0x61090;          // dws_MPLAY: music track f3.dwm (played in sequence by updateMusic) (f3.dwm)
+export const musicTrack0 = 0x610a0;          // dws_MPLAY: music track f0.dwm (played in sequence by updateMusic) (f0.dwm)
+export const musicTrack4 = 0x610b0;          // dws_MPLAY: music track f4.dwm (played in sequence by updateMusic) (f4.dwm)
+export const musicTrack5 = 0x610c0;          // dws_MPLAY: music track f5.dwm (played in sequence by updateMusic) (f5.dwm)
+export const musicTrack6 = 0x610d0;          // dws_MPLAY: music track f6.dwm (played in sequence by updateMusic) (f6.dwm)
+export const musicTrack7 = 0x610e0;          // dws_MPLAY: music track f7.dwm (played in sequence by updateMusic) (f7.dwm)
+export const musicTrack8 = 0x610f0;          // dws_MPLAY: music track f8.dwm (played in sequence by updateMusic) (f8.dwm)
+export const musicTrack9 = 0x61100;          // dws_MPLAY: music track f9.dwm (played in sequence by updateMusic) (f9.dwm)
+export const musicTrack10 = 0x61110;         // dws_MPLAY: music track f10.dwm (played in sequence by updateMusic) (f10.dwm)
 export const sndClick = 0x61160;             // dws_DPLAY: menu click / name typing (click.dwd)
 export const sndDoubleClick = 0x61180;       // dws_DPLAY: menu button / sound-menu toggle (dclick.dwd)
 export const sndGunShot = 0x611a0;           // dws_DPLAY: gun weapons fire (gewtshot.dwd)
@@ -192,7 +192,7 @@ export const sndParaDie3 = 0x612e0;          // dws_DPLAY: paratrooper scream, r
 export const sndPdie4 = 0x61300;             // dws_DPLAY: played when the idle joint-smoking animation completes (+1000) (pdie4.dwd)
 export const sndParaDie5 = 0x61320;          // dws_DPLAY: paratrooper body hit (pdie5.dwd)
 export const sndParaSquish = 0x61340;        // dws_DPLAY: falling paratrooper hits the ground (psquish.dwd)
-export const sndGameOver = 0x61360;          // dws_DPLAY: game over (sub_16b96) (gameover.dwd)
+export const sndGameOver = 0x61360;          // dws_DPLAY: game over (showGameOver) (gameover.dwd)
 export const sndProtect = 0x61380;           // dws_DPLAY: played when Jah flies off after replanting (with message "Jah say: Fight the power mon!") (protect.dwd)
 export const sndMissile = 0x613a0;           // dws_DPLAY: missile launch (weapon 0x35) (missle.dwd)
 export const sndLogo = 0x613c0;              // dws_DPLAY: played once at start-up before the xlogo/evilx logo screens (name from Undlogo.dwd) (Undlogo.dwd)
@@ -203,23 +203,23 @@ export const sndAutomatic = 0x61440;         // dws_DPLAY: automatic-gun pickup 
 export const sndRastaRocket = 0x61460;       // dws_DPLAY: missile-launcher pickup voice (rastarok.dwd)
 export const sndBongDeath = 0x61480;         // dws_DPLAY: bong pickup voice (bongdth.dwd)
 export const sndNuke = 0x614a0;              // dws_DPLAY: nuke detonation (nuke.dwd)
-export const sndMusicSample1 = 0x614c0;      // dws_DPLAY: digital sample f1.dwd played together with a music track by sub_10050 when musicSamplesEnabled (f1.dwd)
-export const sndMusicSample2 = 0x614e0;      // dws_DPLAY: digital sample f2.dwd played together with a music track by sub_10050 when musicSamplesEnabled (f2.dwd)
-export const sndMusicSample3 = 0x61500;      // dws_DPLAY: digital sample f3.dwd played together with a music track by sub_10050 when musicSamplesEnabled (f3.dwd)
-export const sndMusicSample4 = 0x61520;      // dws_DPLAY: digital sample f4.dwd played together with a music track by sub_10050 when musicSamplesEnabled (f4.dwd)
-export const sndMusicSample5 = 0x61540;      // dws_DPLAY: digital sample f5.dwd played together with a music track by sub_10050 when musicSamplesEnabled (f5.dwd)
-export const sndMusicSample6 = 0x61560;      // dws_DPLAY: digital sample f6.dwd played together with a music track by sub_10050 when musicSamplesEnabled (f6.dwd)
-export const sndMusicSample65 = 0x61580;     // dws_DPLAY: digital sample f65.dwd played together with a music track by sub_10050 when musicSamplesEnabled (f65.dwd)
-export const sndMusicSample7 = 0x615a0;      // dws_DPLAY: digital sample f7.dwd played together with a music track by sub_10050 when musicSamplesEnabled (f7.dwd)
-export const sndMusicSample8 = 0x615c0;      // dws_DPLAY: digital sample f8.dwd played together with a music track by sub_10050 when musicSamplesEnabled (f8.dwd)
-export const sndMusicSample9 = 0x615e0;      // dws_DPLAY: digital sample f9.dwd played together with a music track by sub_10050 when musicSamplesEnabled (f9.dwd)
-export const sndMusicSample10 = 0x61600;     // dws_DPLAY: digital sample f10.dwd played together with a music track by sub_10050 when musicSamplesEnabled (f10.dwd)
+export const sndMusicSample1 = 0x614c0;      // dws_DPLAY: digital sample f1.dwd played together with a music track by updateMusic when musicSamplesEnabled (f1.dwd)
+export const sndMusicSample2 = 0x614e0;      // dws_DPLAY: digital sample f2.dwd played together with a music track by updateMusic when musicSamplesEnabled (f2.dwd)
+export const sndMusicSample3 = 0x61500;      // dws_DPLAY: digital sample f3.dwd played together with a music track by updateMusic when musicSamplesEnabled (f3.dwd)
+export const sndMusicSample4 = 0x61520;      // dws_DPLAY: digital sample f4.dwd played together with a music track by updateMusic when musicSamplesEnabled (f4.dwd)
+export const sndMusicSample5 = 0x61540;      // dws_DPLAY: digital sample f5.dwd played together with a music track by updateMusic when musicSamplesEnabled (f5.dwd)
+export const sndMusicSample6 = 0x61560;      // dws_DPLAY: digital sample f6.dwd played together with a music track by updateMusic when musicSamplesEnabled (f6.dwd)
+export const sndMusicSample65 = 0x61580;     // dws_DPLAY: digital sample f65.dwd played together with a music track by updateMusic when musicSamplesEnabled (f65.dwd)
+export const sndMusicSample7 = 0x615a0;      // dws_DPLAY: digital sample f7.dwd played together with a music track by updateMusic when musicSamplesEnabled (f7.dwd)
+export const sndMusicSample8 = 0x615c0;      // dws_DPLAY: digital sample f8.dwd played together with a music track by updateMusic when musicSamplesEnabled (f8.dwd)
+export const sndMusicSample9 = 0x615e0;      // dws_DPLAY: digital sample f9.dwd played together with a music track by updateMusic when musicSamplesEnabled (f9.dwd)
+export const sndMusicSample10 = 0x61600;     // dws_DPLAY: digital sample f10.dwd played together with a music track by updateMusic when musicSamplesEnabled (f10.dwd)
 export const sndUfo = 0x61620;               // dws_DPLAY: UFO beam (ufo.dwd)
 export const sndUfo2 = 0x61640;              // dws_DPLAY: UFO hum loop (ufo2.dwd)
 export const aimAngle = 0x61660;             // double: atan(dy/dx) from rasta to gunsight, used for bullet / bong-smoke velocity
 export const jointGlowColor = 0x61668;       // RGB_color (3 bytes): colour written to DAC entry 0xb6 during the idle smoking animation (red channel ramps up)
 export const paletteFade = 0x61670;
-export const PALETTEFADE_FIELD = { SIZE: 0x38, rgb: 0x0, stepR: 0x8, stepG: 0x10, stepB: 0x18, accR: 0x20, accG: 0x28, accB: 0x30 }; // 255 x 0x38-byte records: per-DAC-entry fade-in state used by the logo screen fade (sub_102d1); entries 1..254 used, step = component / 20.0
+export const PALETTEFADE_FIELD = { SIZE: 0x38, rgb: 0x0, stepR: 0x8, stepG: 0x10, stepB: 0x18, accR: 0x20, accG: 0x28, accB: 0x30 }; // 255 x 0x38-byte records: per-DAC-entry fade-in state used by the logo screen fade (showPictureFadeIn); entries 1..254 used, step = component / 20.0
 export const doubleBuffer = 0x64e7c;         // pointer: library double_buffer (320x200 back buffer)
-export const cin = 0x64eb8;                  // istream object: Watcom C++ cin, passed to istream >> char* in sub_10676
+export const cin = 0x64eb8;                  // istream object: Watcom C++ cin, passed to istream >> char* in saveHighScores
 export const keyboardState = 0x64f04;        // int32[128], indexed by scan code (KEY): library keyboard_state[scan] (1 while key held). Game uses: Esc 0x64f08 quit prompt, F2 0x64ff4 sound menu, P 0x64f68 pause, Space 0x64fe8, Enter 0x64f74, Y 0x64f58 / N 0x64fc8 quit prompt, and cheat keys (see notes)

@@ -70,10 +70,11 @@ src/platform/         what the game runs on: display, timer, keyboard, mouse, fi
 assets/game/          the game's data files (PNG, WAV, OGG, DWM, SCORES.DAT)
 assets/boot/          initial data-segment image, 8x8 ROM font, file manifest
 tests/                unit tests and the headless runner
-docs/                 porting rules, architecture, stage-2 notes, progress
+docs/                 architecture, data and function names, stage-2 notes, stage-1 porting rules
 ```
 
-More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md); what every function and variable is:
+[docs/FUNCTIONS.md](docs/FUNCTIONS.md), [docs/DATA.md](docs/DATA.md).
 
 ## Copyright
 

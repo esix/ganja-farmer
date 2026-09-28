@@ -77,9 +77,9 @@ SCRIPTS.tour = [
   { t: 26.5, key: 'ArrowLeft', down: true }, { t: 28, key: 'ArrowLeft', down: false },
   { t: 28.5, mouse: [300, 60] }, { t: 29, buttons: 1 }, { t: 29.4, snap: 'gameplay-firing' }, { t: 29.6, buttons: 0 },
   { t: 32, snap: 'gameplay-11s' },
-  { t: 33, tap: 'Escape', ms: 200 },   // quit prompt (0x1d178: keyboard_state[1] -> sub_10c0b)
+  { t: 33, tap: 'Escape', ms: 200 },   // quit prompt (0x1d178: keyboard_state[1] -> confirmQuit)
   { t: 34, snap: 'quit-prompt' },
-  { t: 35, tap: 'KeyY', ms: 200 },     // sub_10c0b: keyboard_state[0x15] -> [0x30be4] = 0x1c
+  { t: 35, tap: 'KeyY', ms: 200 },     // confirmQuit: keyboard_state[0x15] -> [0x30be4] = 0x1c
   { t: 38, snap: 'after-quit-game' },
   { t: 42, snap: 'after-quit-game-2' },
   ...mouseClick(44, 532, 160),         // QUIT on the menu -> [0x30be4] = 0x25 -> shutdown

@@ -15,7 +15,7 @@ How the port is put together, as of stage 2. For the rules the game code was tra
 3. installs the sound layer, then `attachBrowserAudio` (AudioContext, the music recordings);
 4. attaches the display (canvas) and the browser input (`pc.attachBrowser`);
 5. runs the program (`machine.js` `runProgram`): decodes the PNG pictures, turns the WAVs back into
-   DWDs for the sound driver, resets the C runtime's streams, calls `main` (`F.sub_1aa02`), then closes
+   DWDs for the sound driver, resets the C runtime's streams, calls `main` (`F.main_1aa02`), then closes
    files; the exit code is `main`'s return value.
 
 The headless runner (`tests/run-headless.mjs`) does the same in Node with a virtual clock.
@@ -26,7 +26,7 @@ The headless runner (`tests/run-headless.mjs`) does the same in Node with a virt
   0x30000..0x667CF (the emulated stack sits at its top, `stack.js`), VGA memory is at 0xA0000, and the
   heap (the C runtime's `malloc`) starts at 0x100000. Game code reads and writes globals through
   `R8/R16/R32/W8/W16/W32` and `RF32/RF64/…` at their original addresses.
-- `registry.js`: every translated function is registered under a key such as `sub_1aa02` or
+- `registry.js`: every translated function is registered under a key `<name>_<address>`, such as `main_1aa02` or
   `PCX_Load_20806`, and calls go through the object `F`, so tests can replace any callee. `callPtr`
   handles the calls the original makes through function pointers stored in memory.
 - `cpu.js`: `yieldCpu()`. The original busy-waits on the clock or the keyboard. The port's waiting loops
@@ -40,8 +40,10 @@ The headless runner (`tests/run-headless.mjs`) does the same in Node with a virt
 
 ## Game and library code
 
-- `src/game/`: the game's own functions, one file each, named `<address>_<name>.js`. `main` (0x1aa02)
-  is split into chunks in `src/game/1aa02/`.
+- `src/game/`: the game's own functions, one file each, named `<address>_<name>.js` (list:
+  [FUNCTIONS.md](FUNCTIONS.md)). `main` (0x1aa02) is split into phases in `src/game/1aa02/`. The game's
+  data keeps its original addresses, but the code uses names for them from `src/game/data.js`
+  ([DATA.md](DATA.md)): `W32(score, …)`, `R32(choppers + k * SPRITE.SIZE + SPRITE.y)`.
 - `src/lib/`: André LaMothe's graphics and input library as used by the game (PCX loading, sprites,
   palette, double buffer, keyboard driver, mouse wrapper, timer), the DiamondWare sound client
   (`stk_client.js`) and the Watcom C runtime subset (`crt*.js`: file streams on the virtual file system

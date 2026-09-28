@@ -29,7 +29,7 @@ export async function runProgram() {
   await images.decodeAll();                // assets/game/*.PNG for PCX_Load
   sounds.mountAll();                       // assets/game/*.WAV -> *.DWD in the DOS file system
   crtInit();
-  const ret = await F.sub_1aa02(0, 0);     // main(argc, argv): both unused
+  const ret = await F.main_1aa02(0, 0);     // main(argc, argv): both unused
   crtExit();
   return { exitCode: ret & 0xff, ret };
 }

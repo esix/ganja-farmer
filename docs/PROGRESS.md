@@ -20,8 +20,8 @@ Status: `porting` → `ported` (difftest PASS) → `verified` (independent audit
 ## Functions
 | addr | name | status | notes |
 |---|---|---|---|
-| 10010 | sub_10010 | verified | pilot |
-| 10676 | sub_10676 | verified | pilot |
+| 10010 | readHighScoreEntry | verified | pilot |
+| 10676 | saveHighScores | verified | pilot |
 | 20ce5 | Sprite_Init | verified | FAITHFUL; nit: field-name comments rely on LIBRARY.md |
 | 20c12 | PCX_Get_Sprite | verified | dead load at 0x20c9a omitted |
 | 2106f | Behind_Sprite_Clip | verified | no return value (EAX = s is a leftover no caller reads); ORIGINAL BUG: exclusive clips, as 212c0 |
@@ -124,7 +124,7 @@ Status: `porting` → `ported` (difftest PASS) → `verified` (independent audit
 | 1a825 | verified | writes 0/-70 to 9 stride-0x18c arrays + 4 scalars (meaning not established) |
 | 14425 | verified | 26 sprites at 0x3a878: states 0x33/0x29/0x32, counters, DDiscard+DPlay |
 | 15788 | verified | digits of [0x60a68]/[0x60a6c]/[0x30bec] via div into 0x18c-stride slots |
-| 10767 | verified | reads "scores.dat" entries (0x60a70, stride 0x18) via sub_10010 |
+| 10767 | verified | reads "scores.dat" entries (0x60a70, stride 0x18) via readHighScoreEntry |
 | 1556a | verified | 63 sprites at 0x3de9c: drift x by rand, y+1; hit-test vs 26 sprites at 0x3a878 |
 | 159e7 | verified | zeroes stride-0x18c elements / 2 dwords depending on [0x30bec] ranges |
 | 16837 | verified | sprite 0x45d74: state 0x20 / approach logic, keyboard moves, 2 hit loops vs 26 sprites, DPlay |
@@ -139,20 +139,20 @@ Status: `porting` → `ported` (difftest PASS) → `verified` (independent audit
 | 10b7d | verified | pause screen: DPause/MPause, 2 strings, wait Enter or Space, unpause |
 | 10c0b | verified | quit prompt: pause, 2 strings, wait keyboard_state[0x15]/[0x31], [0x30be4]=0x1c on Y, unpause |
 | 10cac | verified | mouse-driven loop: 3 sliders → dws_XDig/XMusic/XMaster, toggle [0x30c20], exit Esc/Space/button/box |
-| 107ce | verified | draws "scores.dat" table: per entry sub_15788 digits, sprite rows, Print_String_DB (ORIGINAL BUG: unbounded loop) |
+| 107ce | verified | draws "scores.dat" table: per entry updateStatusDigits digits, sprite rows, Print_String_DB (ORIGINAL BUG: unbounded loop) |
 | 12e85 | verified | chopper2/ptroop sprite logic, sounds, rand; ORIGINAL BUG: reads entry 25 of 25-entry array (0x131e7) |
 | 1977e | verified | up to 3 free entries of 0x4c518 (199) get velocity from atan\/cos\/sin toward 0x33aa4 and pos from 0x33dbc; 12 cases pass, fuzz blocked by harness stubbing x87 callees |
-| 1098f | verified | new-top-score entry: scan 9 scores, name input via kbhit/getch, save (sub_10676), DPlay |
-| 136a5 | verified | state machine over 25 ptroop/pt2 sprites + 26 plant sprites, table 0x5ff20, sounds, sub_1352c |
-| 14c6a | verified | 4 sprites at 0x3d23c (bomb.pcx): fall, y>=0xa0 → sub_1352c + sound, overlap vs 26 sprites at 0x3a878 |
-| 1128e | verified | hiscore.pcx + sub_107ce table, sprite 0x45d74 bounces 301 frames or until Space (after 10), Fill_Screen(0) |
-| 12130 | verified | colour-0xe0 checks, x87 (__CHP/fistp), hit tests vs 5 sprite groups, burst loops calling sub_1352c |
-| 173a2 | verified | sprite 0x45f00/0x4608c logic, jump table on [0x46068], hit tests vs 8 groups, sub_1352c + sounds |
-| 19ade | verified | 200 entries of 0x4c518 vs 8 sprite groups: overlap tests, counters, sounds, sub_1352c |
-| 11659 | verified | mouse-driven menu loop: 4 rectangles, calls sub_10cac/sub_1128e, palette save/restore, 2 wait loops |
-| 18f27 | verified | colour reg 0xb6, sounds, rand, calls sub_11c2a/sub_1864d/sub_1977e by state of 0x33dbc |
+| 1098f | verified | new-top-score entry: scan 9 scores, name input via kbhit/getch, save (saveHighScores), DPlay |
+| 136a5 | verified | state machine over 25 ptroop/pt2 sprites + 26 plant sprites, table 0x5ff20, sounds, spawnExplosion |
+| 14c6a | verified | 4 sprites at 0x3d23c (bomb.pcx): fall, y>=0xa0 → spawnExplosion + sound, overlap vs 26 sprites at 0x3a878 |
+| 1128e | verified | hiscore.pcx + drawHighScoreTable table, sprite 0x45d74 bounces 301 frames or until Space (after 10), Fill_Screen(0) |
+| 12130 | verified | colour-0xe0 checks, x87 (__CHP/fistp), hit tests vs 5 sprite groups, burst loops calling spawnExplosion |
+| 173a2 | verified | sprite 0x45f00/0x4608c logic, jump table on [0x46068], hit tests vs 8 groups, spawnExplosion + sounds |
+| 19ade | verified | 200 entries of 0x4c518 vs 8 sprite groups: overlap tests, counters, sounds, spawnExplosion |
+| 11659 | verified | mouse-driven menu loop: 4 rectangles, calls runSoundOptionsMenu/showHighScoreScreen, palette save/restore, 2 wait loops |
+| 18f27 | verified | colour reg 0xb6, sounds, rand, calls fireBullet/fireMissile/fireBongSmoke by state of 0x33dbc |
 | 15e15 | verified | loop while [0x30bf4]==0x22: per-frame calls (16c37,18f27,15788,16837,14425,…), clock wait, run scan |
-| 15c7d | verified | dec [0x30bf0]; scans 6 lists (a subset of those 1a825 zeroes); calls sub_1a825 / sub_15e15 |
+| 15c7d | verified | dec [0x30bf0]; scans 6 lists (a subset of those 1a825 zeroes); calls clearEnemies / runLevelEndSequence |
 | 14690 | verified | sprites 0x3d0b0 / 0x3d23c[[0x60b9c]]: moves, bounds, rand-driven state changes |
 | 1aa02 | verified: all 11 chunks (region difftests + independent audits) + skeleton; whole-function integration difftest 14/14 PASS (re/difftest/cases/1aa02.json) | main |
 | STK service + audio output | verified (independent audit: faithful for the assumed SB 2.0/OPL2 setup; nits host-output only; OPL2 = DOSBox DBOPL via @malvineous/opl, GPL — accepted by user 2026-09-26, port is GPL-3.0) | src/platform/sound/, tests/stk.test.mjs |

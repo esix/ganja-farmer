@@ -1,7 +1,7 @@
 // Text mode 03h: the BIOS teletype that DOS console output goes through, and the scan-out of the text
 // buffer at 0xB8000. Platform emulation (firmware + monitor), not code from GANJAFRM.EXE.
 //
-// Why it exists: at exit main sets mode 03h (0x1e02c) and then printf()s the shutdown text (chunk_1e018,
+// Why it exists: at exit main sets mode 03h (0x1e02c) and then printf()s the shutdown text (shutdown,
 // 0x1e036..0x1e0bb). printf ends in INT 21h AH=40h on handle 1 (CON); DOS writes CON output with the
 // BIOS teletype (INT 10h AH=0Eh semantics) into the text buffer. console.js collects those bytes;
 // this module plays them into 0xB8000 while the video mode is 03h.

@@ -92,7 +92,7 @@ data/BSS at 0x30000–0x66FFF (initialized from the original image), VGA framebu
 - Register with the registry and call other ported functions **only through `F`**:
   ```js
   import { F, register } from '../runtime/registry.js';
-  register(0x10676, 'sub_10676', async function sub_10676() { ... await F.sub_2264a(0x3000e, 0x3000c); ... });
+  register(0x10676, 'saveHighScores_10676', async function saveHighScores() { ... await F.sub_2264a(0x3000e, 0x3000c); ... });
   ```
   Key: `<name>_<addr>` when the name is established in `re/names.tsv`, else `sub_<addr>`.
 - Return values: return a value if the function deliberately sets EAX before RET (e.g. `mov eax,[ebp-x]`).

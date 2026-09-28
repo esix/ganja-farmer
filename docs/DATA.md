@@ -36,14 +36,14 @@ next to a value, how it is used); the confidence column says how sure that is.
 | `ufo` | 0x4c38c | 1 | UFO that abducts a plant with a beam (target plant index 0x60bd0); threshold_2 (0x4c3ac) = hit points, counter_2 = vx, counter_3 = beam timer; 1000 points | ufo.pcx | high |
 | `bongSmoke` | 0x4c518 | 200 | smoke clouds shot by the bong weapon (0x38): counter_1/counter_2 = velocity, state 1 = flying; hit enemies | cloud.pcx frame (2,0) (grey puff) | high |
 | `powerupDrop` | 0x5fa78 | 1 | weapon / bonus crate on a parachute dropped by Jah; curr_frame (0x5fbe0) = kind: 0 auto gun, 1 missile launcher, 2 bong, 3 +42000 points; state (0x5fbe8) 1 = falling | drpshoot.pcx | high |
-| `cruiseMissile` | 0x5fc04 | 1 | cruise missile carrying a nuke; state 0x46/0x45 flying right/left, 0x44 detonated (threshold_1 0x5fc20 = flash countdown, burns every plant); appears from level 25 (sub_159e7) | crusmis.pcx | high |
+| `cruiseMissile` | 0x5fc04 | 1 | cruise missile carrying a nuke; state 0x46/0x45 flying right/left, 0x44 detonated (threshold_1 0x5fc20 = flash countdown, burns every plant); appears from level 25 (applyLevelEnemyLimits) | crusmis.pcx | high |
 | `nukeCloud` | 0x5fd90 | 1 | mushroom cloud shown when the cruise missile detonates; state (0x5ff00) 1 = visible | nuke.pcx | high |
 
 ## Sound effects (dws_DPLAY)
 
 | name | address | file | when |
 | --- | --- | --- | --- |
-| `sndGameOver` | 0x61360 | gameover.dwd | game over (sub_16b96) |
+| `sndGameOver` | 0x61360 | gameover.dwd | game over (showGameOver) |
 | `sndClick` | 0x61160 | click.dwd | menu click / name typing |
 | `sndLogo` | 0x613c0 | Undlogo.dwd | played once at start-up before the xlogo/evilx logo screens (name from Undlogo.dwd) |
 | `sndMissile` | 0x613a0 | missle.dwd | missile launch (weapon 0x35) |
@@ -70,17 +70,17 @@ next to a value, how it is used); the confidence column says how sure that is.
 | `sndYaMon` | 0x611c0 | yamon.dwd | "ya mon" voice: title, sound menu, random firing voice 1 of 4, high score entered |
 | `sndSmokin` | 0x611e0 | smokin.dwd | random firing voice 2 of 4 |
 | `sndGetSome` | 0x61200 | getsome.dwd | random firing voice 3 of 4; also when Jah arrives to replant (message "Praise Jah!!! more herb") |
-| `sndMusicSample1` | 0x614c0 | f1.dwd | digital sample f1.dwd played together with a music track by sub_10050 when musicSamplesEnabled |
-| `sndMusicSample2` | 0x614e0 | f2.dwd | digital sample f2.dwd played together with a music track by sub_10050 when musicSamplesEnabled |
-| `sndMusicSample3` | 0x61500 | f3.dwd | digital sample f3.dwd played together with a music track by sub_10050 when musicSamplesEnabled |
-| `sndMusicSample4` | 0x61520 | f4.dwd | digital sample f4.dwd played together with a music track by sub_10050 when musicSamplesEnabled |
-| `sndMusicSample5` | 0x61540 | f5.dwd | digital sample f5.dwd played together with a music track by sub_10050 when musicSamplesEnabled |
-| `sndMusicSample6` | 0x61560 | f6.dwd | digital sample f6.dwd played together with a music track by sub_10050 when musicSamplesEnabled |
-| `sndMusicSample65` | 0x61580 | f65.dwd | digital sample f65.dwd played together with a music track by sub_10050 when musicSamplesEnabled |
-| `sndMusicSample7` | 0x615a0 | f7.dwd | digital sample f7.dwd played together with a music track by sub_10050 when musicSamplesEnabled |
-| `sndMusicSample8` | 0x615c0 | f8.dwd | digital sample f8.dwd played together with a music track by sub_10050 when musicSamplesEnabled |
-| `sndMusicSample9` | 0x615e0 | f9.dwd | digital sample f9.dwd played together with a music track by sub_10050 when musicSamplesEnabled |
-| `sndMusicSample10` | 0x61600 | f10.dwd | digital sample f10.dwd played together with a music track by sub_10050 when musicSamplesEnabled |
+| `sndMusicSample1` | 0x614c0 | f1.dwd | digital sample f1.dwd played together with a music track by updateMusic when musicSamplesEnabled |
+| `sndMusicSample2` | 0x614e0 | f2.dwd | digital sample f2.dwd played together with a music track by updateMusic when musicSamplesEnabled |
+| `sndMusicSample3` | 0x61500 | f3.dwd | digital sample f3.dwd played together with a music track by updateMusic when musicSamplesEnabled |
+| `sndMusicSample4` | 0x61520 | f4.dwd | digital sample f4.dwd played together with a music track by updateMusic when musicSamplesEnabled |
+| `sndMusicSample5` | 0x61540 | f5.dwd | digital sample f5.dwd played together with a music track by updateMusic when musicSamplesEnabled |
+| `sndMusicSample6` | 0x61560 | f6.dwd | digital sample f6.dwd played together with a music track by updateMusic when musicSamplesEnabled |
+| `sndMusicSample65` | 0x61580 | f65.dwd | digital sample f65.dwd played together with a music track by updateMusic when musicSamplesEnabled |
+| `sndMusicSample7` | 0x615a0 | f7.dwd | digital sample f7.dwd played together with a music track by updateMusic when musicSamplesEnabled |
+| `sndMusicSample8` | 0x615c0 | f8.dwd | digital sample f8.dwd played together with a music track by updateMusic when musicSamplesEnabled |
+| `sndMusicSample9` | 0x615e0 | f9.dwd | digital sample f9.dwd played together with a music track by updateMusic when musicSamplesEnabled |
+| `sndMusicSample10` | 0x61600 | f10.dwd | digital sample f10.dwd played together with a music track by updateMusic when musicSamplesEnabled |
 | `sndUfo` | 0x61620 | ufo.dwd | UFO beam |
 | `sndUfo2` | 0x61640 | ufo2.dwd | UFO hum loop |
 
@@ -88,17 +88,17 @@ next to a value, how it is used); the confidence column says how sure that is.
 
 | name | address | file | what |
 | --- | --- | --- | --- |
-| `musicTrack0` | 0x610a0 | f0.dwm | music track f0.dwm (played in sequence by sub_10050) |
-| `musicTrack1` | 0x61070 | f1.dwm | music track f1.dwm (played in sequence by sub_10050) |
-| `musicTrack2` | 0x61080 | f2.dwm | music track f2.dwm (played in sequence by sub_10050) |
-| `musicTrack3` | 0x61090 | f3.dwm | music track f3.dwm (played in sequence by sub_10050) |
-| `musicTrack4` | 0x610b0 | f4.dwm | music track f4.dwm (played in sequence by sub_10050) |
-| `musicTrack5` | 0x610c0 | f5.dwm | music track f5.dwm (played in sequence by sub_10050) |
-| `musicTrack6` | 0x610d0 | f6.dwm | music track f6.dwm (played in sequence by sub_10050) |
-| `musicTrack7` | 0x610e0 | f7.dwm | music track f7.dwm (played in sequence by sub_10050) |
-| `musicTrack8` | 0x610f0 | f8.dwm | music track f8.dwm (played in sequence by sub_10050) |
-| `musicTrack9` | 0x61100 | f9.dwm | music track f9.dwm (played in sequence by sub_10050) |
-| `musicTrack10` | 0x61110 | f10.dwm | music track f10.dwm (played in sequence by sub_10050) |
+| `musicTrack0` | 0x610a0 | f0.dwm | music track f0.dwm (played in sequence by updateMusic) |
+| `musicTrack1` | 0x61070 | f1.dwm | music track f1.dwm (played in sequence by updateMusic) |
+| `musicTrack2` | 0x61080 | f2.dwm | music track f2.dwm (played in sequence by updateMusic) |
+| `musicTrack3` | 0x61090 | f3.dwm | music track f3.dwm (played in sequence by updateMusic) |
+| `musicTrack4` | 0x610b0 | f4.dwm | music track f4.dwm (played in sequence by updateMusic) |
+| `musicTrack5` | 0x610c0 | f5.dwm | music track f5.dwm (played in sequence by updateMusic) |
+| `musicTrack6` | 0x610d0 | f6.dwm | music track f6.dwm (played in sequence by updateMusic) |
+| `musicTrack7` | 0x610e0 | f7.dwm | music track f7.dwm (played in sequence by updateMusic) |
+| `musicTrack8` | 0x610f0 | f8.dwm | music track f8.dwm (played in sequence by updateMusic) |
+| `musicTrack9` | 0x61100 | f9.dwm | music track f9.dwm (played in sequence by updateMusic) |
+| `musicTrack10` | 0x61110 | f10.dwm | music track f10.dwm (played in sequence by updateMusic) |
 
 ## Other structs
 
@@ -120,11 +120,11 @@ next to a value, how it is used); the confidence column says how sure that is.
 
 | name | address | records | fields | what | confidence |
 | --- | --- | --- | --- | --- | --- |
-| `bullets` | 0x5ff20 | 60 x 0x30 | x +0x0, y +0x4, savedPixel +0x8, active +0xc, xStepTenths +0x10, yStepTenths +0x14, xStepCounter +0x18, yStepCounter +0x1c, vy +0x20, vx +0x28 | machine-gun tracer bullets (single pixels) fired by the gun weapons (0x36/0x37) from the rasta toward the gunsight; each shot costs 1 point; hits damage choppers, bombs, A-10, dusters, cruise missile, UFO and paratroopers. sub_11c2a spawns (loops 59), sub_12130 moves/collides (60) | high |
+| `bullets` | 0x5ff20 | 60 x 0x30 | x +0x0, y +0x4, savedPixel +0x8, active +0xc, xStepTenths +0x10, yStepTenths +0x14, xStepCounter +0x18, yStepCounter +0x1c, vy +0x20, vx +0x28 | machine-gun tracer bullets (single pixels) fired by the gun weapons (0x36/0x37) from the rasta toward the gunsight; each shot costs 1 point; hits damage choppers, bombs, A-10, dusters, cruise missile, UFO and paratroopers. fireBullet spawns (loops 59), updateBullets moves/collides (60) | high |
 | `highScores` | 0x60a70 | 9 x 0x18 | score +0x0, level +0x4, name +0x8 | high-score table, read from / written to scores.dat | high |
 | `explosionDelays` | 0x60b58 | 13 x 0x4 | delay +0x0 | start delay counters of the 13 explosions slots | high |
-| `paletteFade` | 0x61670 | 255 x 0x38 | rgb +0x0, stepR +0x8, stepG +0x10, stepB +0x18, accR +0x20, accG +0x28, accB +0x30 | per-DAC-entry fade-in state used by the logo screen fade (sub_102d1); entries 1..254 used, step = component / 20.0 | high |
-| `cycleColors` | 0x30c00 | 4 x 0x8 | rgb +0x0 | the 4 colours rotated through DAC entries 0xf9..0xfc by sub_14fba (red 3f/0/0, yellow 3f/3d/0, green 1/3c/0, grey 9/9/9: rasta colours) | high |
+| `paletteFade` | 0x61670 | 255 x 0x38 | rgb +0x0, stepR +0x8, stepG +0x10, stepB +0x18, accR +0x20, accG +0x28, accB +0x30 | per-DAC-entry fade-in state used by the logo screen fade (showPictureFadeIn); entries 1..254 used, step = component / 20.0 | high |
+| `cycleColors` | 0x30c00 | 4 x 0x8 | rgb +0x0 | the 4 colours rotated through DAC entries 0xf9..0xfc by cycleRastaColors (red 3f/0/0, yellow 3f/3d/0, green 1/3c/0, grey 9/9/9: rasta colours) | high |
 | `highScoreRowColors` | 0x30c24 | 10 x 0x4 | color +0x0 | text colour of each high-score row (copied to a local array and passed to Print_String_DB) | high |
 | `chopperSoundStatus` | 0x60f04 | 5 x 0x2 | status +0x0 | dws_DSoundStatus result words, one per chopper; chopper.dwd is replayed when 0 and the chopper is near the screen | high |
 
@@ -132,17 +132,17 @@ next to a value, how it is used); the confidence column says how sure that is.
 
 | name | address | type | what | confidence |
 | --- | --- | --- | --- | --- |
-| `fadeSteps` | 0x30004 | double | 20.0: number of fade steps (divisor) in the logo fade sub_102d1 | high |
+| `fadeSteps` | 0x30004 | double | 20.0: number of fade steps (divisor) in the logo fade showPictureFadeIn | high |
 | `bongHitTimer` | 0x30be0 | int32 | countdown (0x5a) of the bong-hit pose (rasta state 0x3b) | medium |
 | `gameState` | 0x30be4 | int32 | program/menu state: 0x22 = start game (menu "play" button), 0x1c = back to menu (game over or quit confirmed), 0x25 = exit program; initial 1 | high |
 | `idleTimer` | 0x30be8 | int32 | frames without mouse movement/click before the rasta starts smoking (100) | medium |
-| `level` | 0x30bec | int32 | current level (status bar "Level", saved with the high score, drives enemy selection in sub_159e7/sub_16446); starts at 1, +1 when a level ends | high |
+| `level` | 0x30bec | int32 | current level (status bar "Level", saved with the high score, drives enemy selection in applyLevelEnemyLimits/updateJahPowerupDrop); starts at 1, +1 when a level ends | high |
 | `levelTimer` | 0x30bf0 | int32 | frames left in the current level (0x438 at start); below 0 -> levelEnding = 1; below -0x21c all enemies are cleared | high |
-| `levelEndLoopState` | 0x30bf4 | int32 | loop control of the level-complete sequence (sub_15e15): 0x22 running, set to 0x1c by sub_16837 when Jah has flown away | high |
+| `levelEndLoopState` | 0x30bf4 | int32 | loop control of the level-complete sequence (runLevelEndSequence): 0x22 running, set to 0x1c by updateJahReplant when Jah has flown away | high |
 | `smokeGlowPhase` | 0x30bf8 | int32 | phase of the idle smoking animation: 2 = joint glow brightening (DAC 0xb6), 0 = frames advancing, 1 = frames returning | low |
 | `musicTrack` | 0x30c1c | int32 | index 0..11 of the current music track (advanced when the song ends) | high |
 | `musicSamplesEnabled` | 0x30c20 | int32 (bool) | play the f*.dwd digital samples along with the music tracks; toggled by the sound-menu checkbox, forced off when music volume < 0x96 | medium |
-| `resetHighScores` | 0x31ee0 | int32 (bool) | if nonzero sub_10676 re-initialises the high-score table (reading names from cin) before saving; 0 in the binary and never written (debug leftover) | medium |
+| `resetHighScores` | 0x31ee0 | int32 (bool) | if nonzero saveHighScores re-initialises the high-score table (reading names from cin) before saving; 0 in the binary and never written (debug leftover) | medium |
 | `frameStartTime` | 0x60a64 | uint32 | Timer_Query() at the start of a frame; frame pacing waits until the BIOS tick advances | high |
 | `score` | 0x60a68 | int32 | player score (7 digits in the status bar, saved in highScores); +kill points, -1 per bullet | high |
 | `kills` | 0x60a6c | int32 | enemies killed (status bar "Kills", 4 digits) | high |
@@ -151,11 +151,11 @@ next to a value, how it is used); the confidence column says how sure that is.
 | `mouseButtons` | 0x60b50 | int32 | mouse buttons from Squeeze_Mouse(3): 1 = left (fire / menu click), 2 = right (switch weapon) | high |
 | `frameCounter10` | 0x60b54 | int32 | frame counter cycling 0..10; bullets reload their sub-pixel step counters when >= 10 | medium |
 | `explosionNext` | 0x60b8c | int32 | ring index (0..12) of the next explosions[] slot | high |
-| `explosionX` | 0x60b90 | int32 | x of the explosion to spawn (read by sub_1352c) | high |
+| `explosionX` | 0x60b90 | int32 | x of the explosion to spawn (read by spawnExplosion) | high |
 | `explosionY` | 0x60b94 | int32 | y of the explosion to spawn (+6 when stored) | high |
 | `paratrooperNext` | 0x60b98 | int32 | index (0..24) of the last paratroopers[] slot used by a chopper drop | high |
 | `bombNext` | 0x60b9c | int32 | index (0..3) of the next bombs[] slot during an A-10 bombing run | high |
-| `colorCyclePhase` | 0x60ba0 | int32 | phase 0..3 of the DAC 0xf9..0xfc colour rotation (sub_14fba) | high |
+| `colorCyclePhase` | 0x60ba0 | int32 | phase 0..3 of the DAC 0xf9..0xfc colour rotation (cycleRastaColors) | high |
 | `prevGunSightX` | 0x60ba4 | int32 | gunsight x of the previous frame (idle detection) | high |
 | `prevGunSightY` | 0x60ba8 | int32 | gunsight y of the previous frame | high |
 | `dusterSprayNext` | 0x60bac | int32 | ring index (0..62) of the next dusterSpray[] slot | high |
@@ -164,7 +164,7 @@ next to a value, how it is used); the confidence column says how sure that is.
 | `hasBong` | 0x60bb8 | int32 (bool) | bong weapon (0x38) collected | high |
 | `levelEnding` | 0x60bbc | int32 (bool) | set when levelTimer runs out: no new enemies spawn; when all enemies are gone the level-complete sequence runs and level++ | high |
 | `allHerbDead` | 0x60bc0 | int32 (bool) | 1 when every plant state is 0 (computed each frame) -> game over | high |
-| `inLevelEndSequence` | 0x60bc4 | int32 (bool) | 1 while the level-complete sequence runs (suppresses the rasta idle reset in sub_18f27) | medium |
+| `inLevelEndSequence` | 0x60bc4 | int32 (bool) | 1 while the level-complete sequence runs (suppresses the rasta idle reset in updatePlayer) | medium |
 | `jahReplantX` | 0x60bcc | int32 | x of the first plant of the longest run of dead plants (-1 if none): where Jah flies to replant at level end | high |
 | `ufoTargetPlant` | 0x60bd0 | int32 | index of the plant the UFO is abducting | high |
 | `fireReady` | 0x60edc | int32 (bool) | gate for firing with the left button: default gun requires release between shots, the other weapons alternate every frame | medium |
@@ -236,19 +236,19 @@ next to a value, how it is used); the confidence column says how sure that is.
 | `aimAngle` | 0x61660 | double | atan(dy/dx) from rasta to gunsight, used for bullet / bong-smoke velocity | high |
 | `jointGlowColor` | 0x61668 | RGB_color (3 bytes) | colour written to DAC entry 0xb6 during the idle smoking animation (red channel ramps up) | medium |
 | `doubleBuffer` | 0x64e7c | pointer | library double_buffer (320x200 back buffer) | high |
-| `cin` | 0x64eb8 | istream object | Watcom C++ cin, passed to istream >> char* in sub_10676 | medium |
+| `cin` | 0x64eb8 | istream object | Watcom C++ cin, passed to istream >> char* in saveHighScores | medium |
 
 ## Notes
 
 Coverage: every inventory address is either a named global, inside a named struct/table (field of an element), a string literal, or listed here.
 Layout: the sprite structs are one contiguous block 0x33918..0x5ff1c (statusBar, gunSight, van, rasta, choppers[5], (gap 0x345c4..0x34704 unused by game code), explosions[13], paratroopers[25], groundTroops[25], plants[26], a10Jets[1], bombs[4], cropDusters[3], messageBox, dusterSpray[63], scoreDigits[7], killsDigits[5], levelDigits[3], volumeSliders[3], soundMenu, jah, missile, missileTarget, missileSmoke[63], ufo, bongSmoke[200], powerupDrop, cruiseMissile, nukeCloud), followed by bullets[60] 0x5ff20, frameStartTime, score, kills, highScores[9], mouseX/Y/buttons, ... The pcx_pictures pcxScratch + 5 menu frames are consecutive at stride 0x398 (0x31ee4..0x33474) but are used as separate objects.
 Struct-array element vs true array: choppers/paratroopers/groundTroops/plants/bombs/cropDusters/explosions/dusterSpray/missileSmoke/bongSmoke/score-kills-levelDigits are true arrays indexed in loops; volumeSliders are 3 separately initialised objects (fx, music, master) that happen to be contiguous; a10Jets is an array of 1 (all loops have bound 1). keyboardState, explosionDelays, chopperSoundStatus, highScoreRowColors are true arrays.
-ORIGINAL BUG (known): sub_12e85 reads paratroopers[25].state = groundTroops[0].state (0x3833c) when paratrooperNext==24.
+ORIGINAL BUG (known): updateChoppers reads paratroopers[25].state = groundTroops[0].state (0x3833c) when paratrooperNext==24.
 Weapons (currentWeapon 0x60ee8): 0x36 default gun (semi-auto, bullets, sndGunShot), 0x37 automatic gun (hasAutoGun, pickup voice sndAutomatic), 0x35 missile launcher (hasMissileLauncher, fires missile+missileTarget, pickup voice sndRastaRocket), 0x38 bong (hasBong, fires bongSmoke, pickup voice sndBongDeath). Weapon names are inferred from DRPSHOOT/RASTA/MISSLE sprite sheets and sound names (medium confidence for the exact wording; roles are high).
 Kill points: chopper crash 101, bomb 501, A-10 300, duster 100, UFO 1000, paratrooper chute 15, body 11, landed trooper squashed 100, Jah replant bonus 8000, powerup +42000, idle smoke +1000, cheat F3+F4 +5000; each bullet -1.
-Keyboard (keyboardState index = scancode): Esc quit prompt (Y/N), P pause, F2 sound menu, Space/Enter continue. Cheats: F3+F4 +5000; L+V+U level+1; L+V+D level-1; N+U+K clear all enemies (sub_1a825); 4+2+0 ("420") regrow all plants + sndYaMon; G+N auto gun, G+M missile launcher, G+B bong; J + arrow keys move Jah; debug level select keys 3,5..9 -> level 3,5..9 and A -> level 14 (chunk_1d630.js:40-66).
+Keyboard (keyboardState index = scancode): Esc quit prompt (Y/N), P pause, F2 sound menu, Space/Enter continue. Cheats: F3+F4 +5000; L+V+U level+1; L+V+D level-1; N+U+K clear all enemies (clearEnemies); 4+2+0 ("420") regrow all plants + sndYaMon; G+N auto gun, G+M missile launcher, G+B bong; J + arrow keys move Jah; debug level select keys 3,5..9 -> level 3,5..9 and A -> level 14 (updateGameFrame.js:40-66).
 Plant/enemy state values are the game's own codes (e.g. 0x1b/0x1c direction, 0x26 explosion pending); described in each entry, no names claimed for the numeric codes.
-Not named (left out): 0x3000c/0x30019/0x30026 fopen mode strings "w"/"r"/"r"; double constants 0x3014c=5.0, 0x30154=-5.0, 0x3015c=0.1, 0x30164=-5.0, 0x3016c=0.1 (bullet speed), 0x30184=7.0, 0x3018c=-7.0, 0x30194=-7.0 (bong smoke speed); 0x61669 = jointGlowColor.g (byte +1 of the RGB_color at 0x61668); 0x64e78..0x64e7a = 3 bytes (BSS, just before doubleBuffer) copied as the initialiser of a local RGB_color in sub_18a58 and immediately overwritten -> probably a compiler-emitted zero initialiser, no meaning.
+Not named (left out): 0x3000c/0x30019/0x30026 fopen mode strings "w"/"r"/"r"; double constants 0x3014c=5.0, 0x30154=-5.0, 0x3015c=0.1, 0x30164=-5.0, 0x3016c=0.1 (bullet speed), 0x30184=7.0, 0x3018c=-7.0, 0x30194=-7.0 (bong smoke speed); 0x61669 = jointGlowColor.g (byte +1 of the RGB_color at 0x61668); 0x64e78..0x64e7a = 3 bytes (BSS, just before doubleBuffer) copied as the initialiser of a local RGB_color in updateUfo and immediately overwritten -> probably a compiler-emitted zero initialiser, no meaning.
 Load_File buffers 0x60f20..0x60fec: the raw pointers returned by Load_File, each copied once into the .snd/.track field of its STK struct; named <struct>Data.
 Most uncertain: smokeGlowPhase, fireReady, bongState/bongShotsLeft/bongBlowPending, bongHitTimer, frameCounter10, inLevelEndSequence, musicSamplesEnabled, sndPdie4 (pdie4.dwd used only for the idle-smoke bonus), sndLogo, resetHighScores.
 
@@ -256,96 +256,96 @@ Most uncertain: smokeGlowPhase, fireReady, bongState/bongShotsLeft/bongBlowPendi
 
 Where each name comes from (file:line in the code at the time of naming).
 
-- `pcxScratch`: src/game/1aa02/chunk_1aa26.js:42; src/game/102d1_sub_102d1.js:49; src/game/1aa02/chunk_1cc3c.js:16
+- `pcxScratch`: src/game/1aa02/1aa26_initSystemAndLoadSprites.js:42; src/game/102d1_sub_102d1.js:49; src/game/1aa02/1cc3c_startNewGame.js:16
 - `mainMenuPcx`: src/game/11659_sub_11659.js:8; src/game/11659_sub_11659.js:100
 - `mainMenuPcx2`: src/game/11659_sub_11659.js:9; src/game/11659_sub_11659.js:90
 - `mainMenuPcx3`: src/game/11659_sub_11659.js:9; src/game/11659_sub_11659.js:95
 - `mainMenuPcx4`: src/game/11659_sub_11659.js:9; src/game/11659_sub_11659.js:105
 - `mainMenuPcx5`: src/game/11659_sub_11659.js:10; src/game/11659_sub_11659.js:110
-- `statusBar`: src/game/1aa02/chunk_1aa26.js:58; src/game/1aa02/chunk_1aa26.js:61; src/game/15e15_sub_15e15.js:49
-- `gunSight`: src/game/1aa02/chunk_1aa26.js:40; src/game/1aa02/chunk_1d0c1.js:41; src/game/11659_sub_11659.js:119; src/game/1aa02/chunk_1cc3c.js:39
-- `van`: src/game/1aa02/chunk_1aa26.js:49; src/game/1aa02/chunk_1aa26.js:52
-- `rasta`: src/game/1aa02/chunk_1b9a9.js:16; src/game/18f27_sub_18f27.js:134; src/game/11c2a_sub_11c2a.js:120
-- `choppers`: src/game/1aa02/chunk_1aa26.js:67; src/game/1aa02/chunk_1aa26.js:86; src/game/12130_sub_12130.js:139; src/game/12e85_sub_12e85.js:126 (spawns paratrooper)
-- `explosions`: src/game/1aa02/chunk_1b4b9.js:85; src/game/1352c_sub_1352c.js:23; src/game/135bb_sub_135bb.js:26
-- `paratroopers`: src/game/1aa02/chunk_1aa26.js:90; src/game/136a5_sub_136a5.js:51; src/game/136a5_sub_136a5.js:260
-- `groundTroops`: src/game/1aa02/chunk_1af47.js:17; src/game/136a5_sub_136a5.js:259; src/game/136a5_sub_136a5.js:213
-- `plants`: src/game/1aa02/chunk_1af47.js:76; src/game/14425_sub_14425.js:25; src/game/1aa02/chunk_1d0c1.js:30; src/game/1aa02/chunk_1db3a.js:112
-- `a10Jets`: src/game/1aa02/chunk_1b4b9.js:28; src/game/14690_sub_14690.js:8; src/game/12130_sub_12130.js:201
-- `bombs`: src/game/1aa02/chunk_1b4b9.js:43; src/game/14c6a_sub_14c6a.js:9; src/game/12130_sub_12130.js:173
-- `cropDusters`: src/game/1aa02/chunk_1af47.js:62; src/game/15127_sub_15127.js:16; src/game/12130_sub_12130.js:245
-- `messageBox`: src/game/1aa02/chunk_1b9a9.js:34; src/game/16b96_sub_16b96.js:11 (game over); src/game/16837_sub_16837.js:28
-- `dusterSpray`: src/game/1aa02/chunk_1af47.js:89; src/game/15127_sub_15127.js:17; src/game/1556a_sub_1556a.js:13
-- `scoreDigits`: src/game/1aa02/chunk_1b4b9.js:5; src/game/15788_sub_15788.js:7
-- `killsDigits`: src/game/1aa02/chunk_1b4b9.js:69; src/game/15788_sub_15788.js:9
-- `levelDigits`: src/game/1aa02/chunk_1b4b9.js:77; src/game/15788_sub_15788.js:10
-- `volumeSliders`: src/game/1aa02/chunk_1af47.js:51; src/game/10cac_sub_10cac.js:118; src/game/10cac_sub_10cac.js:133
-- `soundMenu`: src/game/1aa02/chunk_1af47.js:42; src/game/10cac_sub_10cac.js:59
-- `jah`: src/game/1aa02/chunk_1b9a9.js:55; src/game/1128e_sub_1128e.js:43; src/game/16446_sub_16446.js:88; src/game/16837_sub_16837.js:81
-- `missile`: src/game/1aa02/chunk_1b9a9.js:92; src/game/173a2_sub_173a2.js:8; src/game/18f27_sub_18f27.js:266
-- `missileTarget`: src/game/1aa02/chunk_1b9a9.js:102; src/game/1864d_sub_1864d.js:25
-- `missileSmoke`: src/game/1aa02/chunk_1af47.js:98; src/game/173a2_sub_173a2.js:16; src/game/185bf_sub_185bf.js:4
-- `ufo`: src/game/1aa02/chunk_1b9a9.js:64; src/game/18a58_sub_18a58.js:137; src/game/12130_sub_12130.js:299
-- `bongSmoke`: src/game/1aa02/chunk_1b4b9.js:20; src/game/1977e_sub_1977e.js:14; src/game/18f27_sub_18f27.js:276
-- `powerupDrop`: src/game/1aa02/chunk_1b9a9.js:82; src/game/16446_sub_16446.js:115; src/game/16446_sub_16446.js:137
-- `cruiseMissile`: src/game/1aa02/chunk_1b9a9.js:73; src/game/16fbb_sub_16fbb.js:47; src/game/159e7_sub_159e7.js:51
-- `nukeCloud`: src/game/1aa02/chunk_1b9a9.js:43; src/game/16fbb_sub_16fbb.js:50; src/game/1aa02/chunk_1d630.js:147
-- `musicTrack0`: src/game/1aa02/chunk_1bed0.js:19; src/game/10050_sub_10050.js:33
-- `musicTrack1`: src/game/1aa02/chunk_1bed0.js:22; src/game/10050_sub_10050.js:36
-- `musicTrack2`: src/game/1aa02/chunk_1bed0.js:25; src/game/10050_sub_10050.js:42
-- `musicTrack3`: src/game/1aa02/chunk_1bed0.js:28; src/game/10050_sub_10050.js:48
-- `musicTrack4`: src/game/1aa02/chunk_1bed0.js:31; src/game/10050_sub_10050.js:54
-- `musicTrack5`: src/game/1aa02/chunk_1bed0.js:34; src/game/10050_sub_10050.js:60
-- `musicTrack6`: src/game/1aa02/chunk_1bed0.js:37; src/game/10050_sub_10050.js:66
-- `musicTrack7`: src/game/1aa02/chunk_1bed0.js:40; src/game/10050_sub_10050.js:72
-- `musicTrack8`: src/game/1aa02/chunk_1bed0.js:43; src/game/10050_sub_10050.js:78
-- `musicTrack9`: src/game/1aa02/chunk_1bed0.js:46; src/game/10050_sub_10050.js:84
-- `musicTrack10`: src/game/1aa02/chunk_1bed0.js:49; src/game/10050_sub_10050.js:90
-- `sndGameOver`: src/game/1aa02/chunk_1bed0.js:52
-- `sndClick`: src/game/1aa02/chunk_1bed0.js:59
-- `sndLogo`: src/game/1aa02/chunk_1bed0.js:65
-- `sndMissile`: src/game/1aa02/chunk_1bed0.js:71
-- `sndChopper`: src/game/1aa02/chunk_1bed0.js:77
-- `sndProtect`: src/game/1aa02/chunk_1bed0.js:83
-- `sndNuke`: src/game/1aa02/chunk_1bed0.js:89
-- `sndBongBubble`: src/game/1aa02/chunk_1bed0.js:95
-- `sndBongBlow`: src/game/1aa02/chunk_1bed0.js:101
-- `sndBong`: src/game/1aa02/chunk_1bed0.js:107
-- `sndRastaRocket`: src/game/1aa02/chunk_1bed0.js:113
-- `sndBongDeath`: src/game/1aa02/chunk_1bed0.js:119
-- `sndAutomatic`: src/game/1aa02/chunk_1bed0.js:125
-- `sndParaDie1`: src/game/1aa02/chunk_1bed0.js:131
-- `sndParaDie2`: src/game/1aa02/chunk_1bed0.js:137
-- `sndParaDie3`: src/game/1aa02/chunk_1bed0.js:143
-- `sndPdie4`: src/game/1aa02/chunk_1bed0.js:149
-- `sndParaDie5`: src/game/1aa02/chunk_1bed0.js:155
-- `sndParaSquish`: src/game/1aa02/chunk_1c567.js:20
-- `sndExplosion`: src/game/1aa02/chunk_1c567.js:28
-- `sndDoubleClick`: src/game/1aa02/chunk_1c567.js:36
-- `sndGunShot`: src/game/1aa02/chunk_1c567.js:44
-- `sndRicochet`: src/game/1aa02/chunk_1c567.js:52
-- `sndIShot`: src/game/1aa02/chunk_1c567.js:60
-- `sndYaMon`: src/game/1aa02/chunk_1c567.js:68
-- `sndSmokin`: src/game/1aa02/chunk_1c567.js:76
-- `sndGetSome`: src/game/1aa02/chunk_1c567.js:84
-- `sndMusicSample1`: src/game/1aa02/chunk_1c567.js:92
-- `sndMusicSample2`: src/game/1aa02/chunk_1c567.js:100
-- `sndMusicSample3`: src/game/1aa02/chunk_1c567.js:108
-- `sndMusicSample4`: src/game/1aa02/chunk_1c567.js:116
-- `sndMusicSample5`: src/game/1aa02/chunk_1c567.js:124
-- `sndMusicSample6`: src/game/1aa02/chunk_1c567.js:132
-- `sndMusicSample65`: src/game/1aa02/chunk_1c567.js:140
-- `sndMusicSample7`: src/game/1aa02/chunk_1c567.js:148
-- `sndMusicSample8`: src/game/1aa02/chunk_1c567.js:156
-- `sndMusicSample9`: src/game/1aa02/chunk_1c567.js:164
-- `sndMusicSample10`: src/game/1aa02/chunk_1c567.js:172
-- `sndUfo`: src/game/1aa02/chunk_1c567.js:180
-- `sndUfo2`: src/game/1aa02/chunk_1c567.js:188
-- `sndDetectOverrides`: src/game/1aa02/chunk_1aa26.js:31
-- `sndDetectResults`: src/game/1aa02/chunk_1aa26.js:31
-- `sndIdeal`: src/game/1aa02/chunk_1aa26.js:37; src/game/1aa02/chunk_1bed0.js:58
+- `statusBar`: src/game/1aa02/1aa26_initSystemAndLoadSprites.js:58; src/game/1aa02/1aa26_initSystemAndLoadSprites.js:61; src/game/15e15_sub_15e15.js:49
+- `gunSight`: src/game/1aa02/1aa26_initSystemAndLoadSprites.js:40; src/game/1aa02/1d0c1_handleFrameInput.js:41; src/game/11659_sub_11659.js:119; src/game/1aa02/1cc3c_startNewGame.js:39
+- `van`: src/game/1aa02/1aa26_initSystemAndLoadSprites.js:49; src/game/1aa02/1aa26_initSystemAndLoadSprites.js:52
+- `rasta`: src/game/1aa02/1b9a9_loadCharacterSprites.js:16; src/game/18f27_sub_18f27.js:134; src/game/11c2a_sub_11c2a.js:120
+- `choppers`: src/game/1aa02/1aa26_initSystemAndLoadSprites.js:67; src/game/1aa02/1aa26_initSystemAndLoadSprites.js:86; src/game/12130_sub_12130.js:139; src/game/12e85_sub_12e85.js:126 (spawns paratrooper)
+- `explosions`: src/game/1aa02/1b4b9_loadAircraftAndHudSprites.js:85; src/game/1352c_sub_1352c.js:23; src/game/135bb_sub_135bb.js:26
+- `paratroopers`: src/game/1aa02/1aa26_initSystemAndLoadSprites.js:90; src/game/136a5_sub_136a5.js:51; src/game/136a5_sub_136a5.js:260
+- `groundTroops`: src/game/1aa02/1af47_loadMenuAndGroundSprites.js:17; src/game/136a5_sub_136a5.js:259; src/game/136a5_sub_136a5.js:213
+- `plants`: src/game/1aa02/1af47_loadMenuAndGroundSprites.js:76; src/game/14425_sub_14425.js:25; src/game/1aa02/1d0c1_handleFrameInput.js:30; src/game/1aa02/1db3a_drawGameFrame.js:112
+- `a10Jets`: src/game/1aa02/1b4b9_loadAircraftAndHudSprites.js:28; src/game/14690_sub_14690.js:8; src/game/12130_sub_12130.js:201
+- `bombs`: src/game/1aa02/1b4b9_loadAircraftAndHudSprites.js:43; src/game/14c6a_sub_14c6a.js:9; src/game/12130_sub_12130.js:173
+- `cropDusters`: src/game/1aa02/1af47_loadMenuAndGroundSprites.js:62; src/game/15127_sub_15127.js:16; src/game/12130_sub_12130.js:245
+- `messageBox`: src/game/1aa02/1b9a9_loadCharacterSprites.js:34; src/game/16b96_sub_16b96.js:11 (game over); src/game/16837_sub_16837.js:28
+- `dusterSpray`: src/game/1aa02/1af47_loadMenuAndGroundSprites.js:89; src/game/15127_sub_15127.js:17; src/game/1556a_sub_1556a.js:13
+- `scoreDigits`: src/game/1aa02/1b4b9_loadAircraftAndHudSprites.js:5; src/game/15788_sub_15788.js:7
+- `killsDigits`: src/game/1aa02/1b4b9_loadAircraftAndHudSprites.js:69; src/game/15788_sub_15788.js:9
+- `levelDigits`: src/game/1aa02/1b4b9_loadAircraftAndHudSprites.js:77; src/game/15788_sub_15788.js:10
+- `volumeSliders`: src/game/1aa02/1af47_loadMenuAndGroundSprites.js:51; src/game/10cac_sub_10cac.js:118; src/game/10cac_sub_10cac.js:133
+- `soundMenu`: src/game/1aa02/1af47_loadMenuAndGroundSprites.js:42; src/game/10cac_sub_10cac.js:59
+- `jah`: src/game/1aa02/1b9a9_loadCharacterSprites.js:55; src/game/1128e_sub_1128e.js:43; src/game/16446_sub_16446.js:88; src/game/16837_sub_16837.js:81
+- `missile`: src/game/1aa02/1b9a9_loadCharacterSprites.js:92; src/game/173a2_sub_173a2.js:8; src/game/18f27_sub_18f27.js:266
+- `missileTarget`: src/game/1aa02/1b9a9_loadCharacterSprites.js:102; src/game/1864d_sub_1864d.js:25
+- `missileSmoke`: src/game/1aa02/1af47_loadMenuAndGroundSprites.js:98; src/game/173a2_sub_173a2.js:16; src/game/185bf_sub_185bf.js:4
+- `ufo`: src/game/1aa02/1b9a9_loadCharacterSprites.js:64; src/game/18a58_sub_18a58.js:137; src/game/12130_sub_12130.js:299
+- `bongSmoke`: src/game/1aa02/1b4b9_loadAircraftAndHudSprites.js:20; src/game/1977e_sub_1977e.js:14; src/game/18f27_sub_18f27.js:276
+- `powerupDrop`: src/game/1aa02/1b9a9_loadCharacterSprites.js:82; src/game/16446_sub_16446.js:115; src/game/16446_sub_16446.js:137
+- `cruiseMissile`: src/game/1aa02/1b9a9_loadCharacterSprites.js:73; src/game/16fbb_sub_16fbb.js:47; src/game/159e7_sub_159e7.js:51
+- `nukeCloud`: src/game/1aa02/1b9a9_loadCharacterSprites.js:43; src/game/16fbb_sub_16fbb.js:50; src/game/1aa02/1d630_updateGameFrame.js:147
+- `musicTrack0`: src/game/1aa02/1bed0_loadMusicAndSounds.js:19; src/game/10050_sub_10050.js:33
+- `musicTrack1`: src/game/1aa02/1bed0_loadMusicAndSounds.js:22; src/game/10050_sub_10050.js:36
+- `musicTrack2`: src/game/1aa02/1bed0_loadMusicAndSounds.js:25; src/game/10050_sub_10050.js:42
+- `musicTrack3`: src/game/1aa02/1bed0_loadMusicAndSounds.js:28; src/game/10050_sub_10050.js:48
+- `musicTrack4`: src/game/1aa02/1bed0_loadMusicAndSounds.js:31; src/game/10050_sub_10050.js:54
+- `musicTrack5`: src/game/1aa02/1bed0_loadMusicAndSounds.js:34; src/game/10050_sub_10050.js:60
+- `musicTrack6`: src/game/1aa02/1bed0_loadMusicAndSounds.js:37; src/game/10050_sub_10050.js:66
+- `musicTrack7`: src/game/1aa02/1bed0_loadMusicAndSounds.js:40; src/game/10050_sub_10050.js:72
+- `musicTrack8`: src/game/1aa02/1bed0_loadMusicAndSounds.js:43; src/game/10050_sub_10050.js:78
+- `musicTrack9`: src/game/1aa02/1bed0_loadMusicAndSounds.js:46; src/game/10050_sub_10050.js:84
+- `musicTrack10`: src/game/1aa02/1bed0_loadMusicAndSounds.js:49; src/game/10050_sub_10050.js:90
+- `sndGameOver`: src/game/1aa02/1bed0_loadMusicAndSounds.js:52
+- `sndClick`: src/game/1aa02/1bed0_loadMusicAndSounds.js:59
+- `sndLogo`: src/game/1aa02/1bed0_loadMusicAndSounds.js:65
+- `sndMissile`: src/game/1aa02/1bed0_loadMusicAndSounds.js:71
+- `sndChopper`: src/game/1aa02/1bed0_loadMusicAndSounds.js:77
+- `sndProtect`: src/game/1aa02/1bed0_loadMusicAndSounds.js:83
+- `sndNuke`: src/game/1aa02/1bed0_loadMusicAndSounds.js:89
+- `sndBongBubble`: src/game/1aa02/1bed0_loadMusicAndSounds.js:95
+- `sndBongBlow`: src/game/1aa02/1bed0_loadMusicAndSounds.js:101
+- `sndBong`: src/game/1aa02/1bed0_loadMusicAndSounds.js:107
+- `sndRastaRocket`: src/game/1aa02/1bed0_loadMusicAndSounds.js:113
+- `sndBongDeath`: src/game/1aa02/1bed0_loadMusicAndSounds.js:119
+- `sndAutomatic`: src/game/1aa02/1bed0_loadMusicAndSounds.js:125
+- `sndParaDie1`: src/game/1aa02/1bed0_loadMusicAndSounds.js:131
+- `sndParaDie2`: src/game/1aa02/1bed0_loadMusicAndSounds.js:137
+- `sndParaDie3`: src/game/1aa02/1bed0_loadMusicAndSounds.js:143
+- `sndPdie4`: src/game/1aa02/1bed0_loadMusicAndSounds.js:149
+- `sndParaDie5`: src/game/1aa02/1bed0_loadMusicAndSounds.js:155
+- `sndParaSquish`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:20
+- `sndExplosion`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:28
+- `sndDoubleClick`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:36
+- `sndGunShot`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:44
+- `sndRicochet`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:52
+- `sndIShot`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:60
+- `sndYaMon`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:68
+- `sndSmokin`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:76
+- `sndGetSome`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:84
+- `sndMusicSample1`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:92
+- `sndMusicSample2`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:100
+- `sndMusicSample3`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:108
+- `sndMusicSample4`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:116
+- `sndMusicSample5`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:124
+- `sndMusicSample6`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:132
+- `sndMusicSample65`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:140
+- `sndMusicSample7`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:148
+- `sndMusicSample8`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:156
+- `sndMusicSample9`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:164
+- `sndMusicSample10`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:172
+- `sndUfo`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:180
+- `sndUfo2`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:188
+- `sndDetectOverrides`: src/game/1aa02/1aa26_initSystemAndLoadSprites.js:31
+- `sndDetectResults`: src/game/1aa02/1aa26_initSystemAndLoadSprites.js:31
+- `sndIdeal`: src/game/1aa02/1aa26_initSystemAndLoadSprites.js:37; src/game/1aa02/1bed0_loadMusicAndSounds.js:58
 - `savedPalette`: src/game/16fbb_sub_16fbb.js:49; src/game/16fbb_sub_16fbb.js:98
-- `keyboardState`: re/LIBRARY.md:25; src/game/1aa02/chunk_1d0c1.js:47
+- `keyboardState`: re/LIBRARY.md:25; src/game/1aa02/1d0c1_handleFrameInput.js:47
 - `bullets`: src/game/11c2a_sub_11c2a.js:7; src/game/11c2a_sub_11c2a.js:145; src/game/11c2a_sub_11c2a.js:151; src/game/18f27_sub_18f27.js:259; src/game/12130_sub_12130.js:80
 - `highScores`: src/game/10676_sub_10676.js:2; src/game/1098f_sub_1098f.js:49; src/game/1098f_sub_1098f.js:50; src/game/107ce_sub_107ce.js:61
 - `explosionDelays`: src/game/135bb_sub_135bb.js:19; src/game/12e85_sub_12e85.js:175
@@ -355,27 +355,27 @@ Where each name comes from (file:line in the code at the time of naming).
 - `chopperSoundStatus`: src/game/12e85_sub_12e85.js:36
 - `score`: src/game/15788_sub_15788.js:7; src/game/1098f_sub_1098f.js:49; src/game/11c2a_sub_11c2a.js:151
 - `kills`: src/game/15788_sub_15788.js:9; src/game/12130_sub_12130.js:174; REGBAR.PNG
-- `level`: src/game/1aa02/chunk_1cc3c.js:42; src/game/15c7d_sub_15c7d.js:68; src/game/1098f_sub_1098f.js:50
-- `levelTimer`: src/game/1aa02/chunk_1cc3c.js:48; src/game/15c7d_sub_15c7d.js:9
+- `level`: src/game/1aa02/1cc3c_startNewGame.js:42; src/game/15c7d_sub_15c7d.js:68; src/game/1098f_sub_1098f.js:50
+- `levelTimer`: src/game/1aa02/1cc3c_startNewGame.js:48; src/game/15c7d_sub_15c7d.js:9
 - `levelEnding`: src/game/15c7d_sub_15c7d.js:29; src/game/12e85_sub_12e85.js:194
 - `gameState`: src/game/11659_sub_11659.js:135; src/game/11659_sub_11659.js:142; src/game/1aa02_sub_1aa02.js:35; src/game/10c0b_sub_10c0b.js:29
-- `allHerbDead`: src/game/1aa02/chunk_1d0c1.js:28; src/game/1aa02/chunk_1db3a.js:112
+- `allHerbDead`: src/game/1aa02/1d0c1_handleFrameInput.js:28; src/game/1aa02/1db3a_drawGameFrame.js:112
 - `levelEndLoopState`: src/game/15e15_sub_15e15.js:96; src/game/16837_sub_16837.js:31
 - `inLevelEndSequence`: src/game/15e15_sub_15e15.js:120; src/game/18f27_sub_18f27.js:25
 - `jahReplantX`: src/game/15e15_sub_15e15.js:75; src/game/16837_sub_16837.js:46
-- `frameStartTime`: src/game/1aa02/chunk_1d0c1.js:27; src/game/11659_sub_11659.js:185
-- `mouseX`: src/game/1aa02/chunk_1d0c1.js:40; re/LIBRARY.md:88
-- `mouseY`: src/game/1aa02/chunk_1d0c1.js:45
-- `mouseButtons`: src/game/1aa02/chunk_1d0c1.js:91; src/game/18f27_sub_18f27.js:220
-- `prevGunSightX`: src/game/1aa02/chunk_1d0c1.js:39; src/game/18f27_sub_18f27.js:23
-- `prevGunSightY`: src/game/1aa02/chunk_1d0c1.js:38
-- `frameCounter10`: src/game/1aa02/chunk_1d0c1.js:34; src/game/12130_sub_12130.js:105
-- `currentWeapon`: src/game/1aa02/chunk_1cc3c.js:49; src/game/1aa02/chunk_1d0c1.js:92; src/game/18f27_sub_18f27.js:131
-- `hasAutoGun`: src/game/16446_sub_16446.js:119; src/game/1aa02/chunk_1d0c1.js:101
-- `hasMissileLauncher`: src/game/16446_sub_16446.js:126; src/game/1aa02/chunk_1d0c1.js:110
-- `hasBong`: src/game/16446_sub_16446.js:131; src/game/1aa02/chunk_1d0c1.js:114
-- `rightButtonHeld`: src/game/1aa02/chunk_1d0c1.js:162; src/game/1aa02/chunk_1d0c1.js:165
-- `fireReady`: src/game/1aa02/chunk_1d630.js:72; src/game/18f27_sub_18f27.js:261
+- `frameStartTime`: src/game/1aa02/1d0c1_handleFrameInput.js:27; src/game/11659_sub_11659.js:185
+- `mouseX`: src/game/1aa02/1d0c1_handleFrameInput.js:40; re/LIBRARY.md:88
+- `mouseY`: src/game/1aa02/1d0c1_handleFrameInput.js:45
+- `mouseButtons`: src/game/1aa02/1d0c1_handleFrameInput.js:91; src/game/18f27_sub_18f27.js:220
+- `prevGunSightX`: src/game/1aa02/1d0c1_handleFrameInput.js:39; src/game/18f27_sub_18f27.js:23
+- `prevGunSightY`: src/game/1aa02/1d0c1_handleFrameInput.js:38
+- `frameCounter10`: src/game/1aa02/1d0c1_handleFrameInput.js:34; src/game/12130_sub_12130.js:105
+- `currentWeapon`: src/game/1aa02/1cc3c_startNewGame.js:49; src/game/1aa02/1d0c1_handleFrameInput.js:92; src/game/18f27_sub_18f27.js:131
+- `hasAutoGun`: src/game/16446_sub_16446.js:119; src/game/1aa02/1d0c1_handleFrameInput.js:101
+- `hasMissileLauncher`: src/game/16446_sub_16446.js:126; src/game/1aa02/1d0c1_handleFrameInput.js:110
+- `hasBong`: src/game/16446_sub_16446.js:131; src/game/1aa02/1d0c1_handleFrameInput.js:114
+- `rightButtonHeld`: src/game/1aa02/1d0c1_handleFrameInput.js:162; src/game/1aa02/1d0c1_handleFrameInput.js:165
+- `fireReady`: src/game/1aa02/1d630_updateGameFrame.js:72; src/game/18f27_sub_18f27.js:261
 - `bongState`: src/game/18f27_sub_18f27.js:113; src/game/18f27_sub_18f27.js:290
 - `bongShotsLeft`: src/game/18f27_sub_18f27.js:114; src/game/18f27_sub_18f27.js:274
 - `bongBlowPending`: src/game/18f27_sub_18f27.js:115; src/game/18f27_sub_18f27.js:278
@@ -407,54 +407,54 @@ Where each name comes from (file:line in the code at the time of naming).
 - `doubleBuffer`: re/LIBRARY.md:21
 - `cin`: src/game/10676_sub_10676.js:17
 - `fadeSteps`: src/game/102d1_sub_102d1.js:8
-- `musicTrack0Data`: src/game/1aa02/chunk_1bed0.js:19
-- `musicTrack1Data`: src/game/1aa02/chunk_1bed0.js:22
-- `musicTrack2Data`: src/game/1aa02/chunk_1bed0.js:25
-- `musicTrack3Data`: src/game/1aa02/chunk_1bed0.js:28
-- `musicTrack4Data`: src/game/1aa02/chunk_1bed0.js:31
-- `musicTrack5Data`: src/game/1aa02/chunk_1bed0.js:34
-- `musicTrack6Data`: src/game/1aa02/chunk_1bed0.js:37
-- `musicTrack7Data`: src/game/1aa02/chunk_1bed0.js:40
-- `musicTrack8Data`: src/game/1aa02/chunk_1bed0.js:43
-- `musicTrack9Data`: src/game/1aa02/chunk_1bed0.js:46
-- `musicTrack10Data`: src/game/1aa02/chunk_1bed0.js:49
-- `sndGameOverData`: src/game/1aa02/chunk_1bed0.js:52
-- `sndClickData`: src/game/1aa02/chunk_1bed0.js:59
-- `sndLogoData`: src/game/1aa02/chunk_1bed0.js:65
-- `sndMissileData`: src/game/1aa02/chunk_1bed0.js:71
-- `sndChopperData`: src/game/1aa02/chunk_1bed0.js:77
-- `sndProtectData`: src/game/1aa02/chunk_1bed0.js:83
-- `sndNukeData`: src/game/1aa02/chunk_1bed0.js:89
-- `sndBongBubbleData`: src/game/1aa02/chunk_1bed0.js:95
-- `sndBongBlowData`: src/game/1aa02/chunk_1bed0.js:101
-- `sndBongData`: src/game/1aa02/chunk_1bed0.js:107
-- `sndRastaRocketData`: src/game/1aa02/chunk_1bed0.js:113
-- `sndBongDeathData`: src/game/1aa02/chunk_1bed0.js:119
-- `sndAutomaticData`: src/game/1aa02/chunk_1bed0.js:125
-- `sndParaDie1Data`: src/game/1aa02/chunk_1bed0.js:131
-- `sndParaDie2Data`: src/game/1aa02/chunk_1bed0.js:137
-- `sndParaDie3Data`: src/game/1aa02/chunk_1bed0.js:143
-- `sndPdie4Data`: src/game/1aa02/chunk_1bed0.js:149
-- `sndParaDie5Data`: src/game/1aa02/chunk_1bed0.js:155
-- `sndParaSquishData`: src/game/1aa02/chunk_1c567.js:20
-- `sndExplosionData`: src/game/1aa02/chunk_1c567.js:28
-- `sndDoubleClickData`: src/game/1aa02/chunk_1c567.js:36
-- `sndGunShotData`: src/game/1aa02/chunk_1c567.js:44
-- `sndRicochetData`: src/game/1aa02/chunk_1c567.js:52
-- `sndIShotData`: src/game/1aa02/chunk_1c567.js:60
-- `sndYaMonData`: src/game/1aa02/chunk_1c567.js:68
-- `sndSmokinData`: src/game/1aa02/chunk_1c567.js:76
-- `sndGetSomeData`: src/game/1aa02/chunk_1c567.js:84
-- `sndMusicSample1Data`: src/game/1aa02/chunk_1c567.js:92
-- `sndMusicSample2Data`: src/game/1aa02/chunk_1c567.js:100
-- `sndMusicSample3Data`: src/game/1aa02/chunk_1c567.js:108
-- `sndMusicSample4Data`: src/game/1aa02/chunk_1c567.js:116
-- `sndMusicSample5Data`: src/game/1aa02/chunk_1c567.js:124
-- `sndMusicSample6Data`: src/game/1aa02/chunk_1c567.js:132
-- `sndMusicSample65Data`: src/game/1aa02/chunk_1c567.js:140
-- `sndMusicSample7Data`: src/game/1aa02/chunk_1c567.js:148
-- `sndMusicSample8Data`: src/game/1aa02/chunk_1c567.js:156
-- `sndMusicSample9Data`: src/game/1aa02/chunk_1c567.js:164
-- `sndMusicSample10Data`: src/game/1aa02/chunk_1c567.js:172
-- `sndUfoData`: src/game/1aa02/chunk_1c567.js:180
-- `sndUfo2Data`: src/game/1aa02/chunk_1c567.js:188
+- `musicTrack0Data`: src/game/1aa02/1bed0_loadMusicAndSounds.js:19
+- `musicTrack1Data`: src/game/1aa02/1bed0_loadMusicAndSounds.js:22
+- `musicTrack2Data`: src/game/1aa02/1bed0_loadMusicAndSounds.js:25
+- `musicTrack3Data`: src/game/1aa02/1bed0_loadMusicAndSounds.js:28
+- `musicTrack4Data`: src/game/1aa02/1bed0_loadMusicAndSounds.js:31
+- `musicTrack5Data`: src/game/1aa02/1bed0_loadMusicAndSounds.js:34
+- `musicTrack6Data`: src/game/1aa02/1bed0_loadMusicAndSounds.js:37
+- `musicTrack7Data`: src/game/1aa02/1bed0_loadMusicAndSounds.js:40
+- `musicTrack8Data`: src/game/1aa02/1bed0_loadMusicAndSounds.js:43
+- `musicTrack9Data`: src/game/1aa02/1bed0_loadMusicAndSounds.js:46
+- `musicTrack10Data`: src/game/1aa02/1bed0_loadMusicAndSounds.js:49
+- `sndGameOverData`: src/game/1aa02/1bed0_loadMusicAndSounds.js:52
+- `sndClickData`: src/game/1aa02/1bed0_loadMusicAndSounds.js:59
+- `sndLogoData`: src/game/1aa02/1bed0_loadMusicAndSounds.js:65
+- `sndMissileData`: src/game/1aa02/1bed0_loadMusicAndSounds.js:71
+- `sndChopperData`: src/game/1aa02/1bed0_loadMusicAndSounds.js:77
+- `sndProtectData`: src/game/1aa02/1bed0_loadMusicAndSounds.js:83
+- `sndNukeData`: src/game/1aa02/1bed0_loadMusicAndSounds.js:89
+- `sndBongBubbleData`: src/game/1aa02/1bed0_loadMusicAndSounds.js:95
+- `sndBongBlowData`: src/game/1aa02/1bed0_loadMusicAndSounds.js:101
+- `sndBongData`: src/game/1aa02/1bed0_loadMusicAndSounds.js:107
+- `sndRastaRocketData`: src/game/1aa02/1bed0_loadMusicAndSounds.js:113
+- `sndBongDeathData`: src/game/1aa02/1bed0_loadMusicAndSounds.js:119
+- `sndAutomaticData`: src/game/1aa02/1bed0_loadMusicAndSounds.js:125
+- `sndParaDie1Data`: src/game/1aa02/1bed0_loadMusicAndSounds.js:131
+- `sndParaDie2Data`: src/game/1aa02/1bed0_loadMusicAndSounds.js:137
+- `sndParaDie3Data`: src/game/1aa02/1bed0_loadMusicAndSounds.js:143
+- `sndPdie4Data`: src/game/1aa02/1bed0_loadMusicAndSounds.js:149
+- `sndParaDie5Data`: src/game/1aa02/1bed0_loadMusicAndSounds.js:155
+- `sndParaSquishData`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:20
+- `sndExplosionData`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:28
+- `sndDoubleClickData`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:36
+- `sndGunShotData`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:44
+- `sndRicochetData`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:52
+- `sndIShotData`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:60
+- `sndYaMonData`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:68
+- `sndSmokinData`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:76
+- `sndGetSomeData`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:84
+- `sndMusicSample1Data`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:92
+- `sndMusicSample2Data`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:100
+- `sndMusicSample3Data`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:108
+- `sndMusicSample4Data`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:116
+- `sndMusicSample5Data`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:124
+- `sndMusicSample6Data`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:132
+- `sndMusicSample65Data`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:140
+- `sndMusicSample7Data`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:148
+- `sndMusicSample8Data`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:156
+- `sndMusicSample9Data`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:164
+- `sndMusicSample10Data`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:172
+- `sndUfoData`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:180
+- `sndUfo2Data`: src/game/1aa02/1c567_loadMoreSoundsAndShowLogos.js:188

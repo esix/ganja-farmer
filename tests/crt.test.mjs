@@ -234,7 +234,7 @@ test('abs / labs(0x23d7a) / div / __CHP / strlen / memset / memcpy', () => {
   boot();
   assert.equal(F.abs_2377c(-5), 5);
   assert.equal(F.abs_2377c(-0x80000000), -0x80000000);
-  assert.equal(F.sub_23d7a(-7), 7);
+  assert.equal(F.labs_23d7a(-7), 7);
   const r = stackAlloc(8);
   assert.equal(F.div_23744(-7, 2, r), r);
   assert.deepEqual([R32(r), R32(r + 4)], [-3, -1]);
