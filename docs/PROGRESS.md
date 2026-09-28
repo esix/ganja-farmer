@@ -1,5 +1,8 @@
 # Port progress
 
+> **Stage 1 record.** Status of the faithful port (git tag `stage1`). Several library layers listed here
+> (sound client, keyboard ISR, DPMI services) were replaced in stage 2: see [STAGE2.md](STAGE2.md).
+
 Status: `porting` → `ported` (difftest PASS) → `verified` (independent audit FAITHFUL) / `rework`.
 
 ## Infrastructure / one-time RE

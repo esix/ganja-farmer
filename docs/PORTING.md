@@ -1,5 +1,10 @@
 # Porting rules — Ganja Farmer (GANJAFRM.EXE) → JavaScript
 
+> **Stage 1 rules.** These rules governed the faithful, function-by-function port (git tag `stage1`).
+> Since stage 2 the code is being adapted to the browser; see [STAGE2.md](STAGE2.md) for what changed and
+> [ARCHITECTURE.md](ARCHITECTURE.md) for the current structure. The memory model, x87 and function rules
+> below still describe the translated game code.
+
 The goal is a **faithful** port. The binary is the only source of truth. Nothing may be added, removed,
 "fixed", simplified, reordered, or renamed in meaning unless the original code does exactly that.
 Original bugs are preserved (mark them `// ORIGINAL BUG:` with an explanation, never fix them).
