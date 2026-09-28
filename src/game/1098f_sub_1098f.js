@@ -87,7 +87,7 @@ register(0x1098f, 'sub_1098f', async function sub_1098f() {
     }
     // 0x10b55
     F.Keyboard_Install_Driver_22bd7();                               // 0x10b55
-    await F.sub_10676();                                                   // 0x10b5a
+    F.sub_10676();                                                   // 0x10b5a
     F.dws_DPlay_1eff8(0x611c0);                                      // 0x10b5f..0x10b6a (cdecl, add esp,4)
     break;                                                                 // 0x10b6d jmp 0x10b74
   }

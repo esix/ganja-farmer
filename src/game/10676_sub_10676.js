@@ -5,7 +5,7 @@
 import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 
-register(0x10676, 'sub_10676', async function sub_10676() {
+register(0x10676, 'sub_10676', function sub_10676() {
   let r; // [ebp-8]: receives sub_2270d results, never read
   let i; // [ebp-0xc]
   let fp; // [ebp-0x10]
@@ -14,7 +14,7 @@ register(0x10676, 'sub_10676', async function sub_10676() {
   i = 0;
   if (R32(0x31ee0) !== 0) {
     for (i = 0; i < 9; i++) {
-      await F.istream_extract_cstr_2231a(0x64eb8, 0x60a70 + i * 0x18 + 8);
+      F.istream_extract_cstr_2231a(0x64eb8, 0x60a70 + i * 0x18 + 8);
       W32(0x60a70 + i * 0x18, 100000 - i * 10000);
       W32(0x60a74 + i * 0x18, 10 - i);
       r = 0;
