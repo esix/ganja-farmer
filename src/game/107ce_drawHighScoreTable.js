@@ -15,55 +15,40 @@
 // file makes fread write past 0x60a70 + 9*0x18, and for i >= 10 the color read [ebp-0x38 + i*4] runs past the
 // 10-dword local array into the other frame slots ([ebp-0x10] fp, [ebp-0xc] never written, [ebp-8] i,
 // [ebp-4] j) and, for i >= 14, into the saved EBP / registers / return address.
-// All locals therefore live in one emulated block laid out like the original frame ([ebp-0x38] .. [ebp-4]),
-// so the out-of-bounds reads for i = 10..13 see the same slots as the original.
-// UNCERTAIN: for i >= 14 the original reads saved registers (caller state) that this port cannot model;
-// the port reads whatever lies above the block in the emulated stack.
+// Stage 1 kept the locals in one emulated block laid out like the original frame for that reason; stage 2
+// makes them JS variables (see below), so those out-of-bounds colours are not reproduced.
 import { F, register } from '../runtime/registry.js';
-import { R32, W32 } from '../runtime/mem.js';
-import { stackAlloc, stackFree } from '../runtime/stack.js';
+import { R32 } from '../runtime/mem.js';
 import { highScoreRowColors, highScores, levelDigits, scoreDigits } from './data.js';
 import { G, highScore, sprite } from './access.js';
 
+// Stage 2: the locals ([ebp-0x38] colours, [ebp-0x10] FILE*, [ebp-8] i, [ebp-4] j) are JS variables instead of
+// an emulated stack frame. DEVIATION (unreachable with the game's own SCORES.DAT, 9 records): with more than
+// 10 records the original read row colours past its 10-entry copy, from the frame's other slots.
 register(0x107ce, 'drawHighScoreTable_107ce', function drawHighScoreTable() {
-  const frame = stackAlloc(0x38);              // sub esp, 0x38
-  const L = (off) => frame + 0x38 - off;       // address of [ebp - off]
-  const ARR = L(0x38);                          // [ebp-0x38]: 10 dwords copied from 0x30c24
-  const FP = L(0x10);                           // [ebp-0x10]: FILE* from fopen
-  const I = L(8);                               // [ebp-8]: entry index
-  const J = L(4);                               // [ebp-4]: loop counter
+  const rowColors = [];
+  for (let k = 0; k < 10; k++) rowColors.push(R32(highScoreRowColors + k * 4));   // 0x107ed rep movsd (ecx=10)
+  const fp = F.fopen_2264a(0x30028 /* "scores.dat" */, 0x30026 /* "r" */);   // 0x10806
+  if (fp === 0) return;                                                       // 0x1080e je 0x10986
 
-  W32(I, 0);                                                             // 0x107e6
-  for (let k = 0; k < 10; k++) W32(ARR + k * 4, R32(highScoreRowColors + k * 4));   // 0x107ed rep movsd (ecx=10)
-  W32(FP, F.fopen_2264a(0x30028 /* "scores.dat" */, 0x30026 /* "r" */));  // 0x10806
-  if (R32(FP) === 0) { stackFree(0x38); return; }                        // 0x1080e je 0x10986
+  for (let i = 0; ; i++) {                                                    // [ebp-8]; 0x10976 inc
+    if (F.readHighScoreEntry_10010(fp, highScore(i).addr) === 0) break;      // 0x10818..0x1082d
+    G.score = highScore(i).score;                                             // 0x10833
+    G.level = highScore(i).level;                                             // 0x10842
+    F.updateStatusDigits_15788();                                             // 0x10851
 
-  for (;;) {
-    // 0x10818..0x1082d
-    if ((F.readHighScoreEntry_10010(R32(FP), highScore(R32(I)).addr)) === 0) break;
-    G.score = highScore(R32(I)).score;                    // 0x10833
-    G.level = highScore(R32(I)).level;                    // 0x10842
-    F.updateStatusDigits_15788();                                                  // 0x10851
-
-    for (W32(J, 0); (R32(J) | 0) < 7; W32(J, R32(J) + 1)) {              // 0x10856..0x10869 (jge: signed)
-      sprite(scoreDigits, R32(J)).x = ((R32(J) << 2) + 0xa8) | 0;   // 0x1086b
-      sprite(scoreDigits, R32(J)).y = (R32(I) * 0xd + 0x55) | 0;    // 0x10884
+    for (let j = 0; j < 7; j++) {                                             // 0x10856..0x10869
+      sprite(scoreDigits, j).x = ((j << 2) + 0xa8) | 0;                       // 0x1086b
+      sprite(scoreDigits, j).y = (i * 0xd + 0x55) | 0;                        // 0x10884
     }
-    for (W32(J, 0); (R32(J) | 0) < 3; W32(J, R32(J) + 1)) {              // 0x1089a..0x108ad
-      sprite(levelDigits, R32(J)).x = ((R32(J) << 2) + 0x104) | 0;  // 0x108af
-      sprite(levelDigits, R32(J)).y = (R32(I) * 0xd + 0x55) | 0;    // 0x108c8
+    for (let j = 0; j < 3; j++) {                                             // 0x1089a..0x108ad
+      sprite(levelDigits, j).x = ((j << 2) + 0x104) | 0;                      // 0x108af
+      sprite(levelDigits, j).y = (i * 0xd + 0x55) | 0;                        // 0x108c8
     }
-    for (W32(J, 0); (R32(J) | 0) < 7; W32(J, R32(J) + 1)) {              // 0x108de..0x108f1
-      F.Draw_Sprite_Clip_212c0(sprite(scoreDigits, R32(J)).addr, G.doubleBuffer, 1);  // 0x1090c
-    }
-    for (W32(J, 0); (R32(J) | 0) < 3; W32(J, R32(J) + 1)) {              // 0x10913..0x10926
-      F.Draw_Sprite_Clip_212c0(sprite(levelDigits, R32(J)).addr, G.doubleBuffer, 1);  // 0x10941
-    }
-    // 0x10948..0x1096e: push 1; ecx = 0x60a70 + i*0x18 + 8; ebx = [ebp-0x38 + i*4]; edx = i*0xd + 0x53; eax = 0x21
-    F.Print_String_DB_221aa(0x21, (R32(I) * 0xd + 0x53) | 0, R32((ARR + (R32(I) << 2)) | 0),
-                                  (R32(I) * 0x18 + highScores + 8) | 0, 1);
-    W32(I, R32(I) + 1);                                                   // 0x10976 inc [ebp-8]
+    for (let j = 0; j < 7; j++) F.Draw_Sprite_Clip_212c0(sprite(scoreDigits, j).addr, G.doubleBuffer, 1); // 0x1090c
+    for (let j = 0; j < 3; j++) F.Draw_Sprite_Clip_212c0(sprite(levelDigits, j).addr, G.doubleBuffer, 1); // 0x10941
+    // 0x10948..0x1096e: name at record + 8, colour of the row
+    F.Print_String_DB_221aa(0x21, (i * 0xd + 0x53) | 0, rowColors[i], (i * 0x18 + highScores + 8) | 0, 1);
   }
-  F.fclose_228ed(R32(FP));                                          // 0x10981
-  stackFree(0x38);
+  F.fclose_228ed(fp);                                                         // 0x10981
 });

@@ -27,71 +27,57 @@
 // crt.js), not on a memory location read here; its body awaits Time_Delay(1), which yields while waiting for
 // the BIOS tick (20404_Time_Delay.js), so no extra yieldCpu is added.
 import { F, register } from '../runtime/registry.js';
-import { R8, R32, W8, W32 } from '../runtime/mem.js';
-import { stackAlloc, stackFree } from '../runtime/stack.js';
-import { HIGHSCORES_FIELD, KEY, highScores, sndClick, sndYaMon } from './data.js';
+import { W8 } from '../runtime/mem.js';
+import { HIGHSCORES_FIELD, sndClick, sndYaMon } from './data.js';
 import { G, highScore } from './access.js';
 
+// Stage 2: the locals ([ebp-0x10] i, [ebp-0xc] pos, [ebp-8] j, [ebp-4] key byte) are JS variables.
 register(0x1098f, 'enterHighScore_1098f', async function enterHighScore() {
-  const frame = stackAlloc(0x10);              // 0x109a1 sub esp, 0x10
-  const L = (off) => frame + 0x10 - off;       // address of [ebp - off]
-  const I = L(0x10);                           // [ebp-0x10]: table index
-  const POS = L(0xc);                          // [ebp-0xc]: character position
-  const J = L(8);                              // [ebp-8]: fill counter
-  const KEY = L(4);                            // [ebp-4]: byte, getch result (uninitialized at first test)
-
-  W32(POS, 0);                                                            // 0x109a7
-  F.loadHighScores_10767();                                                     // 0x109ae
-  // 0x109b3..0x109c6: for (i = 0; i < 9; i++) (jge: signed); 0x109bc mov eax,[ebp-0x10] is a dead load
-  for (W32(I, 0); (R32(I) | 0) < 9; W32(I, R32(I) + 1)) {
-    // 0x109cc..0x109dc: cmp [0x60a68], [i*0x18 + 0x60a70]; jle 0x10b6f (next i)
-    if ((G.score | 0) <= (highScore(R32(I)).score | 0)) continue;
+  let pos = 0;                                                            // 0x109a7
+  // The key byte is first tested before any getch: the original reads its uninitialized frame byte there
+  // (the stage-1 port's stack filled new frames with 0xCC, and 0xCC != 0x0D).
+  let key = 0xcc;
+  F.loadHighScores_10767();                                               // 0x109ae
+  for (let i = 0; i < 9; i++) {                                           // 0x109b3..0x109c6
+    if ((G.score | 0) <= (highScore(i).score | 0)) continue;              // 0x109cc..0x109dc: jle -> next i
 
     await F.Time_Delay_20404(1);                                          // 0x109e2
-    highScore(R32(I)).score = G.score;            // 0x109ec..0x109f6
-    highScore(R32(I)).level = G.level;            // 0x109fc..0x10a06
+    highScore(i).score = G.score;                                         // 0x109ec..0x109f6
+    highScore(i).level = G.level;                                         // 0x109fc..0x10a06
     F.Print_String_DB_221aa(0x55, 0x50, 0xfa, 0x30033 /* " !!!New Top Score!!! " */, 0);  // 0x10a0c..0x10a22
     F.Print_String_DB_221aa(5, 0x5a, 0xfb,
-      0x30049 /* "Please type your name then press enter" */, 0);                             // 0x10a27..0x10a3d
-    F.Show_Double_Buffer_21531(G.doubleBuffer /* double_buffer, LIBRARY.md */, 0);        // 0x10a42..0x10a49
+      0x30049 /* "Please type your name then press enter" */, 0);             // 0x10a27..0x10a3d
+    F.Show_Double_Buffer_21531(G.doubleBuffer, 0);                        // 0x10a42..0x10a49
     await F.Time_Delay_20404(1);                                          // 0x10a4e
-    F.Keyboard_Remove_Driver_22c58();                               // 0x10a58
-    // 0x10a5d..0x10a80: for (j = 0; j < 15; j++) byte [i*0x18 + j + 0x60a78] = 0x20 (jge: signed);
-    // 0x10a66 mov eax,[ebp-8] is a dead load
-    for (W32(J, 0); (R32(J) | 0) < 0xf; W32(J, R32(J) + 1)) {
-      W8((Math.imul(R32(I), 0x18) + R32(J) + (highScores + HIGHSCORES_FIELD.name)) | 0, 0x20);
-    }
+    F.Keyboard_Remove_Driver_22c58();                                     // 0x10a58
+    const name = highScore(i).addr + HIGHSCORES_FIELD.name;
+    for (let j = 0; j < 0xf; j++) W8(name + j, 0x20);                     // 0x10a5d..0x10a80: blank the name
 
-    // 0x10a82..0x10a8c: loop while pos < 15 (signed) and key byte != 0x0d
-    while ((R32(POS) | 0) < 0xf && R8(KEY) !== 0x0d) {
-      // 0x10a93..0x10ab0: while (kbhit() == 0) { Time_Delay(1); cycleRastaColors(); updateMusic(); }
-      while ((F.kbhit_2328d()) === 0) {
+    while (pos < 0xf && key !== 0x0d) {                                   // 0x10a82..0x10a8c
+      while (F.kbhit_2328d() === 0) {                                     // 0x10a93..0x10ab0
         await F.Time_Delay_20404(1);
         F.cycleRastaColors_14fba();
         F.updateMusic_10050();
       }
-      W8(KEY, (await F.getch_232a4()) & 0xff);                            // 0x10ab2..0x10ab7 mov [ebp-4], al
-      if (R8(KEY) === 0x0d) break;                                         // 0x10aba..0x10ac0 jmp 0x10b55
+      key = (await F.getch_232a4()) & 0xff;                               // 0x10ab2..0x10ab7
+      if (key === 0x0d) break;                                            // 0x10aba..0x10ac0
 
-      if (R8(KEY) === 0x08 && (R32(POS) | 0) >= 1) {                       // 0x10ac5..0x10acf (jge: signed)
-        W8((Math.imul(R32(I), 0x18) + R32(POS) + (highScores + 0x7)) | 0, 0x20);     // 0x10ad3..0x10ada
-        W32(POS, R32(POS) - 2);                                            // 0x10ae1 add [ebp-0xc], -2
-      } else if (R8(KEY) !== 0x08) {                                       // 0x10ae7..0x10aeb
-        W8((Math.imul(R32(I), 0x18) + R32(POS) + (highScores + HIGHSCORES_FIELD.name)) | 0, R8(KEY));  // 0x10aed..0x10af7
-        F.dws_DPlay_1eff8(sndClick);                                  // 0x10afd..0x10b08 (cdecl, add esp,4)
+      if (key === 0x08 && pos >= 1) {                                     // 0x10ac5..0x10acf: Backspace
+        W8(name + pos - 1, 0x20);                                         // 0x10ad3..0x10ada
+        pos = (pos - 2) | 0;                                              // 0x10ae1 (the +1 below makes it -1)
+      } else if (key !== 0x08) {                                          // 0x10ae7..0x10aeb
+        W8(name + pos, key);                                              // 0x10aed..0x10af7
+        F.dws_DPlay_1eff8(sndClick);                                      // 0x10afd..0x10b08
       }
-      F.Show_Double_Buffer_21531(G.doubleBuffer, 0);                   // 0x10b0b..0x10b12
-      // 0x10b17..0x10b36: push 0; ecx = i*0x18 + 0x60a70 + 8; ebx = 0xfc; edx = 0x64; eax = 0x6c
-      F.Print_String_202cd(0x6c, 0x64, 0xfc, (Math.imul(R32(I), 0x18) + highScores + 8) | 0, 0);
-      W32(POS, R32(POS) + 1);                                              // 0x10b3b..0x10b3e (eax load is dead)
-      await F.Time_Delay_20404(1);                                         // 0x10b41
-      F.cycleRastaColors_14fba();                                                 // 0x10b4b
+      F.Show_Double_Buffer_21531(G.doubleBuffer, 0);                      // 0x10b0b..0x10b12
+      F.Print_String_202cd(0x6c, 0x64, 0xfc, name, 0);                    // 0x10b17..0x10b36
+      pos = (pos + 1) | 0;                                                // 0x10b3b..0x10b3e
+      await F.Time_Delay_20404(1);                                        // 0x10b41
+      F.cycleRastaColors_14fba();                                         // 0x10b4b
     }
-    // 0x10b55
-    F.Keyboard_Install_Driver_22bd7();                               // 0x10b55
-    F.saveHighScores_10676();                                                   // 0x10b5a
-    F.dws_DPlay_1eff8(sndYaMon);                                      // 0x10b5f..0x10b6a (cdecl, add esp,4)
-    break;                                                                 // 0x10b6d jmp 0x10b74
+    F.Keyboard_Install_Driver_22bd7();                                    // 0x10b55
+    F.saveHighScores_10676();                                             // 0x10b5a
+    F.dws_DPlay_1eff8(sndYaMon);                                          // 0x10b5f..0x10b6a
+    break;                                                                // 0x10b6d
   }
-  stackFree(0x10);                                                         // 0x10b74 epilogue
 });

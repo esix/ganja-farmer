@@ -46,25 +46,25 @@ import { KEY, gunSight, mainMenuPcx, mainMenuPcx2, mainMenuPcx3, mainMenuPcx4, m
 import { G, keyDown, sprite } from './access.js';
 
 register(0x11659, 'runMainMenu_11659', async function runMainMenu() {
-  const frame = stackAlloc(0x328);             // 0x1166b sub esp, 0x328
-  const L = (off) => frame + 0x328 - off;      // address of [ebp - off]
-  const V328 = L(0x328);                       // [ebp-0x328]: switch value
-  const PAL = L(0x324);                        // [ebp-0x324]: RGB_palette (address passed to Read/Write_Palette)
-  const V1C = L(0x1c);                         // [ebp-0x1c]
-  const V18 = L(0x18);                         // [ebp-0x18]
-  const V14 = L(0x14);                         // [ebp-0x14]
-  const V10 = L(0x10);                         // [ebp-0x10]
-  const V0C = L(0xc);                          // [ebp-0xc]
-  const V08 = L(8);                            // [ebp-8]
-  const V04 = L(4);                            // [ebp-4]
+  // Stage 2: the frame's plain locals are JS variables; only the palette, whose address is passed to
+  // Read_Palette / Write_Palette, stays in emulated memory. Originally [ebp-0x324] in a 0x328-byte frame.
+  const PAL = stackAlloc(0x308);               // RGB_palette (LIBRARY.md)
+  let menuFrame;     // [ebp-0x328]: copy of animFrame for the switch
+  let exitCode;      // [ebp-0x1c]: 0x22 leaves the menu (start the game)
+  let unused18;      // [ebp-0x18]: written once, never read
+  let animBack;      // [ebp-0x14]: 1 while the menu animation runs backwards
+  let animFrame;     // [ebp-0x10]: menu animation frame 0..4
+  let idleCountdown; // [ebp-0xc]: frames until the high-score screen is shown (0x168)
+  let spaceLatch;    // [ebp-8]: Space already handled
+  let clickLatch;    // [ebp-4]: mouse button already handled
 
-  W32(V18, 0);                                                              // 0x11671
-  W32(V1C, 0);                                                              // 0x11678
-  W32(V04, 0);                                                              // 0x1167f
-  W32(V14, 0);                                                              // 0x11686
-  W32(V10, 0);                                                              // 0x1168d
-  W32(V0C, 0x168);                                                          // 0x11694
-  W32(V08, 0);                                                              // 0x1169b
+  unused18 = 0;                                                              // 0x11671
+  exitCode = 0;                                                              // 0x11678
+  clickLatch = 0;                                                              // 0x1167f
+  animBack = 0;                                                              // 0x11686
+  animFrame = 0;                                                              // 0x1168d
+  idleCountdown = 0x168;                                                          // 0x11694
+  spaceLatch = 0;                                                              // 0x1169b
   F.PCX_Init_207a0(mainMenuPcx);                                          // 0x116a2..0x116a7
   F.PCX_Load_20806(0x300f4 /* "mainmnb.pcx" */, mainMenuPcx, 1);          // 0x116ac..0x116bb
   F.Read_Palette_20618(0, 0xff, PAL);                                 // 0x116c0..0x116cd
@@ -81,37 +81,37 @@ register(0x11659, 'runMainMenu_11659', async function runMainMenu() {
   sprite(gunSight).currFrame = 1;                                                          // 0x1176a
   F.Behind_Sprite_Clip_2106f(gunSight, G.doubleBuffer);                  // 0x11774..0x1177f
 
-  while ((R32(V1C) | 0) !== 0x22) {                                         // 0x11784 cmp [ebp-0x1c],0x22; je 0x11bef
+  while ((exitCode | 0) !== 0x22) {                                         // 0x11784 cmp [ebp-0x1c],0x22; je 0x11bef
     G.frameStartTime = F.Timer_Query_235f9();                              // 0x1178e..0x11793
     sprite(gunSight).visible = 1;                                                        // 0x11798
-    W32(V328, R32(V10));                                                    // 0x117a2..0x117a5
+    menuFrame = (animFrame) | 0;                                                    // 0x117a2..0x117a5
     // 0x11884: cmp [ebp-0x328],4; ja 0x1186d (unsigned) -> jmp 0x1189c; else jmp [eax*4 + 0x11870]
     // (table: 0x117b0, 0x117d2, 0x117fc, 0x11826, 0x1184d). `mov eax,[ebp-0x10]` before each inc/add is dead.
-    switch (R32(V328) >>> 0) {
+    switch (menuFrame >>> 0) {
       case 0:                                                               // 0x117b0
         F.PCX_Copy_To_Buffer_20bd7(mainMenuPcx2, G.doubleBuffer);
-        W32(V14, 0);                                                        // 0x117c0
-        W32(V10, R32(V10) + 1);                                             // 0x117ca inc
+        animBack = 0;                                                        // 0x117c0
+        animFrame = (animFrame + 1) | 0;                                             // 0x117ca inc
         break;
       case 1:                                                               // 0x117d2
         F.PCX_Copy_To_Buffer_20bd7(mainMenuPcx3, G.doubleBuffer);
-        if (R32(V14) === 0) W32(V10, R32(V10) + 1);                         // 0x117e2..0x117eb
-        else W32(V10, R32(V10) - 1);                                        // 0x117f3 add -1
+        if (animBack === 0) animFrame = (animFrame + 1) | 0;                         // 0x117e2..0x117eb
+        else animFrame = (animFrame - 1) | 0;                                        // 0x117f3 add -1
         break;
       case 2:                                                               // 0x117fc
         F.PCX_Copy_To_Buffer_20bd7(mainMenuPcx, G.doubleBuffer);
-        if (R32(V14) === 0) W32(V10, R32(V10) + 1);                         // 0x1180c..0x11815
-        else W32(V10, R32(V10) - 1);                                        // 0x1181d
+        if (animBack === 0) animFrame = (animFrame + 1) | 0;                         // 0x1180c..0x11815
+        else animFrame = (animFrame - 1) | 0;                                        // 0x1181d
         break;
       case 3:                                                               // 0x11826
         F.PCX_Copy_To_Buffer_20bd7(mainMenuPcx4, G.doubleBuffer);
-        if (R32(V14) === 0) W32(V10, R32(V10) + 1);                         // 0x11836..0x1183f
-        else W32(V10, R32(V10) - 1);                                        // 0x11847
+        if (animBack === 0) animFrame = (animFrame + 1) | 0;                         // 0x11836..0x1183f
+        else animFrame = (animFrame - 1) | 0;                                        // 0x11847
         break;
       case 4:                                                               // 0x1184d
         F.PCX_Copy_To_Buffer_20bd7(mainMenuPcx5, G.doubleBuffer);
-        W32(V14, 1);                                                        // 0x1185d
-        W32(V10, R32(V10) - 1);                                             // 0x11867
+        animBack = 1;                                                        // 0x1185d
+        animFrame = (animFrame - 1) | 0;                                             // 0x11867
         break;
       default:                                                              // 0x1186d jmp 0x1189c
         break;
@@ -122,27 +122,27 @@ register(0x11659, 'runMainMenu_11659', async function runMainMenu() {
     sprite(gunSight).y = G.mouseY;                                             // 0x118c4..0x118c9
 
     // 0x118ce..0x118db: [ebp-4] == 0 && [0x60b50] == 1
-    if (R32(V04) === 0 && G.mouseButtons === 1) {
+    if (clickLatch === 0 && G.mouseButtons === 1) {
       F.dws_DPlay_1eff8(sndClick);                                     // 0x118df..0x118ea (cdecl)
-      W32(V04, 1);                                                          // 0x118ed
+      clickLatch = 1;                                                          // 0x118ed
     }
     // 0x118f4..0x11901: [ebp-4] == 1 && [0x60b50] != 1
-    if (R32(V04) === 1 && G.mouseButtons !== 1) {
-      W32(V04, 0);                                                          // 0x11905
+    if (clickLatch === 1 && G.mouseButtons !== 1) {
+      clickLatch = 0;                                                          // 0x11905
     }
 
     // 0x1190c..0x1193d: 0xf < x < 0x7e && 9 < y < 0x34 && [0x60b50] == 1
     if ((sprite(gunSight).x | 0) > 0xf && (sprite(gunSight).x | 0) < 0x7e &&
         (sprite(gunSight).y | 0) > 9 && (sprite(gunSight).y | 0) < 0x34 && G.mouseButtons === 1) {
       G.gameState = 0x22;                                                   // 0x11941
-      W32(V1C, 0x22);                                                       // 0x1194b
+      exitCode = 0x22;                                                       // 0x1194b
       F.dws_DPlay_1eff8(sndDoubleClick);                                     // 0x11952..0x1195d
     }
     // 0x11960..0x1199d: 0xca < x < 0x132 && 0x93 < y < 0xb5 && [0x60b50] == 1
     if ((sprite(gunSight).x | 0) > 0xca && (sprite(gunSight).x | 0) < 0x132 &&
         (sprite(gunSight).y | 0) > 0x93 && (sprite(gunSight).y | 0) < 0xb5 && G.mouseButtons === 1) {
       G.gameState = 0x25;                                                   // 0x119a1
-      W32(V1C, 0x22);                                                       // 0x119ab
+      exitCode = 0x22;                                                       // 0x119ab
       F.dws_DPlay_1eff8(sndDoubleClick);                                     // 0x119b2..0x119bd
     }
     // 0x119c0..0x119f7: 0xca < x < 0x132 && 0xc < y < 0x2b && [0x60b50] == 1
@@ -161,12 +161,12 @@ register(0x11659, 'runMainMenu_11659', async function runMainMenu() {
     }
 
     // 0x11a70..0x11a7d: [0x64fe8] == 0 && [ebp-8] == 1
-    if (keyDown(KEY.space) === 0 && R32(V08) === 1) {
-      W32(V08, 0);                                                          // 0x11a81
+    if (keyDown(KEY.space) === 0 && spaceLatch === 1) {
+      spaceLatch = 0;                                                          // 0x11a81
     }
-    W32(V0C, R32(V0C) - 1);                                                 // 0x11a88 add [ebp-0xc], -1
+    idleCountdown = (idleCountdown - 1) | 0;                                                 // 0x11a88 add [ebp-0xc], -1
     // 0x11a8c..0x11a9f: [ebp-0xc] < 0 (jl) || ([0x64fe8] != 0 && [ebp-8] == 0)
-    if ((R32(V0C) | 0) < 0 || (keyDown(KEY.space) !== 0 && R32(V08) === 0)) {
+    if ((idleCountdown | 0) < 0 || (keyDown(KEY.space) !== 0 && spaceLatch === 0)) {
       F.Fill_Screen_20768(0);                                         // 0x11aa3..0x11aa5
       await F.showHighScoreScreen_1128e();                                                  // 0x11aaa
       F.Fill_Screen_20768(0);                                         // 0x11aaf..0x11ab1
@@ -174,8 +174,8 @@ register(0x11659, 'runMainMenu_11659', async function runMainMenu() {
       F.Write_Palette_2069f(0, 0xff, PAL);                            // 0x11ac0..0x11acd
       sprite(gunSight).currFrame = 1;                                                      // 0x11ad2
       F.dws_DPlay_1eff8(sndDoubleClick);                                     // 0x11adc..0x11ae7
-      W32(V0C, 0x168);                                                      // 0x11aea
-      W32(V08, 1);                                                          // 0x11af1
+      idleCountdown = 0x168;                                                      // 0x11aea
+      spaceLatch = 1;                                                          // 0x11af1
     }
 
     F.cycleRastaColors_14fba();                                                    // 0x11af8
@@ -205,7 +205,7 @@ register(0x11659, 'runMainMenu_11659', async function runMainMenu() {
       }
       F.PCX_Delete_20b69(pcxScratch);                                    // 0x11bc0..0x11bc5
       F.Fill_Screen_20768(0);                                         // 0x11bca..0x11bcc
-      W32(V08, 1);                                                          // 0x11bd1
+      spaceLatch = 1;                                                          // 0x11bd1
       F.Write_Palette_2069f(0, 0xff, PAL);                            // 0x11bd8..0x11be5
     }
   }                                                                         // 0x11bea jmp 0x11784
@@ -215,5 +215,5 @@ register(0x11659, 'runMainMenu_11659', async function runMainMenu() {
   F.PCX_Delete_20b69(mainMenuPcx3);                                        // 0x11c03..0x11c08
   F.PCX_Delete_20b69(mainMenuPcx4);                                        // 0x11c0d..0x11c12
   F.PCX_Delete_20b69(mainMenuPcx5);                                        // 0x11c17..0x11c1c
-  stackFree(0x328);                                                         // 0x11c21 epilogue
+  stackFree(0x308);                                                         // 0x11c21 epilogue
 });
