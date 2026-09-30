@@ -16,7 +16,8 @@
 import { F } from '../../runtime/registry.js';
 import { R32, W16, W32 } from '../../runtime/mem.js';
 import { imod } from '../../runtime/cpu.js';
-import { DETECT_OVERRIDES, IDEAL, SPRITE, choppers, gunSight, paratroopers, pcxScratch, sndDetectOverrides, sndDetectResults, sndIdeal, statusBar, van } from '../data.js';
+import { DETECT_OVERRIDES, SPRITE, choppers, gunSight, paratroopers, pcxScratch, sndDetectOverrides, sndDetectResults, sndIdeal, statusBar, van } from '../data.js';
+import { ideal, sprite } from '../access.js';
 
 export function initSystemAndLoadSprites() {
   let i; // [ebp-4]
@@ -30,11 +31,11 @@ export function initSystemAndLoadSprites() {
   W16((sndDetectOverrides + DETECT_OVERRIDES.dma), 0xffff);                                          // 1aa52
   W16((sndDetectOverrides + DETECT_OVERRIDES.irq), 0xffff);                                          // 1aa5b
   F.dws_DetectHardWare_1ea27(sndDetectOverrides, sndDetectResults);            // 1aa64..1aa75 (cdecl: push 0x61000, push 0x60ff0)
-  W16(sndIdeal, 1);                                               // 1aa78
-  W16((sndIdeal + IDEAL.digitalType), 8);                                               // 1aa81
-  W16((sndIdeal + IDEAL.digitalRate), 0x2aed);                                          // 1aa8a
-  W16((sndIdeal + IDEAL.digitalVoices), 0x10);                                            // 1aa93
-  W16((sndIdeal + IDEAL.field8), 1);                                               // 1aa9c
+  ideal(sndIdeal).musicType = 1;                                               // 1aa78
+  ideal(sndIdeal).digitalType = 8;                                               // 1aa81
+  ideal(sndIdeal).digitalRate = 0x2aed;                                          // 1aa8a
+  ideal(sndIdeal).digitalVoices = 0x10;                                            // 1aa93
+  ideal(sndIdeal).field8 = 1;                                               // 1aa9c
   F.dws_Init_1ebe4(sndDetectResults, sndIdeal);                      // 1aaa5..1aab6 (cdecl: push 0x61040, push 0x61000)
   F.dwt_Init_1ff4f(2);                                     // 1aab9..1aac4 (cdecl)
 
@@ -70,21 +71,21 @@ export function initSystemAndLoadSprites() {
   F.PCX_Init_207a0(pcxScratch);                               // 1ac3b..1ac40
   F.PCX_Load_20806(0x301bb /* "chopper2.pcx" */, pcxScratch, 1); // 1ac45..1ac54
   for (i = 0; i < 5; i++) {                                      // 1ac59..1ac6c, 1ac62..1ac65 (signed jge)
-    F.Sprite_Init_20ce5((choppers + Math.imul(i, SPRITE.SIZE)) | 0, 0x64, 0x14, 0x89, 0x2a, 0, 0, 0, 0, 0, 0); // 1ac72..1ac9d
+    F.Sprite_Init_20ce5(sprite(choppers, i).addr, 0x64, 0x14, 0x89, 0x2a, 0, 0, 0, 0, 0, 0); // 1ac72..1ac9d
     for (j = 0; j < 2; j++) {                                    // 1aca2..1acb5, 1acab..1acae (signed jge)
-      F.PCX_Get_Sprite_20c12(pcxScratch, (choppers + Math.imul(i, SPRITE.SIZE)) | 0, j, j, 0); // 1acb7..1acd2
+      F.PCX_Get_Sprite_20c12(pcxScratch, sprite(choppers, i).addr, j, j, 0); // 1acb7..1acd2
     }                                                            // 1acd7 jmp
     for (j = 2; j < 4; j++) {                                    // 1acd9..1acec, 1ace2..1ace5 (signed jge)
-      F.PCX_Get_Sprite_20c12(pcxScratch, (choppers + Math.imul(i, SPRITE.SIZE)) | 0, j, (j - 2) | 0, 1); // 1acee..1ad0c
+      F.PCX_Get_Sprite_20c12(pcxScratch, sprite(choppers, i).addr, j, (j - 2) | 0, 1); // 1acee..1ad0c
     }                                                            // 1ad11 jmp
-    W32(((choppers + SPRITE.state) + Math.imul(i, SPRITE.SIZE)) | 0, 0x1b);              // 1ad13..1ad1a (+0x170)
+    sprite(choppers, i).state = 0x1b;              // 1ad13..1ad1a (+0x170)
     let r = F.rand_232c7();                                // 1ad24
-    W32(((choppers + SPRITE.counter1) + Math.imul(i, SPRITE.SIZE)) | 0, (-1 - imod(r, 5)) | 0); // 1ad29..1ad45 (sar edx,31; idiv; 0xffffffff - edx) (+0x10)
+    sprite(choppers, i).counter1 = (-1 - imod(r, 5)) | 0; // 1ad29..1ad45 (sar edx,31; idiv; 0xffffffff - edx) (+0x10)
     r = F.rand_232c7();                                    // 1ad4b
-    W32(((choppers + SPRITE.y) + Math.imul(i, SPRITE.SIZE)) | 0, (imod(r, 0x3c) + 0x14) | 0); // 1ad50..1ad68 (idiv; edx + 0x14) (+4)
+    sprite(choppers, i).y = (imod(r, 0x3c) + 0x14) | 0; // 1ad50..1ad68 (idiv; edx + 0x14) (+4)
     r = F.rand_232c7();                                    // 1ad6e
-    W32((choppers + Math.imul(i, SPRITE.SIZE)) | 0, (imod(r, 0x258) + 0x190) | 0); // 1ad73..1ad8f (idiv; edx + 0x190) (+0)
-    W32(((choppers + SPRITE.counter2) + Math.imul(i, SPRITE.SIZE)) | 0, 0xa);               // 1ad95..1ad9c (+0x14)
+    sprite(choppers, i).x = (imod(r, 0x258) + 0x190) | 0; // 1ad73..1ad8f (idiv; edx + 0x190) (+0)
+    sprite(choppers, i).counter2 = 0xa;               // 1ad95..1ad9c (+0x14)
   }                                                              // 1ada6 jmp
   F.PCX_Delete_20b69(pcxScratch);                             // 1adab..1adb0
 
@@ -93,7 +94,7 @@ export function initSystemAndLoadSprites() {
   F.PCX_Init_207a0(pcxScratch);                               // 1adb5..1adba
   F.PCX_Load_20806(0x301c8 /* "ptroop.pcx" */, pcxScratch, 1); // 1adbf..1adce
   for (i = 0; i < 0x19; i++) {                                   // 1add3..1ade6, 1addc..1addf (signed jge)
-    F.Sprite_Init_20ce5((paratroopers + Math.imul(i, SPRITE.SIZE)) | 0, 0xa0, -0x32, 0x26, 0x2d, 0, 0, 0, 0, 0, 0); // 1ade8..1ae13 (ebx = 0xffffffce)
+    F.Sprite_Init_20ce5(sprite(paratroopers, i).addr, 0xa0, -0x32, 0x26, 0x2d, 0, 0, 0, 0, 0, 0); // 1ade8..1ae13 (ebx = 0xffffffce)
   }                                                              // 1ae18 jmp
   for (j = 0; j < 6; j++) {                                      // 1ae1a..1ae2d, 1ae23..1ae26 (signed jge)
     F.PCX_Get_Sprite_20c12(pcxScratch, paratroopers, j, j, 0);     // 1ae2f..1ae41
@@ -113,7 +114,7 @@ export function initSystemAndLoadSprites() {
       // 1af05..1af20: edx = i<<2; ecx = j*0x18c; eax = (i<<2) + ecx; [eax+0x35b48] = [edx+0x35b48]
       W32(((i << 2) + Math.imul(j, SPRITE.SIZE) + (paratroopers + SPRITE.frames)) | 0, R32(((i << 2) + (paratroopers + SPRITE.frames)) | 0));
     }                                                            // 1af26 jmp
-    W32(((paratroopers + SPRITE.numFrames) + Math.imul(j, SPRITE.SIZE)) | 0, R32((paratroopers + SPRITE.numFrames)));      // 1af28..1af35 (+0x16c)
+    sprite(paratroopers, j).numFrames = sprite(paratroopers).numFrames;      // 1af28..1af35 (+0x16c)
   }                                                              // 1af3b jmp
   F.PCX_Delete_20b69(pcxScratch);                             // 1af3d..1af42
 }

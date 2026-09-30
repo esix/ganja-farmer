@@ -9,7 +9,8 @@
 // is never read.
 import { register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
-import { SPRITE, explosionDelays, explosions } from './data.js';
+import { explosionDelays, explosions } from './data.js';
+import { sprite } from './access.js';
 
 register(0x135bb, 'updateExplosions_135bb', function updateExplosions() {
   let i; // [ebp-4]
@@ -21,24 +22,24 @@ register(0x135bb, 'updateExplosions_135bb', function updateExplosions() {
     // 0x135fe: cmp ..., 0x32; jle (signed)
     if (R32(explosionDelays + i * 4) > 0x32) {
       // 0x1360e: sprite[i].state (+0x170, LIBRARY.md) = 1
-      W32((explosions + SPRITE.state) + Math.imul(i, SPRITE.SIZE), 1);
+      sprite(explosions, i).state = 1;
     }
     // 0x1361f: cmp sprite[i].state, 1; jne
-    if (R32((explosions + SPRITE.state) + Math.imul(i, SPRITE.SIZE)) === 1) {
+    if (sprite(explosions, i).state === 1) {
       // 0x1362f: inc sprite[i].curr_frame (+0x168, LIBRARY.md)
-      W32((explosions + SPRITE.currFrame) + Math.imul(i, SPRITE.SIZE), (R32((explosions + SPRITE.currFrame) + Math.imul(i, SPRITE.SIZE)) + 1) | 0);
+      sprite(explosions, i).currFrame = (sprite(explosions, i).currFrame + 1) | 0;
       // 0x1363c: `cmp curr_frame, 3` — its flags are overwritten by the next cmp without being read
       // (no conditional jump in between); it has no effect on state, so nothing is emitted for it.
       // 0x1364a: cmp curr_frame, 0xb; jle (signed)
-      if (R32((explosions + SPRITE.currFrame) + Math.imul(i, SPRITE.SIZE)) > 0xb) {
+      if (sprite(explosions, i).currFrame > 0xb) {
         // 0x1365a: curr_frame = 1
-        W32((explosions + SPRITE.currFrame) + Math.imul(i, SPRITE.SIZE), 1);
+        sprite(explosions, i).currFrame = 1;
         // 0x1366b: sprite[i].y (+0x004, LIBRARY.md) = -50
-        W32((explosions + SPRITE.y) + Math.imul(i, SPRITE.SIZE), -50);
+        sprite(explosions, i).y = -50;
         // 0x1367c: sprite[i].x (+0x000, LIBRARY.md) = -50
-        W32(explosions + Math.imul(i, SPRITE.SIZE), -50);
+        sprite(explosions, i).x = -50;
         // 0x1368d: sprite[i].state = 0
-        W32((explosions + SPRITE.state) + Math.imul(i, SPRITE.SIZE), 0);
+        sprite(explosions, i).state = 0;
       }
     }
   }

@@ -10,43 +10,44 @@
 // (signatures.json returns=false), so nothing is returned.
 import { register } from '../runtime/registry.js';
 import { W32 } from '../runtime/mem.js';
-import { SPRITE, a10Jets, bombs, bongSmoke, choppers, cropDusters, cruiseMissile, dusterSpray, explosions, groundTroops, missile, missileTarget, paratroopers, ufo } from './data.js';
+import { a10Jets, bombs, bongSmoke, choppers, cropDusters, cruiseMissile, dusterSpray, explosions, groundTroops, missile, missileTarget, paratroopers, ufo } from './data.js';
+import { sprite } from './access.js';
 
 register(0x1a825, 'clearEnemies_1a825', function clearEnemies() {
   let i; // [ebp-4]
 
   i = 0; // 0x1a83d (dead store)
   for (i = 0; i < 0x19; i++) {
-    W32((paratroopers + SPRITE.state) + i * SPRITE.SIZE, 0);
-    W32((paratroopers + SPRITE.y) + i * SPRITE.SIZE, -70); // 0xffffffba
+    sprite(paratroopers, i).state = 0;
+    sprite(paratroopers, i).y = -70; // 0xffffffba
   }
   for (i = 0; i < 0x19; i++) {
-    W32((groundTroops + SPRITE.state) + i * SPRITE.SIZE, 0);
-    W32((groundTroops + SPRITE.y) + i * SPRITE.SIZE, -70); // 0xffffffba
+    sprite(groundTroops, i).state = 0;
+    sprite(groundTroops, i).y = -70; // 0xffffffba
   }
   for (i = 0; i < 4; i++) {
-    W32((bombs + SPRITE.state) + i * SPRITE.SIZE, 0);
+    sprite(bombs, i).state = 0;
   }
   for (i = 0; i < 1; i++) {
-    W32((a10Jets + SPRITE.state) + i * SPRITE.SIZE, 0);
+    sprite(a10Jets, i).state = 0;
   }
   for (i = 0; i < 3; i++) {
-    W32((cropDusters + SPRITE.state) + i * SPRITE.SIZE, 0);
+    sprite(cropDusters, i).state = 0;
   }
   for (i = 0; i < 0x3f; i++) {
-    W32((dusterSpray + SPRITE.state) + i * SPRITE.SIZE, 0);
+    sprite(dusterSpray, i).state = 0;
   }
   for (i = 0; i < 0xd; i++) {
-    W32((explosions + SPRITE.state) + i * SPRITE.SIZE, 0);
+    sprite(explosions, i).state = 0;
   }
   for (i = 0; i < 200; i++) {
-    W32((bongSmoke + SPRITE.state) + i * SPRITE.SIZE, 0);
+    sprite(bongSmoke, i).state = 0;
   }
   for (i = 0; i < 5; i++) {
-    W32((choppers + SPRITE.state) + i * SPRITE.SIZE, 0);
+    sprite(choppers, i).state = 0;
   }
-  W32((missile + SPRITE.state), 0);
-  W32((missileTarget + SPRITE.state), 0);
-  W32((cruiseMissile + SPRITE.state), 0);
-  W32((ufo + SPRITE.state), 0);
+  sprite(missile).state = 0;
+  sprite(missileTarget).state = 0;
+  sprite(cruiseMissile).state = 0;
+  sprite(ufo).state = 0;
 });

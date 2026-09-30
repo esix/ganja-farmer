@@ -23,7 +23,8 @@
 import { F, register } from '../runtime/registry.js';
 import { R32, R32u, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
-import { SPRITE, bongState, currentWeapon, hasAutoGun, hasBong, hasMissileLauncher, jah, level, powerupDrop, rasta, score, sndAutomatic, sndBongDeath, sndRastaRocket } from './data.js';
+import { jah, level, powerupDrop, rasta, sndAutomatic, sndBongDeath, sndRastaRocket } from './data.js';
+import { G, sprite } from './access.js';
 
 register(0x16446, 'updateJahPowerupDrop_16446', function updateJahPowerupDrop() {
   let sel; // [ebp-4]
@@ -33,22 +34,22 @@ register(0x16446, 'updateJahPowerupDrop_16446', function updateJahPowerupDrop() 
   // 16519..165a3: compare tree with unsigned jb/jbe on [ebp-4]
   switch (sel) {
     case 5:                                                               // 1646b
-      if (R32((jah + SPRITE.threshold3)) !== 0x43) {
-        W32((jah + SPRITE.threshold3), 0x41);
+      if (sprite(jah).threshold3 !== 0x43) {
+        sprite(jah).threshold3 = 0x41;
       }
-      W32((powerupDrop + SPRITE.currFrame), 0);
+      sprite(powerupDrop).currFrame = 0;
       break;
     case 10:                                                              // 1648d
-      if (R32((jah + SPRITE.threshold3)) !== 0x43) {
-        W32((jah + SPRITE.threshold3), 0x41);
+      if (sprite(jah).threshold3 !== 0x43) {
+        sprite(jah).threshold3 = 0x41;
       }
-      W32((powerupDrop + SPRITE.currFrame), 1);
+      sprite(powerupDrop).currFrame = 1;
       break;
     case 15:                                                              // 164af
-      if (R32((jah + SPRITE.threshold3)) !== 0x43) {
-        W32((jah + SPRITE.threshold3), 0x41);
+      if (sprite(jah).threshold3 !== 0x43) {
+        sprite(jah).threshold3 = 0x41;
       }
-      W32((powerupDrop + SPRITE.currFrame), 2);
+      sprite(powerupDrop).currFrame = 2;
       break;
     case 20:                                                              // 164d1
     case 25:
@@ -57,85 +58,85 @@ register(0x16446, 'updateJahPowerupDrop_16446', function updateJahPowerupDrop() 
     case 40:
     case 45:
     case 50:
-      if (R32((jah + SPRITE.threshold3)) !== 0x43) {
-        W32((jah + SPRITE.threshold3), 0x41);
+      if (sprite(jah).threshold3 !== 0x43) {
+        sprite(jah).threshold3 = 0x41;
       }
-      W32((powerupDrop + SPRITE.currFrame), 3);
+      sprite(powerupDrop).currFrame = 3;
       break;
     default:                                                              // 164f3
-      if (R32((jah + SPRITE.threshold3)) === 0x41) {
+      if (sprite(jah).threshold3 === 0x41) {
         break;                                                            // 164fc
       }
-      if (R32((jah + SPRITE.threshold3)) === 0x43) {                                        // 16501
-        W32((jah + SPRITE.threshold3), 0x42);
+      if (sprite(jah).threshold3 === 0x43) {                                        // 16501
+        sprite(jah).threshold3 = 0x42;
       }
       break;
   }
 
-  if (R32((jah + SPRITE.state)) === 0x20 && R32((jah + SPRITE.threshold3)) === 0x41) {                   // 165a8..165b8
-    W32((jah + SPRITE.y), 0x14);                                                   // 165bc
+  if (sprite(jah).state === 0x20 && sprite(jah).threshold3 === 0x41) {                   // 165a8..165b8
+    sprite(jah).y = 0x14;                                                   // 165bc
     if (imod(F.rand_232c7(), 2) === 0) {                            // 165c6..165db
-      W32((jah + SPRITE.state), 0x1c);                                                 // 165dd
-      W32(jah, imod(-(F.rand_232c7()) | 0, 0x12c));             // 165e7..165fc (neg; cdq; idiv)
+      sprite(jah).state = 0x1c;                                                 // 165dd
+      sprite(jah).x = imod(-(F.rand_232c7()) | 0, 0x12c);             // 165e7..165fc (neg; cdq; idiv)
     } else {
-      W32((jah + SPRITE.state), 0x1b);                                                 // 16604
-      W32(jah, (imod(F.rand_232c7(), 0x12c) + 0x140) | 0);      // 1660e..16627
+      sprite(jah).state = 0x1b;                                                 // 16604
+      sprite(jah).x = (imod(F.rand_232c7(), 0x12c) + 0x140) | 0;      // 1660e..16627
     }
   }
 
-  if (R32((jah + SPRITE.state)) === 0x1c) {                                            // 1662d
-    W32(jah, (R32(jah) + 3) | 0);                                 // 1663a
-    if (((R32(jah) + 0x28) | 0) > R32(rasta) && R32((powerupDrop + SPRITE.state)) === 0 && R32((jah + SPRITE.threshold3)) === 0x41) { // 16641..16663 (jle / je / je)
-      W32(powerupDrop, (R32(jah) + 0x1e) | 0);                            // 16667
-      W32((powerupDrop + SPRITE.y), (R32((jah + SPRITE.y)) + 0x32) | 0);                            // 16674
-      W32((powerupDrop + SPRITE.state), 1);                                                    // 16681
-      W32((jah + SPRITE.threshold3), 0x43);                                                 // 1668b
+  if (sprite(jah).state === 0x1c) {                                            // 1662d
+    sprite(jah).x = (sprite(jah).x + 3) | 0;                                 // 1663a
+    if (((sprite(jah).x + 0x28) | 0) > sprite(rasta).x && sprite(powerupDrop).state === 0 && sprite(jah).threshold3 === 0x41) { // 16641..16663 (jle / je / je)
+      sprite(powerupDrop).x = (sprite(jah).x + 0x1e) | 0;                            // 16667
+      sprite(powerupDrop).y = (sprite(jah).y + 0x32) | 0;                            // 16674
+      sprite(powerupDrop).state = 1;                                                    // 16681
+      sprite(jah).threshold3 = 0x43;                                                 // 1668b
     }
-    if (R32(jah) > 0x154) {                                           // 16695 (jle)
-      W32((jah + SPRITE.state), 0x20);                                                 // 166a1
-    }
-  }
-
-  if (R32((jah + SPRITE.state)) === 0x1b) {                                            // 166ab
-    W32(jah, (R32(jah) - 3) | 0);                                 // 166b8
-    if (((R32(jah) + 0x28) | 0) < ((R32(rasta) + 0xf) | 0) && R32((powerupDrop + SPRITE.state)) === 0 && R32((jah + SPRITE.threshold3)) === 0x41) { // 166bf..166e6 (jge / je / je)
-      W32(powerupDrop, (R32(jah) + 0x1e) | 0);                            // 166ea
-      W32((powerupDrop + SPRITE.y), (R32((jah + SPRITE.y)) + 0x32) | 0);                            // 166f7
-      W32((powerupDrop + SPRITE.state), 1);                                                    // 16704
-      W32((jah + SPRITE.threshold3), 0x43);                                                 // 1670e
-    }
-    if (((((R32(jah) + R32((jah + SPRITE.width))) | 0) + 0x28) | 0) < 0) {         // 16718..16728 (test; jge)
-      W32((jah + SPRITE.state), 0x20);                                                 // 1672a
+    if (sprite(jah).x > 0x154) {                                           // 16695 (jle)
+      sprite(jah).state = 0x20;                                                 // 166a1
     }
   }
 
-  if (R32((powerupDrop + SPRITE.state)) === 1) {                                               // 16734
-    W32((powerupDrop + SPRITE.y), (R32((powerupDrop + SPRITE.y)) + 3) | 0);                                 // 16741
-    if (R32((powerupDrop + SPRITE.y)) > R32((rasta + SPRITE.y))) {                                    // 16748..16753 (jle)
-      W32((powerupDrop + SPRITE.state), 0);                                                    // 16759
-      sel2 = R32((powerupDrop + SPRITE.currFrame));                                                // 16763/16768
+  if (sprite(jah).state === 0x1b) {                                            // 166ab
+    sprite(jah).x = (sprite(jah).x - 3) | 0;                                 // 166b8
+    if (((sprite(jah).x + 0x28) | 0) < ((sprite(rasta).x + 0xf) | 0) && sprite(powerupDrop).state === 0 && sprite(jah).threshold3 === 0x41) { // 166bf..166e6 (jge / je / je)
+      sprite(powerupDrop).x = (sprite(jah).x + 0x1e) | 0;                            // 166ea
+      sprite(powerupDrop).y = (sprite(jah).y + 0x32) | 0;                            // 166f7
+      sprite(powerupDrop).state = 1;                                                    // 16704
+      sprite(jah).threshold3 = 0x43;                                                 // 1670e
+    }
+    if (((((sprite(jah).x + sprite(jah).width) | 0) + 0x28) | 0) < 0) {         // 16718..16728 (test; jge)
+      sprite(jah).state = 0x20;                                                 // 1672a
+    }
+  }
+
+  if (sprite(powerupDrop).state === 1) {                                               // 16734
+    sprite(powerupDrop).y = (sprite(powerupDrop).y + 3) | 0;                                 // 16741
+    if (sprite(powerupDrop).y > sprite(rasta).y) {                                    // 16748..16753 (jle)
+      sprite(powerupDrop).state = 0;                                                    // 16759
+      sel2 = sprite(powerupDrop).currFrame;                                                // 16763/16768
       // 1681c..16828: cmp [ebp-8],3; ja 0x16809 (-> RET); jmp [eax*4 + 0x1680c]
       switch (sel2 >>> 0) {
         case 0:                                                           // 16770
-          W32(hasAutoGun, 1);
-          W32(currentWeapon, 0x37);
-          W32((rasta + SPRITE.state), 1);
-          W32((rasta + SPRITE.currFrame), 0);
+          G.hasAutoGun = 1;
+          G.currentWeapon = 0x37;
+          sprite(rasta).state = 1;
+          sprite(rasta).currFrame = 0;
           F.dws_DPlay_1eff8(sndAutomatic);                               // 16798..167a3 (cdecl, 1 stack arg)
           break;
         case 1:                                                           // 167ab
-          W32(hasMissileLauncher, 1);
-          W32(currentWeapon, 0x35);
+          G.hasMissileLauncher = 1;
+          G.currentWeapon = 0x35;
           F.dws_DPlay_1eff8(sndRastaRocket);                               // 167bf..167ca
           break;
         case 2:                                                           // 167cf
-          W32(hasBong, 1);
-          W32(currentWeapon, 0x38);
-          W32(bongState, 0x39);
+          G.hasBong = 1;
+          G.currentWeapon = 0x38;
+          G.bongState = 0x39;
           F.dws_DPlay_1eff8(sndBongDeath);                               // 167ed..167f8
           break;
         case 3:                                                           // 167fd
-          W32(score, (R32(score) + 0xa410) | 0);
+          G.score = (G.score + 0xa410) | 0;
           break;
         default:                                                          // 16809
           break;

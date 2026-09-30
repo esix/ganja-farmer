@@ -16,18 +16,19 @@
 // Return: EAX at RET is a leftover (callee result / constant); signatures.json returns=false -> nothing returned.
 import { F, register } from '../runtime/registry.js';
 import { R8, R32, W32 } from '../runtime/mem.js';
-import { musicSamplesEnabled, musicTrack, musicTrack0, musicTrack1, musicTrack10, musicTrack2, musicTrack3, musicTrack4, musicTrack5, musicTrack6, musicTrack7, musicTrack8, musicTrack9, sndMusicSample1, sndMusicSample10, sndMusicSample2, sndMusicSample3, sndMusicSample4, sndMusicSample5, sndMusicSample6, sndMusicSample65, sndMusicSample7, sndMusicSample8, sndMusicSample9, songStatus } from './data.js';
+import { musicTrack0, musicTrack1, musicTrack10, musicTrack2, musicTrack3, musicTrack4, musicTrack5, musicTrack6, musicTrack7, musicTrack8, musicTrack9, sndMusicSample1, sndMusicSample10, sndMusicSample2, sndMusicSample3, sndMusicSample4, sndMusicSample5, sndMusicSample6, sndMusicSample65, sndMusicSample7, sndMusicSample8, sndMusicSample9, songStatus } from './data.js';
+import { G } from './access.js';
 
 register(0x10050, 'updateMusic_10050', function updateMusic() {
   let idx; // [ebp-4]
 
   F.dws_MSongStatus_1fc3f(songStatus); // 1006e
-  if ((R8(songStatus) & 1) !== 0) return; // 10076 test byte; jne 0x102c8 (epilogue)
-  W32(musicTrack, (R32(musicTrack) + 1) | 0); // 10083 inc dword
-  if (!((R32(musicTrack) | 0) <= 0xb)) { // 10089 cmp 0xb; jle (signed)
-    W32(musicTrack, 0); // 10092
+  if ((G.songStatus & 1) !== 0) return; // 10076 test byte; jne 0x102c8 (epilogue)
+  G.musicTrack = (G.musicTrack + 1) | 0; // 10083 inc dword
+  if (!((G.musicTrack | 0) <= 0xb)) { // 10089 cmp 0xb; jle (signed)
+    G.musicTrack = 0; // 10092
   }
-  idx = R32(musicTrack) | 0; // 1009c..100a1
+  idx = G.musicTrack | 0; // 1009c..100a1
   // 102a8: cmp [ebp-4], 0xb; ja 0x10276 (unsigned) -> default; else jmp [idx*4 + 0x10278]
   switch ((idx >>> 0) > 0xb ? -1 : idx) {
     case 0: // 100a9
@@ -35,66 +36,66 @@ register(0x10050, 'updateMusic_10050', function updateMusic() {
       break;
     case 1: // 100bc
       F.dws_MPlay_1faa2(musicTrack1);
-      if (R32(musicSamplesEnabled) !== 0) {
+      if (G.musicSamplesEnabled !== 0) {
         F.dws_DPlay_1eff8(sndMusicSample1);
       }
       break;
     case 2: // 100e6
       F.dws_MPlay_1faa2(musicTrack2);
-      if (R32(musicSamplesEnabled) !== 0) {
+      if (G.musicSamplesEnabled !== 0) {
         F.dws_DPlay_1eff8(sndMusicSample2);
       }
       break;
     case 3: // 10110
       F.dws_MPlay_1faa2(musicTrack3);
-      if (R32(musicSamplesEnabled) !== 0) {
+      if (G.musicSamplesEnabled !== 0) {
         F.dws_DPlay_1eff8(sndMusicSample3);
       }
       break;
     case 4: // 1013a
       F.dws_MPlay_1faa2(musicTrack4);
-      if (R32(musicSamplesEnabled) !== 0) {
+      if (G.musicSamplesEnabled !== 0) {
         F.dws_DPlay_1eff8(sndMusicSample4);
       }
       break;
     case 5: // 10164
       F.dws_MPlay_1faa2(musicTrack5);
-      if (R32(musicSamplesEnabled) !== 0) {
+      if (G.musicSamplesEnabled !== 0) {
         F.dws_DPlay_1eff8(sndMusicSample5);
       }
       break;
     case 6: // 1018e
       F.dws_MPlay_1faa2(musicTrack6);
-      if (R32(musicSamplesEnabled) !== 0) {
+      if (G.musicSamplesEnabled !== 0) {
         F.dws_DPlay_1eff8(sndMusicSample6);
       }
       break;
     case 7: // 101b8
       F.dws_MPlay_1faa2(musicTrack7);
-      if (R32(musicSamplesEnabled) !== 0) {
+      if (G.musicSamplesEnabled !== 0) {
         F.dws_DPlay_1eff8(sndMusicSample65);
       }
       break;
     case 8: // 101e2
       F.dws_MPlay_1faa2(musicTrack8);
-      if (R32(musicSamplesEnabled) !== 0) {
+      if (G.musicSamplesEnabled !== 0) {
         F.dws_DPlay_1eff8(sndMusicSample7);
       }
       break;
     case 9: // 1020c
       F.dws_MPlay_1faa2(musicTrack9);
-      if (R32(musicSamplesEnabled) !== 0) {
+      if (G.musicSamplesEnabled !== 0) {
         F.dws_DPlay_1eff8(sndMusicSample8);
       }
       break;
     case 10: // 10236
       F.dws_MPlay_1faa2(musicTrack10);
-      if (R32(musicSamplesEnabled) !== 0) {
+      if (G.musicSamplesEnabled !== 0) {
         F.dws_DPlay_1eff8(sndMusicSample9);
       }
       break;
     case 11: // 1025d (no MPlay)
-      if (R32(musicSamplesEnabled) !== 0) {
+      if (G.musicSamplesEnabled !== 0) {
         F.dws_DPlay_1eff8(sndMusicSample10);
       }
       break;

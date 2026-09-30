@@ -18,7 +18,8 @@
 import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
-import { SPRITE, dusterSpray, plants } from './data.js';
+import { dusterSpray, plants } from './data.js';
+import { sprite } from './access.js';
 
 register(0x1556a, 'updateDusterSpray_1556a', function updateDusterSpray() {
   let i; // [ebp-8]
@@ -32,52 +33,52 @@ register(0x1556a, 'updateDusterSpray_1556a', function updateDusterSpray() {
   // 0x15590..0x155a3: for (i = 0; i < 0x3f; i++)  (signed jge)
   for (i = 0; i < 0x3f; i++) {
     // 0x155a9: if (A[i].state == 0) A[i].x = -200
-    if (R32((dusterSpray + SPRITE.state) + Math.imul(i, SPRITE.SIZE)) === 0) {
-      W32(dusterSpray + Math.imul(i, SPRITE.SIZE), -200); // 0x155c0: 0xffffff38
+    if (sprite(dusterSpray, i).state === 0) {
+      sprite(dusterSpray, i).x = -200; // 0x155c0: 0xffffff38
     }
     // 0x155ca: if (A[i].state == 1)
-    if (R32((dusterSpray + SPRITE.state) + Math.imul(i, SPRITE.SIZE)) === 1) {
+    if (sprite(dusterSpray, i).state === 1) {
       // 0x155e5..0x155f6: rand(); cdq; idiv 4 -> remainder (EBX)
       r1 = imod(F.rand_232c7(), 4);
       // 0x155fa..0x1560b: rand(); cdq; idiv 4 -> remainder (EDX)
       r2 = imod(F.rand_232c7(), 4);
       // 0x1560d..0x1560f: sub ebx, edx; add [A[i].x], ebx
-      W32(dusterSpray + Math.imul(i, SPRITE.SIZE), (R32(dusterSpray + Math.imul(i, SPRITE.SIZE)) + ((r1 - r2) | 0)) | 0);
+      sprite(dusterSpray, i).x = (sprite(dusterSpray, i).x + ((r1 - r2) | 0)) | 0;
       // 0x1561c..0x15622: old = A[i].y; A[i].y++
-      old = R32((dusterSpray + SPRITE.y) + Math.imul(i, SPRITE.SIZE));
-      W32((dusterSpray + SPRITE.y) + Math.imul(i, SPRITE.SIZE), (R32((dusterSpray + SPRITE.y) + Math.imul(i, SPRITE.SIZE)) + 1) | 0);
+      old = sprite(dusterSpray, i).y;
+      sprite(dusterSpray, i).y = (sprite(dusterSpray, i).y + 1) | 0;
       // 0x15628: cmp old, 0xa4; jle (signed)
       if (old > 0xa4) {
-        W32((dusterSpray + SPRITE.state) + Math.imul(i, SPRITE.SIZE), 0); // 0x15637: A[i].state = 0
+        sprite(dusterSpray, i).state = 0; // 0x15637: A[i].state = 0
       }
       // 0x15641..0x15654: for (j = 0; j < 0x1a; j++)  (signed jge)
       for (j = 0; j < 0x1a; j++) {
         // 0x1565a: A[i].state != 0 -> next j
-        if (R32((dusterSpray + SPRITE.state) + Math.imul(i, SPRITE.SIZE)) !== 0) continue;
+        if (sprite(dusterSpray, i).state !== 0) continue;
         // 0x1567c..0x15688: cmp A.x, B.x; jge 0x156b5
         let inRange = false;
-        if (R32(dusterSpray + Math.imul(i, SPRITE.SIZE)) < R32(plants + Math.imul(j, SPRITE.SIZE))) {
+        if (sprite(dusterSpray, i).x < sprite(plants, j).x) {
           // 0x1568a..0x156b3: A.x + A.width > B.x -> 0x1571c (-> 0x15720)
-          if (((R32(dusterSpray + Math.imul(i, SPRITE.SIZE)) + R32((dusterSpray + SPRITE.width) + Math.imul(i, SPRITE.SIZE))) | 0) >
-              R32(plants + Math.imul(j, SPRITE.SIZE))) inRange = true;
+          if (((sprite(dusterSpray, i).x + sprite(dusterSpray, i).width) | 0) >
+              sprite(plants, j).x) inRange = true;
         }
         if (!inRange) {
           // 0x156b5..0x156de: B.x + B.width <= A.x -> 0x1571a (next j)
-          if (((R32(plants + Math.imul(j, SPRITE.SIZE)) + R32((plants + SPRITE.width) + Math.imul(j, SPRITE.SIZE))) | 0) >
-              R32(dusterSpray + Math.imul(i, SPRITE.SIZE))) {
+          if (((sprite(plants, j).x + sprite(plants, j).width) | 0) >
+              sprite(dusterSpray, i).x) {
             // 0x156e0..0x15718: A.x + A.width > B.x + B.width -> 0x1571c (-> 0x15720)
-            if (((R32(dusterSpray + Math.imul(i, SPRITE.SIZE)) + R32((dusterSpray + SPRITE.width) + Math.imul(i, SPRITE.SIZE))) | 0) >
-                ((R32(plants + Math.imul(j, SPRITE.SIZE)) + R32((plants + SPRITE.width) + Math.imul(j, SPRITE.SIZE))) | 0)) inRange = true;
+            if (((sprite(dusterSpray, i).x + sprite(dusterSpray, i).width) | 0) >
+                ((sprite(plants, j).x + sprite(plants, j).width) | 0)) inRange = true;
           }
         }
         // 0x1571a -> 0x1571e -> 0x15730 -> 0x15751 -> 0x15775: next j
         if (!inRange) continue;
         // 0x15720: B[j].state != 1 -> next j
-        if (R32((plants + SPRITE.state) + Math.imul(j, SPRITE.SIZE)) !== 1) continue;
+        if (sprite(plants, j).state !== 1) continue;
         // 0x15732..0x1574f: cmp B[j].y + 10, A[i].y; jl (signed) -> hit, else next j
-        if (!(((R32((plants + SPRITE.y) + Math.imul(j, SPRITE.SIZE)) + 10) | 0) < R32((dusterSpray + SPRITE.y) + Math.imul(i, SPRITE.SIZE)))) continue;
-        W32((plants + SPRITE.state) + Math.imul(j, SPRITE.SIZE), 0); // 0x1575a: B[j].state = 0
-        W32((plants + SPRITE.currFrame) + Math.imul(j, SPRITE.SIZE), 1); // 0x1576b: B[j].curr_frame = 1
+        if (!(((sprite(plants, j).y + 10) | 0) < sprite(dusterSpray, i).y)) continue;
+        sprite(plants, j).state = 0; // 0x1575a: B[j].state = 0
+        sprite(plants, j).currFrame = 1; // 0x1576b: B[j].curr_frame = 1
       }
     }
   }

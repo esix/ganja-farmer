@@ -30,7 +30,8 @@
 import { F, register } from '../runtime/registry.js';
 import { R8, W8, W32, RF64, WF64 } from '../runtime/mem.js';
 import { stackAlloc, stackFree } from '../runtime/stack.js';
-import { PALETTEFADE_FIELD, fadeSteps, paletteFade, pcxScratch } from './data.js';
+import { PALETTEFADE_FIELD, paletteFade, pcxScratch } from './data.js';
+import { G } from './access.js';
 
 // fistp dword of an integral value already in ST0 (__CHP output): in range -> the value, else 0x80000000.
 function fistp32(v) {
@@ -69,9 +70,9 @@ register(0x102d1, 'showPictureFadeIn_102d1', async function showPictureFadeIn(fi
       g = t; // 103e1..103e4: [ebp-0x20]
       t = R8(i * 0x38 + (paletteFade + 0x2)); // 103e7..103f3
       b = t; // 103f6..103f9: [ebp-0x30]
-      WF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.stepR), r / RF64(fadeSteps)); // 103fc..10409
-      WF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.stepG), g / RF64(fadeSteps)); // 1040f..1041c
-      WF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.stepB), b / RF64(fadeSteps)); // 10422..1042f
+      WF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.stepR), r / G.fadeSteps); // 103fc..10409
+      WF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.stepG), g / G.fadeSteps); // 1040f..1041c
+      WF64(i * 0x38 + (paletteFade + PALETTEFADE_FIELD.stepB), b / G.fadeSteps); // 10422..1042f
     }
   }
 

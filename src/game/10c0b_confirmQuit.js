@@ -12,7 +12,8 @@
 // No x87 instructions in this function.
 import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
-import { KEY, gameState, keyboardState } from './data.js';
+import { KEY } from './data.js';
+import { G, keyDown } from './access.js';
 
 register(0x10c0b, 'confirmQuit_10c0b', async function confirmQuit() {
   F.dws_DPause_1f98a();                                        // 10c23
@@ -23,11 +24,11 @@ register(0x10c0b, 'confirmQuit_10c0b', async function confirmQuit() {
   // entries written by the keyboard ISR Keyboard_Driver 0x22b04 (LIBRARY.md); no extra yieldCpu is added:
   // the body awaits Time_Delay(1), which always yields at least once while waiting for the BIOS tick
   // (20404_Time_Delay.js; same reasoning as 1098f_sub_1098f.js / 1128e_sub_1128e.js).
-  while (R32((keyboardState + 4 * KEY.y)) === 0 && R32((keyboardState + 4 * KEY.n)) === 0) {
+  while (keyDown(KEY.y) === 0 && keyDown(KEY.n) === 0) {
     F.cycleRastaColors_14fba();                                             // 10c77
     await F.Time_Delay_20404(1);                                     // 10c7c/10c81
-    if (R32((keyboardState + 4 * KEY.y)) !== 0) {                                        // 10c86: cmp [0x64f58],0; je 10c99
-      W32(gameState, 0x1c);                                            // 10c8f
+    if (keyDown(KEY.y) !== 0) {                                        // 10c86: cmp [0x64f58],0; je 10c99
+      G.gameState = 0x1c;                                            // 10c8f
     }
   }                                                                  // 10c99: jmp 10c63
   F.dws_DUnPause_1fa16();                                      // 10c9b

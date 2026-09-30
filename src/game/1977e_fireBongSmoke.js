@@ -33,7 +33,8 @@ import { F, register } from '../runtime/registry.js';
 import { R32, W32, RF64, WF64 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
 import * as x87 from '../runtime/x87.js';
-import { SPRITE, aimAngle, bongSmoke, gunSight, rasta } from './data.js';
+import { bongSmoke, gunSight, rasta } from './data.js';
+import { G, sprite } from './access.js';
 
 register(0x1977e, 'fireBongSmoke_1977e', function fireBongSmoke() {
   let n; // [ebp-8]: entries set up so far (loop runs while < 3)
@@ -45,55 +46,51 @@ register(0x1977e, 'fireBongSmoke_1977e', function fireBongSmoke() {
   n = 0;                                                                        // 19796
   i = 0;                                                                        // 1979d
   while (n < 3) {                                                               // 197a4..197a8
-    if (R32((bongSmoke + SPRITE.state) + i * SPRITE.SIZE) === 0) {                                       // 197ae..197bc
-      W32((bongSmoke + SPRITE.counter1) + i * SPRITE.SIZE, 0);                                              // 197c2..197c9
-      W32((bongSmoke + SPRITE.counter2) + i * SPRITE.SIZE, -7);                                             // 197d3..197da
+    if (sprite(bongSmoke, i).state === 0) {                                       // 197ae..197bc
+      sprite(bongSmoke, i).counter1 = 0;                                              // 197c2..197c9
+      sprite(bongSmoke, i).counter2 = -7;                                             // 197d3..197da
 
       // 197e4..19808: if (0x33aa4.x - 0x14 - 0x33dbc.x + 0xd) > 0 && (0x33dc0 - 0x33aa8) > 0
-      if (((((R32(gunSight) - 0x14) | 0) - R32(rasta) + 0xd) | 0) > 0 &&
-          ((R32((rasta + SPRITE.y)) - R32((gunSight + SPRITE.y))) | 0) > 0) {
-        y = (R32((rasta + SPRITE.y)) - R32((gunSight + SPRITE.y))) | 0;                                  // 1980d..1981e fild; fstp qword
-        x = (((R32(gunSight) - 0x14) | 0) - R32(rasta) + 0xd) | 0;            // 19821..19838 fild; fstp qword
-        WF64(aimAngle, x87.toDouble(F.atan_st0_23686(y / x)));            // 1983b..19846 fld; fdiv; atan; fstp
+      if (((((sprite(gunSight).x - 0x14) | 0) - sprite(rasta).x + 0xd) | 0) > 0 &&
+          ((sprite(rasta).y - sprite(gunSight).y) | 0) > 0) {
+        y = (sprite(rasta).y - sprite(gunSight).y) | 0;                                  // 1980d..1981e fild; fstp qword
+        x = (((sprite(gunSight).x - 0x14) | 0) - sprite(rasta).x + 0xd) | 0;            // 19821..19838 fild; fstp qword
+        G.aimAngle = x87.toDouble(F.atan_st0_23686(y / x));            // 1983b..19846 fld; fdiv; atan; fstp
         r = imod(F.rand_232c7(), 2);                                      // 1984c..1985f
-        W32((bongSmoke + SPRITE.counter1) + i * SPRITE.SIZE,                                                // 19862..1988a
-          (F.__CHP_222a4(r + x87.fmul(F.cos_st0_236cc(RF64(aimAngle)), RF64(0x30184)))) | 0); // faddp st(1): st1 + st0
+        sprite(bongSmoke, i).counter1 = (F.__CHP_222a4(r + x87.fmul(F.cos_st0_236cc(G.aimAngle), RF64(0x30184)))) | 0; // faddp st(1): st1 + st0
         r = imod(F.rand_232c7(), 2);                                      // 19890..198a3
-        W32((bongSmoke + SPRITE.counter2) + i * SPRITE.SIZE,                                                // 198a6..198ce
-          (F.__CHP_222a4(x87.fmul(F.sin_st0_236d6(RF64(aimAngle)), RF64(0x3018c)) - r)) | 0); // fsubrp st(1): st0 - st1
+        sprite(bongSmoke, i).counter2 = (F.__CHP_222a4(x87.fmul(F.sin_st0_236d6(G.aimAngle), RF64(0x3018c)) - r)) | 0; // fsubrp st(1): st0 - st1
       }
 
       // 198d4..198f8: if (0x33dbc.x + 0xd - 0x33aa4.x - 0x14) > 0 && (0x33dc0 - 0x33aa8) > 0
-      if (((((R32(rasta) + 0xd) | 0) - R32(gunSight) - 0x14) | 0) > 0 &&
-          ((R32((rasta + SPRITE.y)) - R32((gunSight + SPRITE.y))) | 0) > 0) {
-        y = (((R32((rasta + SPRITE.y)) - R32((gunSight + SPRITE.y))) | 0) - 0x14) | 0;                  // 198fd..19911
-        x = (((R32(rasta) + 0xd) | 0) - R32(gunSight) - 0x14) | 0;            // 19914..1992b
-        WF64(aimAngle, x87.toDouble(F.atan_st0_23686(y / x)));            // 1992e..19939
+      if (((((sprite(rasta).x + 0xd) | 0) - sprite(gunSight).x - 0x14) | 0) > 0 &&
+          ((sprite(rasta).y - sprite(gunSight).y) | 0) > 0) {
+        y = (((sprite(rasta).y - sprite(gunSight).y) | 0) - 0x14) | 0;                  // 198fd..19911
+        x = (((sprite(rasta).x + 0xd) | 0) - sprite(gunSight).x - 0x14) | 0;            // 19914..1992b
+        G.aimAngle = x87.toDouble(F.atan_st0_23686(y / x));            // 1992e..19939
         r = imod(F.rand_232c7(), 2);                                      // 1993f..19952
-        W32((bongSmoke + SPRITE.counter1) + i * SPRITE.SIZE,                                                // 19955..1997d
-          (F.__CHP_222a4(x87.fmul(F.cos_st0_236cc(RF64(aimAngle)), RF64(0x30194)) - r)) | 0); // fsubrp st(1): st0 - st1
+        sprite(bongSmoke, i).counter1 = (F.__CHP_222a4(x87.fmul(F.cos_st0_236cc(G.aimAngle), RF64(0x30194)) - r)) | 0; // fsubrp st(1): st0 - st1
         r = imod(F.rand_232c7(), 2);                                      // 19983..19996
-        W32((bongSmoke + SPRITE.counter2) + i * SPRITE.SIZE,                                                // 19999..199c1
-          (F.__CHP_222a4(x87.fmul(F.sin_st0_236d6(RF64(aimAngle)), RF64(0x30194)) - r)) | 0); // fsubrp st(1): st0 - st1
+        sprite(bongSmoke, i).counter2 = (F.__CHP_222a4(x87.fmul(F.sin_st0_236d6(G.aimAngle), RF64(0x30194)) - r)) | 0; // fsubrp st(1): st0 - st1
       }
 
       // 199c7..199e7: if 0x33aa4.x + 6 > 0x33dbc.x && 0x33aa8 + 6 > 0x33dc0
-      if (((R32(gunSight) + 6) | 0) > R32(rasta) &&
-          ((R32((gunSight + SPRITE.y)) + 6) | 0) > R32((rasta + SPRITE.y))) {
-        W32((bongSmoke + SPRITE.counter1) + i * SPRITE.SIZE, (imod(F.rand_232c7(), 2) + 7) | 0);    // 199e9..19a06
-        W32((bongSmoke + SPRITE.counter2) + i * SPRITE.SIZE, 0);                                            // 19a0c..19a13
+      if (((sprite(gunSight).x + 6) | 0) > sprite(rasta).x &&
+          ((sprite(gunSight).y + 6) | 0) > sprite(rasta).y) {
+        sprite(bongSmoke, i).counter1 = (imod(F.rand_232c7(), 2) + 7) | 0;    // 199e9..19a06
+        sprite(bongSmoke, i).counter2 = 0;                                            // 19a0c..19a13
       }
 
       // 19a1d..19a3d: if 0x33aa4.x + 6 < 0x33dbc.x && 0x33aa8 + 6 > 0x33dc0
-      if (((R32(gunSight) + 6) | 0) < R32(rasta) &&
-          ((R32((gunSight + SPRITE.y)) + 6) | 0) > R32((rasta + SPRITE.y))) {
-        W32((bongSmoke + SPRITE.counter1) + i * SPRITE.SIZE, (-7 - imod(F.rand_232c7(), 2)) | 0);   // 19a3f..19a60
-        W32((bongSmoke + SPRITE.counter2) + i * SPRITE.SIZE, 0);                                            // 19a66..19a6d
+      if (((sprite(gunSight).x + 6) | 0) < sprite(rasta).x &&
+          ((sprite(gunSight).y + 6) | 0) > sprite(rasta).y) {
+        sprite(bongSmoke, i).counter1 = (-7 - imod(F.rand_232c7(), 2)) | 0;   // 19a3f..19a60
+        sprite(bongSmoke, i).counter2 = 0;                                            // 19a66..19a6d
       }
 
-      W32(bongSmoke + i * SPRITE.SIZE, (R32(rasta) + 0xc) | 0);                       // 19a77..19a87
-      W32((bongSmoke + SPRITE.y) + i * SPRITE.SIZE, (R32((rasta + SPRITE.y)) + 7) | 0);                         // 19a8d..19a9d
-      W32((bongSmoke + SPRITE.state) + i * SPRITE.SIZE, 1);                                              // 19aa3..19aaa
+      sprite(bongSmoke, i).x = (sprite(rasta).x + 0xc) | 0;                       // 19a77..19a87
+      sprite(bongSmoke, i).y = (sprite(rasta).y + 7) | 0;                         // 19a8d..19a9d
+      sprite(bongSmoke, i).state = 1;                                              // 19aa3..19aaa
       n++;                                                                      // 19ab4..19ab7
     }
     i++;                                                                        // 19aba..19abd

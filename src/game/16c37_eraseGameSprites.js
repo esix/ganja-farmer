@@ -10,63 +10,64 @@
 // in every loop.
 import { F, register } from '../runtime/registry.js';
 import { R32 } from '../runtime/mem.js';
-import { SPRITE, a10Jets, bombs, bongSmoke, choppers, cropDusters, cruiseMissile, doubleBuffer, dusterSpray, explosions, groundTroops, gunSight, jah, killsDigits, levelDigits, messageBox, missile, missileSmoke, missileTarget, nukeCloud, paratroopers, plants, powerupDrop, rasta, scoreDigits, statusBar, ufo, van } from './data.js';
+import { a10Jets, bombs, bongSmoke, choppers, cropDusters, cruiseMissile, dusterSpray, explosions, groundTroops, gunSight, jah, killsDigits, levelDigits, messageBox, missile, missileSmoke, missileTarget, nukeCloud, paratroopers, plants, powerupDrop, rasta, scoreDigits, statusBar, ufo, van } from './data.js';
+import { G, sprite } from './access.js';
 
 register(0x16c37, 'eraseGameSprites_16c37', function eraseGameSprites() {
   let i; // [ebp-4]
 
-  F.Erase_Sprite_Clip_211fc(cruiseMissile, R32(doubleBuffer));
-  F.Erase_Sprite_Clip_211fc(nukeCloud, R32(doubleBuffer));
-  F.Erase_Sprite_Clip_211fc(van, R32(doubleBuffer));
+  F.Erase_Sprite_Clip_211fc(cruiseMissile, G.doubleBuffer);
+  F.Erase_Sprite_Clip_211fc(nukeCloud, G.doubleBuffer);
+  F.Erase_Sprite_Clip_211fc(van, G.doubleBuffer);
   for (i = 0; i < 5; i++) {
-    F.Erase_Sprite_Clip_211fc(i * SPRITE.SIZE + choppers, R32(doubleBuffer));
+    F.Erase_Sprite_Clip_211fc(sprite(choppers, i).addr, G.doubleBuffer);
   }
   for (i = 0; i < 3; i++) {
-    F.Erase_Sprite_Clip_211fc(i * SPRITE.SIZE + cropDusters, R32(doubleBuffer));
+    F.Erase_Sprite_Clip_211fc(sprite(cropDusters, i).addr, G.doubleBuffer);
   }
   for (i = 0; i < 0x3f; i++) {
-    F.Erase_Sprite_Clip_211fc(i * SPRITE.SIZE + dusterSpray, R32(doubleBuffer));
+    F.Erase_Sprite_Clip_211fc(sprite(dusterSpray, i).addr, G.doubleBuffer);
   }
   for (i = 0; i < 0x3f; i++) {
-    F.Erase_Sprite_Clip_211fc(i * SPRITE.SIZE + missileSmoke, R32(doubleBuffer));
+    F.Erase_Sprite_Clip_211fc(sprite(missileSmoke, i).addr, G.doubleBuffer);
   }
   for (i = 0; i < 0xc8; i++) {
-    F.Erase_Sprite_Clip_211fc(i * SPRITE.SIZE + bongSmoke, R32(doubleBuffer));
+    F.Erase_Sprite_Clip_211fc(sprite(bongSmoke, i).addr, G.doubleBuffer);
   }
   for (i = 0; i < 4; i++) {
-    F.Erase_Sprite_Clip_211fc(i * SPRITE.SIZE + bombs, R32(doubleBuffer));
+    F.Erase_Sprite_Clip_211fc(sprite(bombs, i).addr, G.doubleBuffer);
   }
   for (i = 0; i < 1; i++) {
-    F.Erase_Sprite_Clip_211fc(i * SPRITE.SIZE + a10Jets, R32(doubleBuffer));
+    F.Erase_Sprite_Clip_211fc(sprite(a10Jets, i).addr, G.doubleBuffer);
   }
   for (i = 0; i < 0x1a; i++) {
-    F.Erase_Sprite_Clip_211fc(i * SPRITE.SIZE + plants, R32(doubleBuffer));
+    F.Erase_Sprite_Clip_211fc(sprite(plants, i).addr, G.doubleBuffer);
   }
-  F.Erase_Sprite_Clip_211fc(jah, R32(doubleBuffer));
-  F.Erase_Sprite_Clip_211fc(powerupDrop, R32(doubleBuffer));
-  F.Erase_Sprite_Clip_211fc(ufo, R32(doubleBuffer));
+  F.Erase_Sprite_Clip_211fc(jah, G.doubleBuffer);
+  F.Erase_Sprite_Clip_211fc(powerupDrop, G.doubleBuffer);
+  F.Erase_Sprite_Clip_211fc(ufo, G.doubleBuffer);
   for (i = 0; i < 0x19; i++) {
-    F.Erase_Sprite_Clip_211fc(i * SPRITE.SIZE + paratroopers, R32(doubleBuffer));
+    F.Erase_Sprite_Clip_211fc(sprite(paratroopers, i).addr, G.doubleBuffer);
   }
   for (i = 0; i < 0x19; i++) {
-    F.Erase_Sprite_Clip_211fc(i * SPRITE.SIZE + groundTroops, R32(doubleBuffer));
+    F.Erase_Sprite_Clip_211fc(sprite(groundTroops, i).addr, G.doubleBuffer);
   }
-  F.Erase_Sprite_Clip_211fc(missile, R32(doubleBuffer));
-  F.Erase_Sprite_Clip_211fc(missileTarget, R32(doubleBuffer));
+  F.Erase_Sprite_Clip_211fc(missile, G.doubleBuffer);
+  F.Erase_Sprite_Clip_211fc(missileTarget, G.doubleBuffer);
   for (i = 0; i < 0xd; i++) {
-    F.Erase_Sprite_Clip_211fc(i * SPRITE.SIZE + explosions, R32(doubleBuffer));
+    F.Erase_Sprite_Clip_211fc(sprite(explosions, i).addr, G.doubleBuffer);
   }
   for (i = 0; i < 7; i++) {
-    F.Erase_Sprite_Clip_211fc(i * SPRITE.SIZE + scoreDigits, R32(doubleBuffer));
+    F.Erase_Sprite_Clip_211fc(sprite(scoreDigits, i).addr, G.doubleBuffer);
   }
   for (i = 0; i < 5; i++) {
-    F.Erase_Sprite_Clip_211fc(i * SPRITE.SIZE + killsDigits, R32(doubleBuffer));
+    F.Erase_Sprite_Clip_211fc(sprite(killsDigits, i).addr, G.doubleBuffer);
   }
   for (i = 0; i < 3; i++) {
-    F.Erase_Sprite_Clip_211fc(i * SPRITE.SIZE + levelDigits, R32(doubleBuffer));
+    F.Erase_Sprite_Clip_211fc(sprite(levelDigits, i).addr, G.doubleBuffer);
   }
-  F.Erase_Sprite_Clip_211fc(rasta, R32(doubleBuffer));
-  F.Erase_Sprite_Clip_211fc(messageBox, R32(doubleBuffer));
-  F.Erase_Sprite_Clip_211fc(statusBar, R32(doubleBuffer));
-  F.Erase_Sprite_Clip_211fc(gunSight, R32(doubleBuffer));
+  F.Erase_Sprite_Clip_211fc(rasta, G.doubleBuffer);
+  F.Erase_Sprite_Clip_211fc(messageBox, G.doubleBuffer);
+  F.Erase_Sprite_Clip_211fc(statusBar, G.doubleBuffer);
+  F.Erase_Sprite_Clip_211fc(gunSight, G.doubleBuffer);
 });

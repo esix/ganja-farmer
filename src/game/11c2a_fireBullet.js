@@ -40,7 +40,8 @@
 import { F, register } from '../runtime/registry.js';
 import { R32, W32, RF64, WF64 } from '../runtime/mem.js';
 import * as x87 from '../runtime/x87.js';
-import { BULLETS_FIELD, SPRITE, aimAngle, bullets, gunSight, rasta, score } from './data.js';
+import { BULLETS_FIELD, bullets, gunSight, rasta } from './data.js';
+import { G, sprite } from './access.js';
 // fistp dword of an integral ST0 (see header). NaN, out-of-range, and an Ext argument (x87.chp returns Ext only when
 // |v| needs > 53 bits, i.e. far outside int32; the object compares as NaN here) all give 0x80000000 (masked invalid).
 const fistp32 = (v) => (v >= -2147483648 && v <= 2147483647 ? v | 0 : -2147483648);
@@ -66,13 +67,13 @@ register(0x11c2a, 'fireBullet_11c2a', function fireBullet() {
       }
 
       // 11caa..11ccc: if ([0x33aa4] - 0x14 - [0x33dbc] + 0xd) > 0 && ([0x33dc0] - [0x33aa8]) > 0
-      if (((((R32(gunSight) - 0x14) | 0) - R32(rasta) + 0xd) | 0) > 0 &&
-          ((R32((rasta + SPRITE.y)) - R32((gunSight + SPRITE.y))) | 0) > 0) {
-        y = (R32((rasta + SPRITE.y)) - R32((gunSight + SPRITE.y))) | 0;                                // 11cd3..11ce4 fild; fstp qword
-        x = ((((R32(gunSight) - 0x14) | 0) - R32(rasta) + 0xd) | 0);          // 11ce7..11cfe fild; fstp qword
-        WF64(aimAngle, x87.toDouble(F.atan_st0_23686(y / x)));            // 11d01..11d0c fld; fdiv; atan; fstp
-        c = F.cos_st0_236cc(RF64(aimAngle));                              // 11d12..11d18
-        s = x87.toDouble(F.sin_st0_236d6(RF64(aimAngle)));                // 11d1d..11d28 (fstp qword [ebp-0x38])
+      if (((((sprite(gunSight).x - 0x14) | 0) - sprite(rasta).x + 0xd) | 0) > 0 &&
+          ((sprite(rasta).y - sprite(gunSight).y) | 0) > 0) {
+        y = (sprite(rasta).y - sprite(gunSight).y) | 0;                                // 11cd3..11ce4 fild; fstp qword
+        x = ((((sprite(gunSight).x - 0x14) | 0) - sprite(rasta).x + 0xd) | 0);          // 11ce7..11cfe fild; fstp qword
+        G.aimAngle = x87.toDouble(F.atan_st0_23686(y / x));            // 11d01..11d0c fld; fdiv; atan; fstp
+        c = F.cos_st0_236cc(G.aimAngle);                              // 11d12..11d18
+        s = x87.toDouble(F.sin_st0_236d6(G.aimAngle));                // 11d1d..11d28 (fstp qword [ebp-0x38])
         WF64((bullets + BULLETS_FIELD.vx) + e, x87.fmul(c, RF64(0x3014c)));                         // 11d2b..11d35 fmul; fstp
         WF64((bullets + BULLETS_FIELD.vy) + e, s * RF64(0x30154));                                  // 11d3b..11d48 fld; fmul; fstp
         t = fistp32(F.__CHP_222a4(RF64((bullets + BULLETS_FIELD.vx) + e)));                      // 11d4e..11d5d fld; __CHP; fistp
@@ -84,13 +85,13 @@ register(0x11c2a, 'fireBullet_11c2a', function fireBullet() {
       }
 
       // 11dd6..11df8: if ([0x33dbc] + 0xd - [0x33aa4] - 0x14) > 0 && ([0x33dc0] - [0x33aa8]) > 0
-      if (((((R32(rasta) + 0xd) | 0) - R32(gunSight) - 0x14) | 0) > 0 &&
-          ((R32((rasta + SPRITE.y)) - R32((gunSight + SPRITE.y))) | 0) > 0) {
-        y = (((R32((rasta + SPRITE.y)) - R32((gunSight + SPRITE.y))) | 0) - 0x14) | 0;                 // 11dff..11e13
-        x = ((((R32(rasta) + 0xd) | 0) - R32(gunSight) - 0x14) | 0);          // 11e16..11e2d
-        WF64(aimAngle, x87.toDouble(F.atan_st0_23686(y / x)));            // 11e30..11e3b
-        c = F.cos_st0_236cc(RF64(aimAngle));                              // 11e41..11e47
-        s = x87.toDouble(F.sin_st0_236d6(RF64(aimAngle)));                // 11e4c..11e57
+      if (((((sprite(rasta).x + 0xd) | 0) - sprite(gunSight).x - 0x14) | 0) > 0 &&
+          ((sprite(rasta).y - sprite(gunSight).y) | 0) > 0) {
+        y = (((sprite(rasta).y - sprite(gunSight).y) | 0) - 0x14) | 0;                 // 11dff..11e13
+        x = ((((sprite(rasta).x + 0xd) | 0) - sprite(gunSight).x - 0x14) | 0);          // 11e16..11e2d
+        G.aimAngle = x87.toDouble(F.atan_st0_23686(y / x));            // 11e30..11e3b
+        c = F.cos_st0_236cc(G.aimAngle);                              // 11e41..11e47
+        s = x87.toDouble(F.sin_st0_236d6(G.aimAngle));                // 11e4c..11e57
         WF64((bullets + BULLETS_FIELD.vx) + e, x87.fmul(c, RF64(0x30164)));                         // 11e5a..11e64
         WF64((bullets + BULLETS_FIELD.vy) + e, s * RF64(0x30164));                                  // 11e6a..11e77
         t = fistp32(F.__CHP_222a4(RF64((bullets + BULLETS_FIELD.vx) + e)));                      // 11e7d..11e8c
@@ -100,8 +101,8 @@ register(0x11c2a, 'fireBullet_11c2a', function fireBullet() {
       }
 
       // 11f05..11f23: if [0x33aa4] + 6 > [0x33dbc] && [0x33aa8] + 6 > [0x33dc0]
-      if (((R32(gunSight) + 6) | 0) > R32(rasta) &&
-          ((R32((gunSight + SPRITE.y)) + 6) | 0) > R32((rasta + SPRITE.y))) {
+      if (((sprite(gunSight).x + 6) | 0) > sprite(rasta).x &&
+          ((sprite(gunSight).y + 6) | 0) > sprite(rasta).y) {
         W32((bullets + BULLETS_FIELD.vx) + e, 0);                                                  // 11f2b: +0x48 = 5.0 (lo dword)
         W32((bullets + 0x2c) + e, 0x40140000);                                         // 11f35: (hi dword)
         W32((bullets + BULLETS_FIELD.vy) + e, 0);                                                  // 11f43: +0x40 = 0.0
@@ -109,33 +110,33 @@ register(0x11c2a, 'fireBullet_11c2a', function fireBullet() {
       }
 
       // 11f57..11f75: if [0x33aa4] + 6 < [0x33dbc] && [0x33aa8] + 6 > [0x33dc0]
-      if (((R32(gunSight) + 6) | 0) < R32(rasta) &&
-          ((R32((gunSight + SPRITE.y)) + 6) | 0) > R32((rasta + SPRITE.y))) {
+      if (((sprite(gunSight).x + 6) | 0) < sprite(rasta).x &&
+          ((sprite(gunSight).y + 6) | 0) > sprite(rasta).y) {
         W32((bullets + BULLETS_FIELD.vx) + e, 0);                                                  // 11f7d: +0x48 = -5.0 (lo dword)
         W32((bullets + 0x2c) + e, 0xc0140000 | 0);                                     // 11f87: (hi dword)
         W32((bullets + BULLETS_FIELD.vy) + e, 0);                                                  // 11f95: +0x40 = 0.0
         W32((bullets + 0x24) + e, 0);                                                  // 11f9f
       }
 
-      if (R32((rasta + SPRITE.currFrame)) === 1) {                                               // 11fa9
-        W32(bullets + e, (R32(rasta) + 0xe) | 0);                           // 11fb2..11fbf
-        W32((bullets + BULLETS_FIELD.y) + e, (R32((rasta + SPRITE.y)) + 3) | 0);                             // 11fc5..11fd2
+      if (sprite(rasta).currFrame === 1) {                                               // 11fa9
+        W32(bullets + e, (sprite(rasta).x + 0xe) | 0);                           // 11fb2..11fbf
+        W32((bullets + BULLETS_FIELD.y) + e, (sprite(rasta).y + 3) | 0);                             // 11fc5..11fd2
       }
-      if (R32((rasta + SPRITE.currFrame)) === 3) {                                               // 11fd8
-        W32(bullets + e, (R32(rasta) + 0x14) | 0);                          // 11fe1..11fee
-        W32((bullets + BULLETS_FIELD.y) + e, (R32((rasta + SPRITE.y)) + 4) | 0);                             // 11ff4..12001
+      if (sprite(rasta).currFrame === 3) {                                               // 11fd8
+        W32(bullets + e, (sprite(rasta).x + 0x14) | 0);                          // 11fe1..11fee
+        W32((bullets + BULLETS_FIELD.y) + e, (sprite(rasta).y + 4) | 0);                             // 11ff4..12001
       }
-      if (R32((rasta + SPRITE.currFrame)) === 5) {                                               // 12007
-        W32(bullets + e, (R32(rasta) + 8) | 0);                             // 12010..1201d
-        W32((bullets + BULLETS_FIELD.y) + e, (R32((rasta + SPRITE.y)) + 4) | 0);                             // 12023..12030
+      if (sprite(rasta).currFrame === 5) {                                               // 12007
+        W32(bullets + e, (sprite(rasta).x + 8) | 0);                             // 12010..1201d
+        W32((bullets + BULLETS_FIELD.y) + e, (sprite(rasta).y + 4) | 0);                             // 12023..12030
       }
-      if (R32((rasta + SPRITE.currFrame)) === 7) {                                               // 12036
-        W32(bullets + e, (R32(rasta) + 0x1c) | 0);                          // 1203f..1204c
-        W32((bullets + BULLETS_FIELD.y) + e, (R32((rasta + SPRITE.y)) + 9) | 0);                             // 12052..1205f
+      if (sprite(rasta).currFrame === 7) {                                               // 12036
+        W32(bullets + e, (sprite(rasta).x + 0x1c) | 0);                          // 1203f..1204c
+        W32((bullets + BULLETS_FIELD.y) + e, (sprite(rasta).y + 9) | 0);                             // 12052..1205f
       }
-      if (R32((rasta + SPRITE.currFrame)) === 9) {                                               // 12065
-        W32(bullets + e, R32(rasta));                                       // 1206e..12078
-        W32((bullets + BULLETS_FIELD.y) + e, (R32((rasta + SPRITE.y)) + 9) | 0);                             // 1207e..1208b
+      if (sprite(rasta).currFrame === 9) {                                               // 12065
+        W32(bullets + e, sprite(rasta).x);                                       // 1206e..12078
+        W32((bullets + BULLETS_FIELD.y) + e, (sprite(rasta).y + 9) | 0);                             // 1207e..1208b
       }
 
       // 12091..120cd: only if 0 <= y <= 0xc8 and 0 <= x <= 0x140 (signed)
@@ -149,5 +150,5 @@ register(0x11c2a, 'fireBullet_11c2a', function fireBullet() {
     i++;                                                                      // 12109..1210c
     if (!(i < 0x3b)) done = 1;                                                // 1210f..12115
   }
-  W32(score, (R32(score) - 1) | 0);                                       // 12121: dec dword [0x60a68]
+  G.score = (G.score - 1) | 0;                                       // 12121: dec dword [0x60a68]
 });

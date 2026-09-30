@@ -44,4 +44,5 @@ import './1977e_fireBongSmoke.js';
 import './19ade_updateBongSmoke.js';
 import './1a825_clearEnemies.js';
 import './1aa02_main.js';
+import './access.js';
 import './data.js';

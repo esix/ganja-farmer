@@ -22,7 +22,8 @@
 import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
-import { SPRITE, cropDusters, dusterSpray, dusterSprayNext, levelEnding } from './data.js';
+import { SPRITE, cropDusters, dusterSpray } from './data.js';
+import { G } from './access.js';
 
 register(0x15127, 'updateCropDusters_15127', function updateCropDusters() {
   let i; // [ebp-4]
@@ -57,7 +58,7 @@ register(0x15127, 'updateCropDusters_15127', function updateCropDusters() {
           W32(cropDusters + o, (-100 - imod(F.rand_232c7(), 500)) | 0);     // 152c3..152e6
           W32((cropDusters + SPRITE.counter2) + o, 4);                                                // 152f3
         }
-        if (R32(levelEnding) !== 0) {                                   // 152fd: cmp [0x60bbc],0; je 15328
+        if (G.levelEnding !== 0) {                                   // 152fd: cmp [0x60bbc],0; je 15328
           W32((cropDusters + SPRITE.state) + o, 0);                                      // 1530d
           W32(cropDusters + o, -200);                                   // 1531e: 0xffffff38
         }
@@ -66,7 +67,7 @@ register(0x15127, 'updateCropDusters_15127', function updateCropDusters() {
 
     if (R32((cropDusters + SPRITE.state) + o) === 0) {                                   // 1532f: cmp ..,0; jne 1542e
       W32((cropDusters + SPRITE.y) + o, 0x6b);                                       // 15343
-      if (R32(levelEnding) === 0) {                                     // 1534d: jne 15367
+      if (G.levelEnding === 0) {                                     // 1534d: jne 15367
         W32((cropDusters + SPRITE.state) + o, 1);                                        // 1535d
       }
       W32((cropDusters + SPRITE.counter2) + o, 4);                                          // 1536e
@@ -82,15 +83,15 @@ register(0x15127, 'updateCropDusters_15127', function updateCropDusters() {
     if (R32((cropDusters + SPRITE.state) + o) === 0x2d) {                                // 15435: cmp ..,0x2d; jne 154d8
       W32((cropDusters + SPRITE.counter3) + o, (R32((cropDusters + SPRITE.counter3) + o) - 1) | 0);                 // 15449: dec
       if (R32((cropDusters + SPRITE.counter3) + o) > 0) {                                   // 1544f: cmp ..,0; jle 154c7
-        W32(dusterSprayNext, (R32(dusterSprayNext) + 1) | 0);                       // 15458: inc [0x60bac]
-        if (R32(dusterSprayNext) > 0x3e) {                                  // 1545e: cmp ..,0x3e; jle
-          W32(dusterSprayNext, 0);                                          // 15467
+        G.dusterSprayNext = (G.dusterSprayNext + 1) | 0;                       // 15458: inc [0x60bac]
+        if (G.dusterSprayNext > 0x3e) {                                  // 1545e: cmp ..,0x3e; jle
+          G.dusterSprayNext = 0;                                          // 15467
         }
-        k = Math.imul(R32(dusterSprayNext), SPRITE.SIZE);                          // 15471: imul [0x60bac]
+        k = Math.imul(G.dusterSprayNext, SPRITE.SIZE);                          // 15471: imul [0x60bac]
         W32((dusterSpray + SPRITE.state) + k, 1);                                        // 1547b
-        k = Math.imul(R32(dusterSprayNext), SPRITE.SIZE);                          // 15495: re-read [0x60bac] (store above may alias it)
+        k = Math.imul(G.dusterSprayNext, SPRITE.SIZE);                          // 15495: re-read [0x60bac] (store above may alias it)
         W32(dusterSpray + k, (R32(cropDusters + o) + 0x19) | 0);            // 1548c..1549f
-        k = Math.imul(R32(dusterSprayNext), SPRITE.SIZE);
+        k = Math.imul(G.dusterSprayNext, SPRITE.SIZE);
         W32((dusterSpray + SPRITE.y) + k, (R32((cropDusters + SPRITE.y) + o) + 0xf) | 0);             // 154ac..154bf
       } else {
         W32((cropDusters + SPRITE.state) + o, 1);                                        // 154ce

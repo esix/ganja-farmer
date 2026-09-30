@@ -15,6 +15,8 @@
 //                      of the emulated stack (below the stack pointer) is not hashed.
 //   --trace-skip A-B,… hex address ranges [A, B) left out of the memory hash (state the game never reads,
 //                      e.g. a removed layer's private variables)
+//   --dump N:FILE      write the data segment + VGA + first 2 MB of heap at yield N to FILE (for finding where two
+//                      versions' traces diverge)
 //   --trace-visible    hash only what the player perceives instead of memory: VGA memory + the DAC palette
 //                      (plus the DAC/OPL hashes as always). For refactors that move heap addresses. The last
 //                      line also hashes every file the program wrote (e.g. SCORES.DAT).
@@ -50,6 +52,7 @@ const everyS = opt('--every', null);
 const stepMs = +opt('--step', 1);
 const traceFile = opt('--trace', null);
 const traceVisible = flag('--trace-visible');
+const dumpAt = (opt('--dump', '') || '').split(':');
 const traceSkip = (opt('--trace-skip', '') || '').split(',').filter(Boolean).map((r) => r.split('-').map((x) => parseInt(x, 16)));
 const realtime = flag('--realtime');
 mkdirSync(outDir, { recursive: true });
@@ -200,6 +203,7 @@ class Stop extends Error {}
 setYieldHook(() => {
   yields++;
   if (traceFile && (yields & 31) === 0) traceLine();
+  if (dumpAt[1] && yields === +dumpAt[0]) writeFileSync(dumpAt[1], Buffer.concat([u8.subarray(DATA_BASE, DATA_END), u8.subarray(VGA_BASE, VGA_BASE + 64000), u8.subarray(HEAP_BASE, HEAP_BASE + 0x200000)]));
   if (!realtime) vms += stepMs;
   pc.pit.pump();
   if (t0 !== null) {

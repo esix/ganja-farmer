@@ -18,57 +18,58 @@
 // All dword comparisons signed (jge). No x87 instructions. No busy-wait loop (all loops have constant bounds).
 import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
-import { SPRITE, a10Jets, bombs, choppers, cropDusters, groundTroops, level, levelEnding, levelTimer, paratroopers } from './data.js';
+import { a10Jets, bombs, choppers, cropDusters, groundTroops, paratroopers } from './data.js';
+import { G, sprite } from './access.js';
 
 register(0x15c7d, 'updateLevelProgress_15c7d', async function updateLevelProgress() {
   let flag; // [ebp-4]
   let i;    // [ebp-8]
 
   flag = 1;                                                                   // 0x15c95
-  W32(levelTimer, (R32(levelTimer) - 1) | 0);                                       // 0x15c9c dec dword
-  if (R32(levelTimer) < 0) {                                                     // 0x15ca2..0x15ca9 (jge: signed)
-    W32(levelEnding, 1);                                                          // 0x15cab
+  G.levelTimer = (G.levelTimer - 1) | 0;                                       // 0x15c9c dec dword
+  if (G.levelTimer < 0) {                                                     // 0x15ca2..0x15ca9 (jge: signed)
+    G.levelEnding = 1;                                                          // 0x15cab
   }
-  if (R32(levelEnding) !== 0) {                                                   // 0x15cb5..0x15cbc
+  if (G.levelEnding !== 0) {                                                   // 0x15cb5..0x15cbc
     // 0x15cc2..0x15cee (mov eax,[ebp-8] at 0x15ccb is a dead load, same in every loop below)
     for (i = 0; i < 5; i++) {
-      if (R32((Math.imul(i, SPRITE.SIZE) + (choppers + SPRITE.state)) | 0) !== 0) {                   // 0x15cd7..0x15ce5
+      if (sprite(choppers, i).state !== 0) {                   // 0x15cd7..0x15ce5
         flag = 0;                                                             // 0x15ce7
       }
     }
     for (i = 0; i < 3; i++) {                                                 // 0x15cf0..0x15d1c
-      if (R32((Math.imul(i, SPRITE.SIZE) + (cropDusters + SPRITE.state)) | 0) !== 0) {
+      if (sprite(cropDusters, i).state !== 0) {
         flag = 0;
       }
     }
     for (i = 0; i < 4; i++) {                                                 // 0x15d1e..0x15d4a
-      if (R32((Math.imul(i, SPRITE.SIZE) + (bombs + SPRITE.state)) | 0) !== 0) {
+      if (sprite(bombs, i).state !== 0) {
         flag = 0;
       }
     }
     for (i = 0; i < 1; i++) {                                                 // 0x15d4c..0x15d78
-      if (R32((Math.imul(i, SPRITE.SIZE) + (a10Jets + SPRITE.state)) | 0) !== 0) {
+      if (sprite(a10Jets, i).state !== 0) {
         flag = 0;
       }
     }
     for (i = 0; i < 0x19; i++) {                                              // 0x15d7a..0x15da6
-      if (R32((Math.imul(i, SPRITE.SIZE) + (paratroopers + SPRITE.state)) | 0) !== 0) {
+      if (sprite(paratroopers, i).state !== 0) {
         flag = 0;
       }
     }
     for (i = 0; i < 0x19; i++) {                                              // 0x15da8..0x15dd4
-      if (R32((Math.imul(i, SPRITE.SIZE) + (groundTroops + SPRITE.state)) | 0) !== 0) {
+      if (sprite(groundTroops, i).state !== 0) {
         flag = 0;
       }
     }
-    if (R32(levelTimer) < -0x21c) {                                              // 0x15dd6..0x15de0 (0xfffffde4, jge: signed)
+    if (G.levelTimer < -0x21c) {                                              // 0x15dd6..0x15de0 (0xfffffde4, jge: signed)
       F.clearEnemies_1a825();                                                    // 0x15de2
     }
     if (flag !== 0) {                                                         // 0x15de7..0x15deb
       await F.runLevelEndSequence_15e15();                                                    // 0x15ded
-      W32(level, (R32(level) + 1) | 0);                                   // 0x15df2 inc dword
-      W32(levelTimer, 0x438);                                                    // 0x15df8
-      W32(levelEnding, 0);                                                        // 0x15e02
+      G.level = (G.level + 1) | 0;                                   // 0x15df2 inc dword
+      G.levelTimer = 0x438;                                                    // 0x15df8
+      G.levelEnding = 0;                                                        // 0x15e02
     }
   }
 });

@@ -29,7 +29,8 @@
 import { F, register } from '../runtime/registry.js';
 import { R8, R32, W8, W32 } from '../runtime/mem.js';
 import { stackAlloc, stackFree } from '../runtime/stack.js';
-import { HIGHSCORES_FIELD, doubleBuffer, highScores, level, score, sndClick, sndYaMon } from './data.js';
+import { HIGHSCORES_FIELD, KEY, highScores, sndClick, sndYaMon } from './data.js';
+import { G, highScore } from './access.js';
 
 register(0x1098f, 'enterHighScore_1098f', async function enterHighScore() {
   const frame = stackAlloc(0x10);              // 0x109a1 sub esp, 0x10
@@ -44,15 +45,15 @@ register(0x1098f, 'enterHighScore_1098f', async function enterHighScore() {
   // 0x109b3..0x109c6: for (i = 0; i < 9; i++) (jge: signed); 0x109bc mov eax,[ebp-0x10] is a dead load
   for (W32(I, 0); (R32(I) | 0) < 9; W32(I, R32(I) + 1)) {
     // 0x109cc..0x109dc: cmp [0x60a68], [i*0x18 + 0x60a70]; jle 0x10b6f (next i)
-    if ((R32(score) | 0) <= (R32((Math.imul(R32(I), 0x18) + highScores) | 0) | 0)) continue;
+    if ((G.score | 0) <= (highScore(R32(I)).score | 0)) continue;
 
     await F.Time_Delay_20404(1);                                          // 0x109e2
-    W32((Math.imul(R32(I), 0x18) + highScores) | 0, R32(score));            // 0x109ec..0x109f6
-    W32((Math.imul(R32(I), 0x18) + (highScores + HIGHSCORES_FIELD.level)) | 0, R32(level));            // 0x109fc..0x10a06
+    highScore(R32(I)).score = G.score;            // 0x109ec..0x109f6
+    highScore(R32(I)).level = G.level;            // 0x109fc..0x10a06
     F.Print_String_DB_221aa(0x55, 0x50, 0xfa, 0x30033 /* " !!!New Top Score!!! " */, 0);  // 0x10a0c..0x10a22
     F.Print_String_DB_221aa(5, 0x5a, 0xfb,
       0x30049 /* "Please type your name then press enter" */, 0);                             // 0x10a27..0x10a3d
-    F.Show_Double_Buffer_21531(R32(doubleBuffer) /* double_buffer, LIBRARY.md */, 0);        // 0x10a42..0x10a49
+    F.Show_Double_Buffer_21531(G.doubleBuffer /* double_buffer, LIBRARY.md */, 0);        // 0x10a42..0x10a49
     await F.Time_Delay_20404(1);                                          // 0x10a4e
     F.Keyboard_Remove_Driver_22c58();                               // 0x10a58
     // 0x10a5d..0x10a80: for (j = 0; j < 15; j++) byte [i*0x18 + j + 0x60a78] = 0x20 (jge: signed);
@@ -79,7 +80,7 @@ register(0x1098f, 'enterHighScore_1098f', async function enterHighScore() {
         W8((Math.imul(R32(I), 0x18) + R32(POS) + (highScores + HIGHSCORES_FIELD.name)) | 0, R8(KEY));  // 0x10aed..0x10af7
         F.dws_DPlay_1eff8(sndClick);                                  // 0x10afd..0x10b08 (cdecl, add esp,4)
       }
-      F.Show_Double_Buffer_21531(R32(doubleBuffer), 0);                   // 0x10b0b..0x10b12
+      F.Show_Double_Buffer_21531(G.doubleBuffer, 0);                   // 0x10b0b..0x10b12
       // 0x10b17..0x10b36: push 0; ecx = i*0x18 + 0x60a70 + 8; ebx = 0xfc; edx = 0x64; eax = 0x6c
       F.Print_String_202cd(0x6c, 0x64, 0xfc, (Math.imul(R32(I), 0x18) + highScores + 8) | 0, 0);
       W32(POS, R32(POS) + 1);                                              // 0x10b3b..0x10b3e (eax load is dead)

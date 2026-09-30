@@ -5,7 +5,7 @@
 // the one saveHighScores writes to "scores.dat" (9 entries there).
 // The loop has no upper bound on i: entries are read until readHighScoreEntry returns 0 (0x107b1 test eax,eax / je).
 import { F, register } from '../runtime/registry.js';
-import { highScores } from './data.js';
+import { highScore } from './access.js';
 
 register(0x10767, 'loadHighScores_10767', function loadHighScores() {
   let i; // [ebp-4]
@@ -16,7 +16,7 @@ register(0x10767, 'loadHighScores_10767', function loadHighScores() {
   if (fp !== 0) { // 0x10798 cmp / je 0x107c5
     for (;;) {
       // 0x1079e..0x107ac: EDX = 0x60a70 + i*0x18, EAX = fp
-      if ((F.readHighScoreEntry_10010(fp, (highScores + Math.imul(i, 0x18)) | 0)) === 0) break; // 0x107b1 test / je 0x107bd
+      if ((F.readHighScoreEntry_10010(fp, highScore(i).addr)) === 0) break; // 0x107b1 test / je 0x107bd
       i++; // 0x107b5 mov eax,[ebp-4] (unused) / 0x107b8 inc [ebp-4]
     }
     F.fclose_228ed(fp); // 0x107bd..0x107c0

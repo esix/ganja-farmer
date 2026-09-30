@@ -18,7 +18,8 @@ import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 import { idiv } from '../runtime/cpu.js';
 import { stackAlloc, stackFree } from '../runtime/stack.js';
-import { SPRITE, kills, killsDigits, level, levelDigits, score, scoreDigits } from './data.js';
+import { killsDigits, levelDigits, scoreDigits } from './data.js';
+import { G, sprite } from './access.js';
 
 register(0x15788, 'updateStatusDigits_15788', function updateStatusDigits() {
   let i;    // [ebp-4]
@@ -30,52 +31,52 @@ register(0x15788, 'updateStatusDigits_15788', function updateStatusDigits() {
 
   i = 0;       // 0x157a0
   d = 1000;    // 0x157a7 (overwritten below before being read)
-  F.div_23744(R32(score), 1000000, T(0x18));                // 0x157bb
+  F.div_23744(G.score, 1000000, T(0x18));                // 0x157bb
   quot = R32(T(0x18)); rem = R32(T(0x18) + 4);                       // 0x157c6 movsd x2
-  W32((scoreDigits + SPRITE.currFrame), quot);
+  sprite(scoreDigits).currFrame = quot;
   F.div_23744(rem, 100000, T(0x20));                           // 0x157db
   quot = R32(T(0x20)); rem = R32(T(0x20) + 4);
-  W32((scoreDigits + 1 * SPRITE.SIZE + SPRITE.currFrame), quot);
+  sprite(scoreDigits, 1).currFrame = quot;
   F.div_23744(rem, 10000, T(0x28));                            // 0x157fb
   quot = R32(T(0x28)); rem = R32(T(0x28) + 4);
-  W32((scoreDigits + 2 * SPRITE.SIZE + SPRITE.currFrame), quot);
+  sprite(scoreDigits, 2).currFrame = quot;
   F.div_23744(rem, 1000, T(0x30));                             // 0x1581b
   quot = R32(T(0x30)); rem = R32(T(0x30) + 4);
-  W32((scoreDigits + 3 * SPRITE.SIZE + SPRITE.currFrame), quot);
+  sprite(scoreDigits, 3).currFrame = quot;
   F.div_23744(rem, 100, T(0x38));                              // 0x1583b
   quot = R32(T(0x38)); rem = R32(T(0x38) + 4);
-  W32((scoreDigits + 4 * SPRITE.SIZE + SPRITE.currFrame), quot);
+  sprite(scoreDigits, 4).currFrame = quot;
   F.div_23744(rem, 10, T(0x40));                               // 0x1585b
   quot = R32(T(0x40)); rem = R32(T(0x40) + 4);
-  W32((scoreDigits + 5 * SPRITE.SIZE + SPRITE.currFrame), quot);
-  W32((scoreDigits + 6 * SPRITE.SIZE + SPRITE.currFrame), rem);                                                 // 0x15873
+  sprite(scoreDigits, 5).currFrame = quot;
+  sprite(scoreDigits, 6).currFrame = rem;                                                 // 0x15873
 
   d = 1000;                                                          // 0x15878
-  rem = R32(kills);                                                // 0x15884 -> [ebp-0xc]
+  rem = G.kills;                                                // 0x15884 -> [ebp-0xc]
   for (i = 0; i < 4; i++) {
     F.div_23744(rem, d, T(0x48));                              // 0x158a5
     quot = R32(T(0x48)); rem = R32(T(0x48) + 4);
-    W32((killsDigits + SPRITE.currFrame) + i * SPRITE.SIZE, quot);
+    sprite(killsDigits, i).currFrame = quot;
     d = idiv(d, 10);                                                 // 0x158d0 cdq-style sar; idiv
   }
 
   d = 100;                                                           // 0x158d7
-  rem = R32(level);                                                // 0x158e3 -> [ebp-0xc]
+  rem = G.level;                                                // 0x158e3 -> [ebp-0xc]
   for (i = 0; i < 3; i++) {
     F.div_23744(rem, d, T(0x50));                              // 0x15904
     quot = R32(T(0x50)); rem = R32(T(0x50) + 4);
-    W32((levelDigits + SPRITE.currFrame) + i * SPRITE.SIZE, quot);
+    sprite(levelDigits, i).currFrame = quot;
     d = idiv(d, 10);                                                 // 0x1592f
   }
 
   for (i = 0; i < 7; i++) {
-    if ((R32((scoreDigits + SPRITE.currFrame) + i * SPRITE.SIZE) | 0) < 0) W32((scoreDigits + SPRITE.currFrame) + i * SPRITE.SIZE, 0);   // 0x15952 cmp/jge (signed)
+    if ((sprite(scoreDigits, i).currFrame | 0) < 0) sprite(scoreDigits, i).currFrame = 0;   // 0x15952 cmp/jge (signed)
   }
   for (i = 0; i < 4; i++) {
-    if ((R32((killsDigits + SPRITE.currFrame) + i * SPRITE.SIZE) | 0) < 0) W32((killsDigits + SPRITE.currFrame) + i * SPRITE.SIZE, 0);   // 0x1598a
+    if ((sprite(killsDigits, i).currFrame | 0) < 0) sprite(killsDigits, i).currFrame = 0;   // 0x1598a
   }
   for (i = 0; i < 3; i++) {
-    if ((R32((levelDigits + SPRITE.currFrame) + i * SPRITE.SIZE) | 0) < 0) W32((levelDigits + SPRITE.currFrame) + i * SPRITE.SIZE, 0);   // 0x159c2
+    if ((sprite(levelDigits, i).currFrame | 0) < 0) sprite(levelDigits, i).currFrame = 0;   // 0x159c2
   }
 
   stackFree(0x40);

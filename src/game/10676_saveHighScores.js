@@ -4,7 +4,8 @@
 // sets entry+0 = 100000 - i*10000 and entry+4 = 10 - i.
 import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
-import { HIGHSCORES_FIELD, cin, highScores, resetHighScores } from './data.js';
+import { cin, highScores } from './data.js';
+import { G, highScore } from './access.js';
 
 register(0x10676, 'saveHighScores_10676', function saveHighScores() {
   let r; // [ebp-8]: receives sub_2270d results, never read
@@ -13,18 +14,18 @@ register(0x10676, 'saveHighScores_10676', function saveHighScores() {
 
   r = 0;
   i = 0;
-  if (R32(resetHighScores) !== 0) {
+  if (G.resetHighScores !== 0) {
     for (i = 0; i < 9; i++) {
       F.istream_extract_cstr_2231a(cin, highScores + i * 0x18 + 8);
-      W32(highScores + i * 0x18, 100000 - i * 10000);
-      W32((highScores + HIGHSCORES_FIELD.level) + i * 0x18, 10 - i);
+      highScore(i).score = 100000 - i * 10000;
+      highScore(i).level = 10 - i;
       r = 0;
     }
   }
   fp = F.fopen_2264a(0x3000e /* "scores.dat" */, 0x3000c /* "w" */);
   if (fp !== 0) {
     for (i = 0; i < 9; i++) {
-      r = F.fwrite_2270d(highScores + i * 0x18, 0x18, 1, fp);
+      r = F.fwrite_2270d(highScore(i).addr, 0x18, 1, fp);
     }
     F.fclose_228ed(fp);
   }
