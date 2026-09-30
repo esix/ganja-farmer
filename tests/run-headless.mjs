@@ -28,6 +28,7 @@
 // ticks is the original's.
 //
 // Events: { t: seconds since program start, snap: "name" } | { t, key: "KeyboardEvent.code", down: bool }
+//         | { t, eval: "code" }: run code with MEM (runtime/mem.js) in scope, e.g. to put a sprite somewhere
 //         | { t, tap: "code", ms: hold } | { t, mouse: [x 0..639, y 0..199] } | { t, buttons: mask }
 import { readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
@@ -38,6 +39,7 @@ import { setYieldHook, hostYield } from '../src/runtime/cpu.js';
 import { R32u, u8, DATA_BASE, DATA_END, VGA_BASE, HEAP_BASE } from '../src/runtime/mem.js';
 import { stackPointer, STACK_LIMIT } from '../src/runtime/stack.js';
 import { F } from '../src/runtime/registry.js';
+import * as MEM from '../src/runtime/mem.js';
 import * as vfs from '../src/platform/vfs.js';
 import * as display from '../src/platform/display.js';
 import * as vga from '../src/platform/vga.js';
@@ -156,6 +158,7 @@ function runEvents() {
   while (events.length && events[0].t <= s) {
     const e = events.shift();
     if (e.snap) snap(e.snap);
+    else if (e.eval) new Function('MEM', e.eval)(MEM); // --script { t, eval: "code" }: poke game memory (MEM = runtime/mem.js)
     else if (e.key) pc.kbd.sendBytes(pc.kbd.keyBytes(e.key, !!e.down));
     else if (e.tap) {
       pc.kbd.sendBytes(pc.kbd.keyBytes(e.tap, true));

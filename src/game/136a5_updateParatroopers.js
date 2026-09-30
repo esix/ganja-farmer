@@ -297,6 +297,9 @@ register(0x136a5, 'updateParatroopers_136a5', function updateParatroopers() {
         sprite(paratroopers, i).state = PARATROOPER.INACTIVE;                                 // 0x1438c
         sprite(paratroopers, i).y = -0x32;                             // 0x1439d
       }
+      // ORIGINAL BUG (kept on purpose): unlike the other deactivations this one does not park the sprite at
+      // y = -0x32. drawGameFrame draws every paratrooper, active or not, and the sprite is 0x26 wide, so at
+      // x = -0x20 its right-most 6 columns stay on screen, frozen, until the slot is reused.
       if (sprite(paratroopers, i).x < -0x1e) {                        // 0x143ae (jge)
         sprite(paratroopers, i).state = PARATROOPER.INACTIVE;                                 // 0x143be
       }
