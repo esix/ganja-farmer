@@ -17,25 +17,26 @@
 import { F, register } from '../runtime/registry.js';
 import { R8, W8, R16, R32, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
+import { BONG_STATE, MISSILE, RASTA, WEAPON } from './states.js';
 import { gunSight, jointGlowColor, missile, rasta, sndBong, sndBongBlow, sndBongBubble, sndGetSome, sndGunShot, sndIShot, sndMissile, sndPdie4, sndSmokin, sndYaMon, soundStatus } from './data.js';
 import { G, dplay, sprite } from './access.js';
 
 register(0x18f27, 'updatePlayer_18f27', function updatePlayer() {
   // 0x18f3f..0x18f9b
   if ((G.mouseButtons === 1 || G.prevGunSightY !== sprite(gunSight).y || G.prevGunSightX !== sprite(gunSight).x) && // 18f3f..18f62
-      (sprite(rasta).state === 0x2c || sprite(rasta).state === 0x2b) && // 18f64..18f74
+      (sprite(rasta).state === RASTA.SMOKING || sprite(rasta).state === RASTA.LIGHTING_UP) && // 18f64..18f74
       G.inLevelEndSequence !== 1 && // 18f7a
-      sprite(rasta).state !== 0x3a && // 18f85
-      sprite(rasta).state !== 0x3b) { // 18f90
-    sprite(rasta).state = 1; // 18f9b
+      sprite(rasta).state !== RASTA.LOADING_BONG && // 18f85
+      sprite(rasta).state !== RASTA.BONG_HIT) { // 18f90
+    sprite(rasta).state = RASTA.AIMING; // 18f9b
   }
 
   // 0x18fa5..0x19018
   if (G.mouseButtons !== 1 && G.prevGunSightY === sprite(gunSight).y && G.prevGunSightX === sprite(gunSight).x &&
-      sprite(rasta).state === 1) {
+      sprite(rasta).state === RASTA.AIMING) {
     G.idleTimer = (G.idleTimer - 1) | 0; // 18fd7 dec
     if (G.idleTimer < 0) { // 18fdd cmp 0; jge
-      sprite(rasta).state = 0x2b;
+      sprite(rasta).state = RASTA.LIGHTING_UP;
       sprite(rasta).currFrame = 0xa;
       G.rastaAnimDelay = 0;
       G.idleTimer = 0x64;
@@ -44,7 +45,7 @@ register(0x18f27, 'updatePlayer_18f27', function updatePlayer() {
   }
 
   // 0x19018..0x19115
-  if (sprite(rasta).state === 0x2c) {
+  if (sprite(rasta).state === RASTA.SMOKING) {
     if (G.smokeGlowPhase === 2) {
       G.jointGlowColor = (G.jointGlowColor + 2) & 0xff; // 1902e add byte
       F.Write_Color_Reg_20541(0xb6, jointGlowColor); // 19035..1903f
@@ -79,25 +80,25 @@ register(0x18f27, 'updatePlayer_18f27', function updatePlayer() {
   }
 
   // 0x19115..0x1915f
-  if (sprite(rasta).state === 0x2b) {
+  if (sprite(rasta).state === RASTA.LIGHTING_UP) {
     F.Write_Color_Reg_20541(0xb6, jointGlowColor); // 1911e..19128
     G.rastaAnimDelay = (G.rastaAnimDelay + 1) | 0; // 1912d inc
     if (G.rastaAnimDelay > 4) { // 19133 jle
       sprite(rasta).currFrame = (sprite(rasta).currFrame + 1) | 0; // 1913c inc
       if (sprite(rasta).currFrame > 0xf) { // 19142 jle
-        sprite(rasta).state = 0x2c;
+        sprite(rasta).state = RASTA.SMOKING;
       }
       G.rastaAnimDelay = 0; // 19155
     }
   }
 
   // 0x1915f..0x191b2
-  if (sprite(rasta).state === 0x3a) {
+  if (sprite(rasta).state === RASTA.LOADING_BONG) {
     G.rastaAnimDelay = (G.rastaAnimDelay + 1) | 0; // 19168 inc
     if (G.rastaAnimDelay > 4) { // 1916e jle
       sprite(rasta).currFrame = (sprite(rasta).currFrame + 1) | 0; // 19177 inc
       if (sprite(rasta).currFrame > 0x22) { // 1917d jle
-        sprite(rasta).state = 0x3b;
+        sprite(rasta).state = RASTA.BONG_HIT;
         G.bongHitTimer = 0x5a;
         F.dws_DPlay_1eff8(sndBongBubble); // 1919a..191a0 (cdecl)
       }
@@ -106,20 +107,20 @@ register(0x18f27, 'updatePlayer_18f27', function updatePlayer() {
   }
 
   // 0x191b2..0x1921d
-  if (sprite(rasta).state === 0x3b) {
+  if (sprite(rasta).state === RASTA.BONG_HIT) {
     sprite(rasta).currFrame = 0x22; // 191bb
     G.bongHitTimer = (G.bongHitTimer - 1) | 0; // 191c5 dec
     F.dws_DSoundStatus_1f348(dplay(sndBongBubble).soundnum, soundStatus); // 191cb..191da (cdecl, push 0x60f14 then word)
     if (G.soundStatus === 0 || G.bongHitTimer < 0) { // 191e2 je / 191ec jge
-      sprite(rasta).state = 1;
-      G.bongState = 0x3c;
+      sprite(rasta).state = RASTA.AIMING;
+      G.bongState = BONG_STATE.LOADED;
       G.bongShotsLeft = 0x3c;
       G.bongBlowPending = 1;
     }
   }
 
   // 0x1921d
-  if (sprite(rasta).state !== 1) {
+  if (sprite(rasta).state !== RASTA.AIMING) {
     return; // jne 0x19777 (epilogue)
   }
 
@@ -130,90 +131,90 @@ register(0x18f27, 'updatePlayer_18f27', function updatePlayer() {
   }
 
   // 0x19271..0x192b3
-  if (G.currentWeapon === 0x37 || G.currentWeapon === 0x36) {
+  if (G.currentWeapon === WEAPON.AUTO_GUN || G.currentWeapon === WEAPON.DEFAULT_GUN) {
     sprite(rasta).currFrame = 0;
   }
-  if (G.currentWeapon === 0x35) {
+  if (G.currentWeapon === WEAPON.MISSILE_LAUNCHER) {
     sprite(rasta).currFrame = 0x14;
   }
-  if (G.currentWeapon === 0x38) {
+  if (G.currentWeapon === WEAPON.BONG) {
     sprite(rasta).currFrame = 0x23;
   }
 
   // 0x192b3..0x19315: 0xbe < 0x33aa4.x + 6 < 0x140
   if (((sprite(gunSight).x + 6) | 0) > 0xbe && ((sprite(gunSight).x + 6) | 0) < 0x140) {
-    if (G.currentWeapon === 0x37 || G.currentWeapon === 0x36) {
+    if (G.currentWeapon === WEAPON.AUTO_GUN || G.currentWeapon === WEAPON.DEFAULT_GUN) {
       sprite(rasta).currFrame = 2;
     }
-    if (G.currentWeapon === 0x35) {
+    if (G.currentWeapon === WEAPON.MISSILE_LAUNCHER) {
       sprite(rasta).currFrame = 0x16;
     }
-    if (G.currentWeapon === 0x38) {
+    if (G.currentWeapon === WEAPON.BONG) {
       sprite(rasta).currFrame = 0x24;
     }
   }
 
   // 0x19315..0x19374: 0 < 0x33aa4.x + 6 < 0x82
   if (((sprite(gunSight).x + 6) | 0) > 0 && ((sprite(gunSight).x + 6) | 0) < 0x82) {
-    if (G.currentWeapon === 0x37 || G.currentWeapon === 0x36) {
+    if (G.currentWeapon === WEAPON.AUTO_GUN || G.currentWeapon === WEAPON.DEFAULT_GUN) {
       sprite(rasta).currFrame = 4;
     }
-    if (G.currentWeapon === 0x35) {
+    if (G.currentWeapon === WEAPON.MISSILE_LAUNCHER) {
       sprite(rasta).currFrame = 0x18;
     }
-    if (G.currentWeapon === 0x38) {
+    if (G.currentWeapon === WEAPON.BONG) {
       sprite(rasta).currFrame = 0x25;
     }
   }
 
   // 0x19374..0x193e1: 0x118 < 0x33aa4.x + 6 < 0x140 and 0x33aa4.y > 0x50
   if (((sprite(gunSight).x + 6) | 0) > 0x118 && ((sprite(gunSight).x + 6) | 0) < 0x140 && sprite(gunSight).y > 0x50) {
-    if (G.currentWeapon === 0x37 || G.currentWeapon === 0x36) {
+    if (G.currentWeapon === WEAPON.AUTO_GUN || G.currentWeapon === WEAPON.DEFAULT_GUN) {
       sprite(rasta).currFrame = 6;
     }
-    if (G.currentWeapon === 0x35) {
+    if (G.currentWeapon === WEAPON.MISSILE_LAUNCHER) {
       sprite(rasta).currFrame = 0x1a;
     }
-    if (G.currentWeapon === 0x38) {
+    if (G.currentWeapon === WEAPON.BONG) {
       sprite(rasta).currFrame = 0x26;
     }
   }
 
   // 0x193e1..0x19449: 0 < 0x33aa4.x + 6 < 0x28 and 0x33aa4.y > 0x50
   if (((sprite(gunSight).x + 6) | 0) > 0 && ((sprite(gunSight).x + 6) | 0) < 0x28 && sprite(gunSight).y > 0x50) {
-    if (G.currentWeapon === 0x37 || G.currentWeapon === 0x36) {
+    if (G.currentWeapon === WEAPON.AUTO_GUN || G.currentWeapon === WEAPON.DEFAULT_GUN) {
       sprite(rasta).currFrame = 8;
     }
-    if (G.currentWeapon === 0x35) {
+    if (G.currentWeapon === WEAPON.MISSILE_LAUNCHER) {
       sprite(rasta).currFrame = 0x1c;
     }
-    if (G.currentWeapon === 0x38) {
+    if (G.currentWeapon === WEAPON.BONG) {
       sprite(rasta).currFrame = 0x27;
     }
   }
 
   // 0x19449..0x194ad: 0x33aa4.x + 6 > 0x33dbc.x and 0x33aa4.y + 6 > 0x33dbc.y
   if (((sprite(gunSight).x + 6) | 0) > sprite(rasta).x && ((sprite(gunSight).y + 6) | 0) > sprite(rasta).y) {
-    if (G.currentWeapon === 0x37 || G.currentWeapon === 0x36) {
+    if (G.currentWeapon === WEAPON.AUTO_GUN || G.currentWeapon === WEAPON.DEFAULT_GUN) {
       sprite(rasta).currFrame = 6;
     }
-    if (G.currentWeapon === 0x35) {
+    if (G.currentWeapon === WEAPON.MISSILE_LAUNCHER) {
       sprite(rasta).currFrame = 0x1a;
     }
-    if (G.currentWeapon === 0x38) {
+    if (G.currentWeapon === WEAPON.BONG) {
       sprite(rasta).currFrame = 0x26;
     }
   }
 
   // 0x194ad..0x19511: 0x33aa4.x + 6 < 0x33dbc.x and 0x33aa4.y + 6 > 0x33dbc.y
   if (((sprite(gunSight).x + 6) | 0) < sprite(rasta).x && ((sprite(gunSight).y + 6) | 0) > sprite(rasta).y) {
-    if (G.currentWeapon === 0x37 || G.currentWeapon === 0x36) {
+    if (G.currentWeapon === WEAPON.AUTO_GUN || G.currentWeapon === WEAPON.DEFAULT_GUN) {
       sprite(rasta).currFrame = 8;
     }
-    if (G.currentWeapon === 0x35) {
+    if (G.currentWeapon === WEAPON.MISSILE_LAUNCHER) {
       sprite(rasta).currFrame = 0x1c;
     }
-    if (G.currentWeapon === 0x38) {
+    if (G.currentWeapon === WEAPON.BONG) {
       sprite(rasta).currFrame = 0x27;
     }
   }
@@ -224,7 +225,7 @@ register(0x18f27, 'updatePlayer_18f27', function updatePlayer() {
   }
 
   F.dws_DDiscard_1f770(dplay(sndGunShot).soundnum); // 19528..19531
-  if (sprite(missile).state === 0) {
+  if (sprite(missile).state === MISSILE.INACTIVE) {
     F.dws_DDiscard_1f770(dplay(sndMissile).soundnum); // 19542..1954b
   }
 
@@ -247,32 +248,32 @@ register(0x18f27, 'updatePlayer_18f27', function updatePlayer() {
       F.dws_DPlay_1eff8(sndIShot);
     }
   } else { // 0x1962e
-    if (G.currentWeapon === 0x37 || G.currentWeapon === 0x36) {
+    if (G.currentWeapon === WEAPON.AUTO_GUN || G.currentWeapon === WEAPON.DEFAULT_GUN) {
       F.dws_DPlay_1eff8(sndGunShot); // 19640..19646
     }
-    if (G.currentWeapon === 0x35 && sprite(missile).state === 0) { // 1964e jne skip / 19657 je do
+    if (G.currentWeapon === WEAPON.MISSILE_LAUNCHER && sprite(missile).state === MISSILE.INACTIVE) { // 1964e jne skip / 19657 je do
       F.dws_DPlay_1eff8(sndMissile); // 19662..19668
     }
   }
 
   // 0x19670..0x196bf
-  if (G.currentWeapon === 0x37 || G.currentWeapon === 0x36) {
+  if (G.currentWeapon === WEAPON.AUTO_GUN || G.currentWeapon === WEAPON.DEFAULT_GUN) {
     sprite(rasta).currFrame = (sprite(rasta).currFrame + 1) | 0; // 19682 inc
     F.fireBullet_11c2a(); // 19688
-    if (G.currentWeapon === 0x36) {
+    if (G.currentWeapon === WEAPON.DEFAULT_GUN) {
       G.fireReady = 0; // 19696
     }
   }
-  if (G.currentWeapon === 0x35 && sprite(missile).state === 0) { // 196a0 jne skip / 196a9 je do
+  if (G.currentWeapon === WEAPON.MISSILE_LAUNCHER && sprite(missile).state === MISSILE.INACTIVE) { // 196a0 jne skip / 196a9 je do
     sprite(rasta).currFrame = (sprite(rasta).currFrame + 1) | 0; // 196b4 inc
     F.fireMissile_1864d(); // 196ba
   }
 
   // 0x196bf
-  if (G.currentWeapon !== 0x38) {
+  if (G.currentWeapon !== WEAPON.BONG) {
     return; // jne 0x19777 (epilogue)
   }
-  if (G.bongState === 0x3c) { // 196cc
+  if (G.bongState === BONG_STATE.LOADED) { // 196cc
     G.bongShotsLeft = (G.bongShotsLeft - 1) | 0; // 196d9 dec
     if (G.bongShotsLeft > 0) { // 196df jle
       F.fireBongSmoke_1977e(); // 196e8
@@ -285,12 +286,12 @@ register(0x18f27, 'updatePlayer_18f27', function updatePlayer() {
         F.dws_DPlay_1eff8(sndBong); // 1972f..19735
       }
     } else { // 0x1973f
-      G.bongState = 0x39;
+      G.bongState = BONG_STATE.NEEDS_RELOAD;
       F.dws_DDiscard_1f770(dplay(sndBong).soundnum); // 19749..19752
     }
   }
-  if (G.bongState === 0x39) { // 1975a
-    sprite(rasta).state = 0x3a;
+  if (G.bongState === BONG_STATE.NEEDS_RELOAD) { // 1975a
+    sprite(rasta).state = RASTA.LOADING_BONG;
     sprite(rasta).currFrame = 0x1e;
   }
 });

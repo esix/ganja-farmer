@@ -18,6 +18,7 @@ import { F, register } from '../runtime/registry.js';
 import { R16, R32, W8, W32, R8 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
 import { stackAlloc, stackFree } from '../runtime/stack.js';
+import { PLANT, UFO } from './states.js';
 import { plants, sndUfo, sndUfo2, ufo, ufoSoundStatus } from './data.js';
 import { G, dplay, sprite } from './access.js';
 
@@ -38,12 +39,12 @@ register(0x18a58, 'updateUfo_18a58', function updateUfo() {
   sprite(ufo).currFrame = (sprite(ufo).currFrame + 1) | 0;                                // 18adb: inc curr_frame
   if (sprite(ufo).currFrame > 1) sprite(ufo).currFrame = 0;                               // 18ae1: jle (signed)
 
-  if (sprite(ufo).state === 0x3d) sprite(ufo).y = (sprite(ufo).y - 3) | 0;    // 18af4..18afd
+  if (sprite(ufo).state === UFO.ASCENDING) sprite(ufo).y = (sprite(ufo).y - 3) | 0;    // 18af4..18afd
 
-  if (sprite(ufo).state === 0) {                                            // 18b04
+  if (sprite(ufo).state === UFO.INACTIVE) {                                            // 18b04
     sprite(ufo).y = (-0x50 - imod(F.rand_232c7(), 0xc8)) | 0;      // 18b0d..18b27: ecx=0xffffffb0; sub ecx,edx
     if (G.levelEnding === 0) {                                          // 18b2d
-      sprite(ufo).state = 0x3e;                                              // 18b36
+      sprite(ufo).state = UFO.DESCENDING;                                              // 18b36
       sprite(ufo).x = imod(F.rand_232c7(), 0x10e);                 // 18b40..18b53
       sprite(ufo).counter1 = imod(F.rand_232c7(), 0x24);                  // 18b59..18b6c
       sprite(ufo).counter2 = 2;                                                 // 18b72
@@ -51,17 +52,17 @@ register(0x18a58, 'updateUfo_18a58', function updateUfo() {
     }
   }
 
-  if (sprite(ufo).state === 0x3f) {                                         // 18b86
+  if (sprite(ufo).state === UFO.LEAVING) {                                         // 18b86
     sprite(ufo).y = (sprite(ufo).y - 5) | 0;                              // 18b8f
     if (sprite(ufo).y < -0x50) {                                        // 18b96: jge (signed)
-      sprite(ufo).state = 0x3e;                                              // 18b9f
+      sprite(ufo).state = UFO.DESCENDING;                                              // 18b9f
       sprite(ufo).x = imod(F.rand_232c7(), 0x10e);                 // 18ba9..18bbc
       sprite(ufo).counter1 = imod(F.rand_232c7(), 0x24);                  // 18bc2..18bd5
       sprite(ufo).counter2 = 2;                                                 // 18bdb
     }
   }
 
-  if (sprite(ufo).state === 0x3e) {                                         // 18be5
+  if (sprite(ufo).state === UFO.DESCENDING) {                                         // 18be5
     sprite(ufo).y = (sprite(ufo).y + 3) | 0;                              // 18bf2
     sprite(ufo).counter1 = (sprite(ufo).counter1 - 1) | 0;                              // 18bf9
     if (sprite(ufo).counter1 < 0) {                                            // 18bff: jge (signed)
@@ -74,7 +75,7 @@ register(0x18a58, 'updateUfo_18a58', function updateUfo() {
     }
     if (sprite(ufo).y > 0x6c) {                                         // 18c60: jle (signed)
       for (i = 0; i < 0x1a; i++) {                                     // 18c6d..18c80, 18c76 (mov eax,[ebp-0xc] dead)
-        if (sprite(plants, i).state === 1) {                // 18c82..18c90
+        if (sprite(plants, i).state === PLANT.ALIVE) {                // 18c82..18c90
           a = sprite(ufo).width;                                            // 18c92..18ca2: (w - (w >> 31)) >> 1
           a = ((a - (a >> 31)) | 0) >> 1;
           // 18ca4..18cbb: abs(x + width/2 - X[i])
@@ -89,9 +90,9 @@ register(0x18a58, 'updateUfo_18a58', function updateUfo() {
       a = ((a - (a >> 31)) | 0) >> 1;
       // 18cfb..18d13: x + width/2 > X[[0x60bd0]] (signed)
       if (((sprite(ufo).x + a) | 0) > sprite(plants, G.ufoTargetPlant).x) {
-        sprite(ufo).state = 0x1b;                                            // 18d15
+        sprite(ufo).state = UFO.MOVING_LEFT_TO_PLANT;                                            // 18d15
       } else {
-        sprite(ufo).state = 0x1c;                                            // 18d21
+        sprite(ufo).state = UFO.MOVING_RIGHT_TO_PLANT;                                            // 18d21
       }
     }
     sprite(ufo).x = (sprite(ufo).x + sprite(ufo).counter2) | 0;                   // 18d2b..18d30
@@ -102,7 +103,7 @@ register(0x18a58, 'updateUfo_18a58', function updateUfo() {
     }
   }
 
-  if (sprite(ufo).state === 0x1c) {                                         // 18d71
+  if (sprite(ufo).state === UFO.MOVING_RIGHT_TO_PLANT) {                                         // 18d71
     sprite(ufo).x = (sprite(ufo).x + 3) | 0;                              // 18d7a
     a = sprite(plants, G.ufoTargetPlant).width;           // 18d81..18d9c: W[j]/2
     a = ((a - (a >> 31)) | 0) >> 1;
@@ -110,12 +111,12 @@ register(0x18a58, 'updateUfo_18a58', function updateUfo() {
     a = sprite(ufo).width;                                                  // 18db0..18dc2: width/2 + x
     a = ((((a - (a >> 31)) | 0) >> 1) + sprite(ufo).x) | 0;
     if (a >= c) {                                                      // 18dc8: jl (signed)
-      sprite(ufo).state = 0x40;                                              // 18dcc
+      sprite(ufo).state = UFO.ABDUCTING;                                              // 18dcc
       sprite(ufo).counter3 = 0x28;                                              // 18dd6
     }
   }
 
-  if (sprite(ufo).state === 0x1b) {                                         // 18de0
+  if (sprite(ufo).state === UFO.MOVING_LEFT_TO_PLANT) {                                         // 18de0
     sprite(ufo).x = (sprite(ufo).x - 3) | 0;                              // 18ded
     a = sprite(plants, G.ufoTargetPlant).width;           // 18df4..18e0f
     a = ((a - (a >> 31)) | 0) >> 1;
@@ -123,19 +124,19 @@ register(0x18a58, 'updateUfo_18a58', function updateUfo() {
     a = sprite(ufo).width;                                                  // 18e23..18e35
     a = ((((a - (a >> 31)) | 0) >> 1) + sprite(ufo).x) | 0;
     if (a <= c) {                                                      // 18e3b: jg (signed)
-      sprite(ufo).state = 0x40;                                              // 18e3f
+      sprite(ufo).state = UFO.ABDUCTING;                                              // 18e3f
       sprite(ufo).counter3 = (0x37 - G.level) | 0;                         // 18e49..18e55
       F.dws_DPlay_1eff8(sndUfo);                                // 18e5b..18e66 (cdecl)
     }
   }
 
-  if (sprite(ufo).state === 0x40) {                                         // 18e69
+  if (sprite(ufo).state === UFO.ABDUCTING) {                                         // 18e69
     sprite(ufo).height = 0x43;                                                // 18e72: height = 0x43
     sprite(ufo).counter3 = (sprite(ufo).counter3 - 1) | 0;                              // 18e7c: dec counter_3
     if (sprite(ufo).counter3 < 0) {                                            // 18e82: jge (signed)
-      sprite(ufo).state = 0x3f;                                              // 18e8b
+      sprite(ufo).state = UFO.LEAVING;                                              // 18e8b
       F.dws_DDiscard_1f770(dplay(sndUfo).soundnum);                        // 18e95..18ea3: zero-extended word soundnum of 0x61620
-      sprite(plants, G.ufoTargetPlant).state = 0;          // 18ea6..18eb0: state[j] = 0
+      sprite(plants, G.ufoTargetPlant).state = PLANT.DEAD;          // 18ea6..18eb0: state[j] = 0
       sprite(plants, G.ufoTargetPlant).currFrame = 7;          // 18eba..18ec4: curr_frame[j] = 7
     }
   }
@@ -144,7 +145,7 @@ register(0x18a58, 'updateUfo_18a58', function updateUfo() {
   F.dws_DSoundStatus_1f348(dplay(sndUfo2).soundnum, ufoSoundStatus);
 
   // 18ee5..18f16: skip if y <= -0x3c, state == 0, state == 0x40 or word [0x60f18] != 0
-  if (!(sprite(ufo).y <= -0x3c || sprite(ufo).state === 0 || sprite(ufo).state === 0x40 || G.ufoSoundStatus !== 0)) {
+  if (!(sprite(ufo).y <= -0x3c || sprite(ufo).state === UFO.INACTIVE || sprite(ufo).state === UFO.ABDUCTING || G.ufoSoundStatus !== 0)) {
     F.dws_DPlay_1eff8(sndUfo2);                                  // 18f10..18f1b (cdecl)
   }
 

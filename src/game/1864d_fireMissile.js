@@ -17,6 +17,7 @@
 // Any game meaning of these fields/values is not established here.
 import { register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
+import { A10_JET, CHOPPER, CROP_DUSTER, CRUISE_MISSILE, MISSILE, MISSILE_TARGET } from './states.js';
 import { a10Jets, choppers, cropDusters, cruiseMissile, gunSight, missile, missileTarget, rasta } from './data.js';
 import { sprite } from './access.js';
 
@@ -35,7 +36,7 @@ register(0x1864d, 'fireMissile_1864d', function fireMissile() {
         ((sprite(choppers, i).x + sprite(choppers, i).width - 10) | 0) > sprite(missileTarget).x && // x + width - 10 > X (0x186e1 jg)
         ((sprite(choppers, i).y + sprite(choppers, i).height - 5) | 0) > sprite(missileTarget).y && // y + height - 5 > Y (0x18708 jg)
         ((sprite(choppers, i).y + 5) | 0) < sprite(missileTarget).y && // y + 5 < Y        (0x18722 jl)
-        sprite(choppers, i).state !== 0) { // state != 0 (0x18734)
+        sprite(choppers, i).state !== CHOPPER.INACTIVE) { // state != 0 (0x18734)
       sprite(missileTarget).counter2 = sprite(choppers, i).counter1; // 0x4608c.counter_2 = counter_1
     }
   }
@@ -46,7 +47,7 @@ register(0x1864d, 'fireMissile_1864d', function fireMissile() {
         ((sprite(cropDusters, i).x + sprite(cropDusters, i).width) | 0) > sprite(missileTarget).x && // x + width > X (0x1879d jg)
         sprite(missileTarget).y > sprite(cropDusters, i).y && // Y > y (0x187b4 jg)
         ((sprite(cropDusters, i).y + sprite(cropDusters, i).height) | 0) > sprite(missileTarget).y && // y + height > Y (0x187d8 jg)
-        sprite(cropDusters, i).state !== 0) { // state != 0 (0x187ea)
+        sprite(cropDusters, i).state !== CROP_DUSTER.INACTIVE) { // state != 0 (0x187ea)
       sprite(missileTarget).counter2 = sprite(cropDusters, i).counter1; // 0x4608c.counter_2 = counter_1
     }
   }
@@ -57,7 +58,7 @@ register(0x1864d, 'fireMissile_1864d', function fireMissile() {
         ((sprite(a10Jets, i).x + sprite(a10Jets, i).width) | 0) > sprite(missileTarget).x && // x + width > X (0x18853 jg)
         sprite(missileTarget).y > sprite(a10Jets, i).y && // Y > y (0x1886a jg)
         ((sprite(a10Jets, i).y + sprite(a10Jets, i).height) | 0) > sprite(missileTarget).y && // y + height > Y (0x1888e jg)
-        sprite(a10Jets, i).state !== 0) { // state != 0 (0x188a0)
+        sprite(a10Jets, i).state !== A10_JET.INACTIVE) { // state != 0 (0x188a0)
       sprite(missileTarget).counter2 = sprite(a10Jets, i).counter1; // 0x4608c.counter_2 = counter_1
     }
   }
@@ -67,11 +68,11 @@ register(0x1864d, 'fireMissile_1864d', function fireMissile() {
       ((sprite(cruiseMissile).x + sprite(cruiseMissile).width + 3) | 0) > sprite(missileTarget).x && // x + width + 3 > X (0x188df jg)
       ((sprite(cruiseMissile).y - 3) | 0) < sprite(missileTarget).y && // y - 3 < Y (0x188f1 jl)
       ((sprite(cruiseMissile).y + sprite(cruiseMissile).height + 3) | 0) > sprite(missileTarget).y && // y + height + 3 > Y (0x18909 jg)
-      sprite(cruiseMissile).state !== 0) { // state != 0 (0x18914)
-    if (sprite(cruiseMissile).state === 0x46) {
+      sprite(cruiseMissile).state !== CRUISE_MISSILE.INACTIVE) { // state != 0 (0x18914)
+    if (sprite(cruiseMissile).state === CRUISE_MISSILE.FLYING_RIGHT) {
       sprite(missileTarget).counter2 = 5;
     }
-    if (sprite(cruiseMissile).state === 0x45) {
+    if (sprite(cruiseMissile).state === CRUISE_MISSILE.FLYING_LEFT) {
       sprite(missileTarget).counter2 = -5;
     }
     sprite(missileTarget).counter3 = 3; // 0x4608c.counter_3
@@ -80,8 +81,8 @@ register(0x1864d, 'fireMissile_1864d', function fireMissile() {
   // 0x18948..0x1897a
   sprite(missile).x = sprite(rasta).x; // 0x45f00.x = 0x33dbc.x
   sprite(missile).y = sprite(rasta).y; // 0x45f00.y = 0x33dbc.y
-  sprite(missile).state = 1; // 0x45f00.state
-  sprite(missileTarget).state = 1; // 0x4608c.state
+  sprite(missile).state = MISSILE.FLYING; // 0x45f00.state
+  sprite(missileTarget).state = MISSILE_TARGET.ACTIVE; // 0x4608c.state
   sprite(missile).counter1 = 7; // 0x45f00.counter_1
   sprite(missile).threshold3 = 0x96; // 0x45f00.threshold_3
 

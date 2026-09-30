@@ -6,6 +6,7 @@
 import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
+import { MISSILE_SMOKE } from './states.js';
 import { missileSmoke } from './data.js';
 import { sprite } from './access.js';
 
@@ -23,7 +24,7 @@ register(0x185bf, 'updateMissileSmoke_185bf', function updateMissileSmoke() {
     sprite(missileSmoke, i).counter1 = (sprite(missileSmoke, i).counter1 - 1) | 0;
     if ((sprite(missileSmoke, i).counter1 | 0) < 0) {
       // 18638: mov [eax+0x46388] (state), 0
-      sprite(missileSmoke, i).state = 0;
+      sprite(missileSmoke, i).state = MISSILE_SMOKE.INACTIVE;
     }
   }
 });

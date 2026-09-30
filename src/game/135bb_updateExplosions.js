@@ -9,6 +9,7 @@
 // is never read.
 import { register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
+import { EXPLOSION } from './states.js';
 import { explosionDelays, explosions } from './data.js';
 import { sprite } from './access.js';
 
@@ -22,10 +23,10 @@ register(0x135bb, 'updateExplosions_135bb', function updateExplosions() {
     // 0x135fe: cmp ..., 0x32; jle (signed)
     if (R32(explosionDelays + i * 4) > 0x32) {
       // 0x1360e: sprite[i].state (+0x170, LIBRARY.md) = 1
-      sprite(explosions, i).state = 1;
+      sprite(explosions, i).state = EXPLOSION.ANIMATING;
     }
     // 0x1361f: cmp sprite[i].state, 1; jne
-    if (sprite(explosions, i).state === 1) {
+    if (sprite(explosions, i).state === EXPLOSION.ANIMATING) {
       // 0x1362f: inc sprite[i].curr_frame (+0x168, LIBRARY.md)
       sprite(explosions, i).currFrame = (sprite(explosions, i).currFrame + 1) | 0;
       // 0x1363c: `cmp curr_frame, 3` — its flags are overwritten by the next cmp without being read
@@ -39,7 +40,7 @@ register(0x135bb, 'updateExplosions_135bb', function updateExplosions() {
         // 0x1367c: sprite[i].x (+0x000, LIBRARY.md) = -50
         sprite(explosions, i).x = -50;
         // 0x1368d: sprite[i].state = 0
-        sprite(explosions, i).state = 0;
+        sprite(explosions, i).state = EXPLOSION.IDLE;
       }
     }
   }

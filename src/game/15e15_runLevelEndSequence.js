@@ -35,6 +35,7 @@
 import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 import { yieldCpu } from '../runtime/cpu.js';
+import { JAH, LEVEL_END_LOOP, PLANT, RASTA } from './states.js';
 import { gunSight, jah, killsDigits, levelDigits, messageBox, plants, rasta, scoreDigits, statusBar, van } from './data.js';
 import { G, sprite } from './access.js';
 
@@ -60,7 +61,7 @@ register(0x15e15, 'runLevelEndSequence_15e15', async function runLevelEndSequenc
     F.Draw_Sprite_Clip_212c0(sprite(levelDigits, i).addr, G.doubleBuffer, 1);
   }
   F.Draw_Sprite_Clip_212c0(van, G.doubleBuffer, 1);                   // 0x15efb..0x15f0b
-  sprite(rasta).state = 0x2b;                                                         // 0x15f10
+  sprite(rasta).state = RASTA.LIGHTING_UP;                                                         // 0x15f10
   sprite(rasta).currFrame = 0xa;                                                          // 0x15f1a
   G.rastaAnimDelay = 0;                                                            // 0x15f24
   G.idleTimer = 0x64;                                                         // 0x15f2e
@@ -68,7 +69,7 @@ register(0x15e15, 'runLevelEndSequence_15e15', async function runLevelEndSequenc
   sprite(jah).x = 0;                                                            // 0x15f42
   sprite(jah).y = sprite(jah).height;                                                 // 0x15f4c..0x15f51
   sprite(jah).y = -sprite(jah).y | 0;                                            // 0x15f56 neg dword
-  sprite(jah).state = 0x21;                                                         // 0x15f5c
+  sprite(jah).state = JAH.DESCENDING_TO_REPLANT;                                                         // 0x15f5c
   sprite(jah).counter2 = Math.imul(G.level, 0xa);                                 // 0x15f66..0x15f6e
   sprite(messageBox).currFrame = 0;                                                            // 0x15f73
   k = 0;                                                                      // 0x15f7d
@@ -77,7 +78,7 @@ register(0x15e15, 'runLevelEndSequence_15e15', async function runLevelEndSequenc
   G.jahReplantX = -1;                                                           // 0x15f92
   // 0x15f9c..0x15ff9: for (i = 0; i < 0x1a; i++)
   for (i = 0; i < 0x1a; i++) {
-    if (sprite(plants, i).state === 0) {                     // 0x15fb1..0x15fbf
+    if (sprite(plants, i).state === PLANT.DEAD) {                     // 0x15fb1..0x15fbf
       run = (run + 1) | 0;                                                    // 0x15fc1..0x15fc4
     } else {
       if (run > best) {                                                       // 0x15fc9..0x15fcf (jle: signed)
@@ -95,10 +96,10 @@ register(0x15e15, 'runLevelEndSequence_15e15', async function runLevelEndSequenc
     G.jahReplantX = sprite(plants, k).x;                   // 0x16012..0x1601f
   }
   run = 0;                                                                    // 0x16024
-  G.levelEndLoopState = 0x22;                                                         // 0x1602b
+  G.levelEndLoopState = LEVEL_END_LOOP.RUNNING;                                                         // 0x1602b
 
   // 0x16035: cmp dword [0x30bf4], 0x22; jne 0x16429
-  while (G.levelEndLoopState === 0x22) {
+  while (G.levelEndLoopState === LEVEL_END_LOOP.RUNNING) {
     G.frameStartTime = F.Timer_Query_235f9();                                // 0x16042..0x16047
     F.cycleRastaColors_14fba();                                                      // 0x1604c
     F.Erase_Sprite_Clip_211fc(van, G.doubleBuffer);                   // 0x16051..0x1605c

@@ -77,6 +77,11 @@ const BULLET_PROPS = {
   y: [BULLETS_FIELD.y, R32, W32],
   x: [BULLETS_FIELD.x, R32, W32],
   savedPixel: [BULLETS_FIELD.savedPixel, R32, W32],
+  active: [BULLETS_FIELD.active, R32, W32],
+  xStepTenths: [BULLETS_FIELD.xStepTenths, R32, W32],
+  yStepTenths: [BULLETS_FIELD.yStepTenths, R32, W32],
+  yStepCounter: [BULLETS_FIELD.yStepCounter, R32, W32],
+  xStepCounter: [BULLETS_FIELD.xStepCounter, R32, W32],
 };
 const bulletViews = new Map();
 export function bullet(i) {

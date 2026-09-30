@@ -14,6 +14,7 @@
 // The `mov eax,[ebp-8]` before every `inc [ebp-8]` is a dead read and produces nothing.
 import { F } from '../../runtime/registry.js';
 import { R32, W32 } from '../../runtime/mem.js';
+import { CRUISE_MISSILE, NUKE_CLOUD, WEAPON } from '../states.js';
 import { KEY, a10Jets, bombs, bongSmoke, choppers, cropDusters, cruiseMissile, dusterSpray, explosions, groundTroops, gunSight, jah, killsDigits, levelDigits, messageBox, missile, missileSmoke, missileTarget, nukeCloud, paratroopers, plants, powerupDrop, rasta, scoreDigits, statusBar, ufo, van } from '../data.js';
 import { G, keyDown, sprite } from '../access.js';
 
@@ -70,7 +71,7 @@ export function updateGameFrame() {
 
   // 1d72d..1d748: ([0x60ee8] == 0x37 || [0x60ee8] == 0x38 || [0x60ee8] == 0x35) -> 1d74a, else -> 1d769
   // ([0x60ee8] is re-read from memory by each cmp)
-  if (G.currentWeapon === 0x37 || G.currentWeapon === 0x38 || G.currentWeapon === 0x35) {
+  if (G.currentWeapon === WEAPON.AUTO_GUN || G.currentWeapon === WEAPON.BONG || G.currentWeapon === WEAPON.MISSILE_LAUNCHER) {
     if (G.fireReady === 1) {                                    // 1d74a..1d751
       G.fireReady = 0;                                           // 1d753 (jmp 1d769)
     } else {
@@ -79,7 +80,7 @@ export function updateGameFrame() {
   }
   // 1d769..1d786: if [0x60ee8] == 0x36: [0x60edc] != 0 -> skip (1d784 jmp 1d790);
   //               else [0x60b50] == 1 -> skip; else [0x60edc] = 1
-  if (G.currentWeapon === 0x36) {                                   // 1d769..1d770
+  if (G.currentWeapon === WEAPON.DEFAULT_GUN) {                                   // 1d769..1d770
     if (!(G.fireReady !== 0 || G.mouseButtons === 1)) {           // 1d772..1d782
       G.fireReady = 1;                                           // 1d786
     }
@@ -141,11 +142,11 @@ export function updateGameFrame() {
   F.Behind_Sprite_Clip_2106f(nukeCloud, G.doubleBuffer);       // 1dae3..1daee
 
   // 1daf3..1db05: [0x5fd74] (= 0x5fc04 + 0x170, sprite `state`, LIBRARY.md) == 0 or == 0x44 -> skip to 1db1c
-  if (!(sprite(cruiseMissile).state === 0 || sprite(cruiseMissile).state === 0x44)) {
+  if (!(sprite(cruiseMissile).state === CRUISE_MISSILE.INACTIVE || sprite(cruiseMissile).state === CRUISE_MISSILE.DETONATED)) {
     F.Draw_Sprite_Clip_212c0(cruiseMissile, G.doubleBuffer, 1);    // 1db07..1db17
   }
   // 1db1c..1db23: [0x5ff00] (= 0x5fd90 + 0x170, sprite `state`, LIBRARY.md) != 1 -> exit 1db3a
-  if (sprite(nukeCloud).state === 1) {
+  if (sprite(nukeCloud).state === NUKE_CLOUD.VISIBLE) {
     F.Draw_Sprite_Clip_212c0(nukeCloud, G.doubleBuffer, 1);    // 1db25..1db35
   }
 }

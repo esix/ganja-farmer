@@ -12,6 +12,7 @@
 // No x87 instructions in this function.
 import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
+import { GAME_STATE } from './states.js';
 import { KEY } from './data.js';
 import { G, keyDown } from './access.js';
 
@@ -28,7 +29,7 @@ register(0x10c0b, 'confirmQuit_10c0b', async function confirmQuit() {
     F.cycleRastaColors_14fba();                                             // 10c77
     await F.Time_Delay_20404(1);                                     // 10c7c/10c81
     if (keyDown(KEY.y) !== 0) {                                        // 10c86: cmp [0x64f58],0; je 10c99
-      G.gameState = 0x1c;                                            // 10c8f
+      G.gameState = GAME_STATE.RETURN_TO_MENU;                                            // 10c8f
     }
   }                                                                  // 10c99: jmp 10c63
   F.dws_DUnPause_1fa16();                                      // 10c9b

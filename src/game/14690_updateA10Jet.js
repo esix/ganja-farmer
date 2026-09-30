@@ -31,6 +31,7 @@
 import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
+import { A10_JET, BOMB } from './states.js';
 import { SPRITE, a10Jets, bombs } from './data.js';
 import { G, sprite } from './access.js';
 
@@ -50,32 +51,32 @@ register(0x14690, 'updateA10Jet_14690', function updateA10Jet() {
     if (sprite(a10Jets, i).counter1 < -0xd) {                                    // 0x1471a jge
       sprite(a10Jets, i).counter1 = -0xd;                                         // 0x1472a 0xfffffff3
     }
-    if (sprite(a10Jets, i).state !== 0) {                                     // 0x1473b je
+    if (sprite(a10Jets, i).state !== A10_JET.INACTIVE) {                                     // 0x1473b je
       sprite(a10Jets, i).x = (sprite(a10Jets, i).x + sprite(a10Jets, i).counter1) | 0; // 0x14744..0x14758
     }
-    if (sprite(a10Jets, i).state === 1) {                                     // 0x14765 jne 0x14786 -> 0x147a3
+    if (sprite(a10Jets, i).state === A10_JET.FLYING) {                                     // 0x14765 jne 0x14786 -> 0x147a3
       r = imod(F.rand_232c7(), 0x12);                              // 0x1476e..0x1477f
       if (r === 0xf &&                                                   // 0x14781 je
-          sprite(bombs, 3).state === 0 &&                                          // 0x14788 je
+          sprite(bombs, 3).state === BOMB.INACTIVE &&                                          // 0x14788 je
           sprite(a10Jets, i).x > -0x32 &&                                 // 0x1479a jg
           sprite(a10Jets, i).x < 0x14a) {                                 // 0x147ac jl
-        sprite(a10Jets, i).state = 0x2a;                                       // 0x147c1
+        sprite(a10Jets, i).state = A10_JET.BOMBING;                                       // 0x147c1
       }
     }
-    if (sprite(a10Jets, i).state === 0x2a) {                                  // 0x147d2 jne 0x148df
+    if (sprite(a10Jets, i).state === A10_JET.BOMBING) {                                  // 0x147d2 jne 0x148df
       sprite(a10Jets, i).counter3 = (sprite(a10Jets, i).counter3 + 1) | 0;                // 0x147e2 inc counter_3
       if (sprite(a10Jets, i).counter3 > 4) {                                     // 0x147e8 jg
         sprite(a10Jets, i).counter3 = 0;                                          // 0x147fd
         G.bombNext = (G.bombNext + 1) | 0;                            // 0x14807 inc
         if (G.bombNext >= 4) {                                         // 0x1480d jl 0x14836
-          sprite(a10Jets, i).state = 1;                                        // 0x1481d
+          sprite(a10Jets, i).state = A10_JET.FLYING;                                        // 0x1481d
           G.bombNext = 0;                                               // 0x14827
         } else {
           sprite(bombs, G.bombNext).x = (sprite(a10Jets, i).x + 0x23) | 0; // 0x14836..0x14850
           sprite(bombs, G.bombNext).y = (sprite(a10Jets, i).y + 0x14) | 0; // 0x14856..0x14870
           sprite(bombs, G.bombNext).counter1 = sprite(a10Jets, i).counter1;           // 0x14876..0x1488d
           sprite(bombs, G.bombNext).counter2 = 0;                             // 0x14893..0x1489d
-          sprite(bombs, G.bombNext).state = 1;                             // 0x148a7..0x148b1
+          sprite(bombs, G.bombNext).state = BOMB.FALLING;                             // 0x148a7..0x148b1
           if (sprite(a10Jets, i).counter1 < 0) {                                 // 0x148c2 jge
             sprite(bombs, G.bombNext).currFrame = 0;                           // 0x148cb..0x148d5
           }
@@ -90,12 +91,12 @@ register(0x14690, 'updateA10Jet_14690', function updateA10Jet() {
     if ((sprite(a10Jets, i).x < -0x82 &&                                  // 0x1492e jge 0xffffff7e
          sprite(a10Jets, i).counter1 < 0 &&                                      // 0x14941 jl
          sprite(a10Jets, i).counter2 === 1) ||                                   // 0x14953 je 0x14970
-        sprite(a10Jets, i).state === 0) {                                     // 0x14963 jne 0x14add
+        sprite(a10Jets, i).state === A10_JET.INACTIVE) {                                     // 0x14963 jne 0x14add
       if (sprite(a10Jets, i).y < 8 || sprite(a10Jets, i).y > 0x3c) {      // 0x14977 jl / 0x14987 jle
         sprite(a10Jets, i).y = 0x1e;                                       // 0x14997
       }
       sprite(a10Jets, i).counter2 = 0;                                            // 0x149a8
-      sprite(a10Jets, i).state = 1;                                            // 0x149b9
+      sprite(a10Jets, i).state = A10_JET.FLYING;                                            // 0x149b9
       sprite(a10Jets, i).threshold1 = 4;                                            // 0x149ca threshold_1
       r = imod(F.rand_232c7(), 3);                                 // 0x149d4..0x149e5
       if (r === 1) {                                                     // 0x149e7 jne 0x14a53
@@ -114,7 +115,7 @@ register(0x14690, 'updateA10Jet_14690', function updateA10Jet() {
         }
       }
       if (G.levelEnding !== 0) {                                          // 0x14ab2 je
-        sprite(a10Jets, i).state = 0;                                          // 0x14ac2
+        sprite(a10Jets, i).state = A10_JET.INACTIVE;                                          // 0x14ac2
         sprite(a10Jets, i).x = -200;                                       // 0x14ad3 0xffffff38
       }
     }
@@ -122,10 +123,10 @@ register(0x14690, 'updateA10Jet_14690', function updateA10Jet() {
         sprite(a10Jets, i).counter1 > 0 &&                                       // 0x14af7 jg
         sprite(a10Jets, i).counter2 === 1) {                                     // 0x14b09 je
       sprite(a10Jets, i).counter2 = 0;                                            // 0x14b1e
-      sprite(a10Jets, i).state = 1;                                            // 0x14b2f
+      sprite(a10Jets, i).state = A10_JET.FLYING;                                            // 0x14b2f
       sprite(a10Jets, i).threshold1 = 4;                                            // 0x14b40 threshold_1
       if (G.levelEnding !== 0) {                                          // 0x14b4a je
-        sprite(a10Jets, i).state = 0;                                          // 0x14b5a
+        sprite(a10Jets, i).state = A10_JET.INACTIVE;                                          // 0x14b5a
       }
       r = imod(F.rand_232c7(), 3);                                 // 0x14b64..0x14b75
       if (r === 1) {                                                     // 0x14b77 jne 0x14bca
@@ -143,7 +144,7 @@ register(0x14690, 'updateA10Jet_14690', function updateA10Jet() {
         }
       }
       if (G.levelEnding !== 0) {                                          // 0x14c31 je
-        sprite(a10Jets, i).state = 0;                                          // 0x14c41
+        sprite(a10Jets, i).state = A10_JET.INACTIVE;                                          // 0x14c41
         sprite(a10Jets, i).x = -200;                                       // 0x14c52 0xffffff38
       }
     }

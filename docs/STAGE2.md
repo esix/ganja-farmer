@@ -22,6 +22,9 @@ it is listed below.
 | C runtime stdio | Watcom FILE structures, buffers and stream lists in emulated memory, DOS handle calls | JS streams on the file system with the same text-mode rules (`\r` dropped on read, 0x1A ends a read, `\n` → `\r\n` on write) |
 | start-up | Watcom cstart + 16 initializers (argv, environment, code page, extender set-up) over an emulated PMODE/W | `main` is called directly |
 | ports / interrupts | `io.js`: every IN/OUT/INT through a device backend; INT 10h/33h with register blocks in memory | the library calls the VGA, mouse and timer functions directly |
+| data names | `R32(0x60a68)`, `W32(0x44010 + i*0x18c, v)` | `G.score`, `sprite(scoreDigits, i).x = v`; named state codes (`CHOPPER.FLYING_LEFT`); [DATA.md](DATA.md) |
+| function names | `sub_12130` | `updateBullets` (key `updateBullets_12130`, file `12130_updateBullets.js`); [FUNCTIONS.md](FUNCTIONS.md) |
+| locals | whole frames in emulated stack memory | plain JS variables unless their address is passed on |
 
 CPU on the main menu: the tab used more than a full core before; the main thread is now about 97% idle.
 
@@ -47,6 +50,8 @@ CPU on the main menu: the tab used more than a full core before; the main thread
 - **Heap addresses**: without the C runtime's FILE buffers and start-up allocations, heap blocks sit at
   other addresses than in the original. Nothing in the game depends on them (checked with the visible
   trace, below).
+- **High-score table with more than 10 records**: the original drew rows 11+ in garbage colours read past its
+  local colour table; with locals as JS variables that is not reproduced (the game only writes 9 records).
 - **Data the game never reads**: the 128-byte PCX header area in each picture struct is zero, a
   DWD's 4-byte id is zero, and the keyboard driver no longer saves the old INT 9 vector at
   0x64ef8/0x64efc.
@@ -79,6 +84,13 @@ After each step:
    separately:
    - all 39 PNGs give the same pixels, palette and `buf[64000]` as the original PCX loader;
    - all 41 WAVs rebuild their DWD byte for byte (except the id).
+
+4. **Old-vs-new fuzz** (for the readability steps: names, accessors, states, locals): `tools/fuzz-equiv.mjs`
+   (local) runs every game function and every phase of `main` 1000 times, on memory snapshots from the tour
+   with sprite fields and globals set to the function's own constants and random values, with every callee
+   stubbed (seeded return values). Memory writes, the call sequence and return values must match between
+   the previous commit and the new code: 54000 runs, identical for each step. It catches rarely reached code
+   (it found a precedence bug in the accessor rewrite that the tour hits only once).
 
 Going back: each step is its own commit, so `git revert <commit>` undoes one of them, and
 `git checkout stage1` shows the exact port.

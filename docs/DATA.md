@@ -238,6 +238,204 @@ next to a value, how it is used); the confidence column says how sure that is.
 | `doubleBuffer` | 0x64e7c | pointer | library double_buffer (320x200 back buffer) | high |
 | `cin` | 0x64eb8 | istream object | Watcom C++ cin, passed to istream >> char* in saveHighScores | medium |
 
+## State codes
+
+Named in `src/game/states.js`; each set belongs to one sprite array (its `.state`) or global.
+
+### `GAME_STATE`: `G.gameState`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `RETURN_TO_MENU` | 0x1c | game loop exits back to the main menu: set on game over (drawGameFrame, all herb dead) or quit confirmed with Y (confirmQuit); main's game loops run while !== 0x1c | high |
+| `START_GAME` | 0x22 | set by main menu 'play' button; main then starts a new game | high |
+| `EXIT_PROGRAM` | 0x25 | set by main menu exit button; main breaks out of its outer loop and quits | high |
+
+### `CRUISE_MISSILE`: `sprite(cruiseMissile, i).state`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `INACTIVE` | 0x0 | not present; respawns (as 0x46/0x45) when level not ending; also forced by applyLevelEnemyLimits below level 25, and when shot | high |
+| `DETONATED` | 0x44 | hit ground (y>0xa0): nuke cloud shown, palette flash countdown threshold1, burns every live plant; not drawn | high |
+| `FLYING_LEFT` | 0x45 | x -= 5, frames 2-3, gone past x<-0x1e | high |
+| `FLYING_RIGHT` | 0x46 | x += 5, frames 0-1, gone past x>0x140 | high |
+
+### `A10_JET`: `sprite(a10Jets, i).state`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `INACTIVE` | 0x0 | not flying (shot down / level ending); respawned to FLYING when level not ending | high |
+| `FLYING` | 0x1 | crossing the screen; randomly switches to BOMBING when bomb slot 3 is free | high |
+| `BOMBING` | 0x2a | bombing run: drops a bomb every 5 frames into bombs[bombNext], back to FLYING after 4 | high |
+
+### `UFO`: `sprite(ufo, i).state`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `INACTIVE` | 0x0 | not present (shot down / level start limits); respawns above screen into DESCENDING | high |
+| `MOVING_LEFT_TO_PLANT` | 0x1b | x -= 3 until centered over target plant, then ABDUCTING (plays sndUfo) | high |
+| `MOVING_RIGHT_TO_PLANT` | 0x1c | x += 3 until centered over target plant, then ABDUCTING | high |
+| `ASCENDING` | 0x3d | y -= 3; checked in updateUfo but never assigned anywhere in the game (dead state) | low |
+| `DESCENDING` | 0x3e | y += 3 while wandering horizontally; once y>0x6c picks nearest live plant (ufoTargetPlant) and moves toward it | high |
+| `LEAVING` | 0x3f | after abducting a plant: y -= 5 until off the top, then back to DESCENDING | high |
+| `ABDUCTING` | 0x40 | beam (height 0x43) over the plant for counter3 frames, then plant state 0 frame 7 (abducted) and LEAVING | high |
+
+### `CHOPPER`: `sprite(choppers, i).state`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `INACTIVE` | 0x0 | destroyed/unused slot; next update respawns it off-screen flying left or right (unless level ending) | high |
+| `CRASHING` | 0x1a | hit points gone: explosions spawned, animates for counter3 frames, then INACTIVE with +101 score and a kill | high |
+| `FLYING_LEFT` | 0x1b | x += counter1 (negative), frames 0-1; drops paratroopers; wraps or turns to FLYING_RIGHT past x<-0x82 | high |
+| `FLYING_RIGHT` | 0x1c | x += counter1 (positive), frames 2-3; drops paratroopers; wraps or turns to FLYING_LEFT past x>0x154 | high |
+
+### `PARATROOPER`: `sprite(paratroopers, i).state`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `INACTIVE` | 0x0 | free slot (chopper only drops into a slot with state 0) | high |
+| `SHOT_FALLING_RIGHT` | 0x2 | body shot (1/10 case, x>0xa0): drifts x += 2, y += 1 until off screen / ground, then INACTIVE | high |
+| `SHOT_FALLING_LEFT` | 0x3 | body shot (1/10 case, x<=0xa0): drifts x -= 2, y += 1 until off screen / ground, then INACTIVE | high |
+| `SHOT_DYING` | 0x4 | body shot (9/10 case): death animation frames 0x15..0x1a in place, then INACTIVE | high |
+| `DESCENDING_SWING_BACK` | 0x1b | under parachute, y += 1, curr_frame decreasing to 0 then DESCENDING_SWING_FORWARD; initial state when dropped; reaching y>0x96 -> LANDING | medium |
+| `DESCENDING_SWING_FORWARD` | 0x1c | under parachute, y += 1, curr_frame increasing to >4 then DESCENDING_SWING_BACK; reaching y>0x96 -> LANDING | medium |
+| `CHUTE_SHOT_FALLING` | 0x21 | parachute shot: free fall with accelerating counter2, squishes landed troopers below, then INACTIVE | high |
+| `LANDING` | 0x27 | on the ground, landing animation frames 0xc..0x12, then LANDED; can be squished by a falling trooper | high |
+| `LANDED` | 0x28 | converted next update into a groundTroops entry (WALKING) and slot freed | high |
+
+### `EXPLOSION`: `sprite(explosions, i).state`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `IDLE` | 0x0 | finished / unused slot, not drawn | high |
+| `ANIMATING` | 0x1 | drawn; frames advance to 0xb, then IDLE | high |
+| `PENDING` | 0x26 | spawned by spawnExplosion; waits until its explosionDelays counter exceeds 0x32, then ANIMATING | high |
+
+### `GROUND_TROOP`: `sprite(groundTroops, i).state`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `INACTIVE` | 0x0 | unused slot / squished / walked off screen | high |
+| `RUNNING_AWAY_RIGHT` | 0x2e | after planting (x>0xa0): x += 4 until off the right edge, then INACTIVE | high |
+| `WALKING_TO_PLANT` | 0x2f | walks 2 px/frame (direction counter3) toward the herb; next to a live plant -> PLANTING_CHARGE | high |
+| `PLANTING_CHARGE` | 0x30 | animates frames 4..0xc, then sets adjacent live plants to CHARGE_PLANTED and runs away (RUNNING_RIGHT/LEFT) | high |
+| `RUNNING_AWAY_LEFT` | 0x31 | after planting (x<=0xa0): x -= 4 until off the left edge, then INACTIVE | high |
+
+### `PLANT`: `sprite(plants, i).state`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `DEAD` | 0x0 | no live plant: burnt (frame 5), sprayed (frame 1) or abducted by UFO (frame 7); all 0 -> game over | high |
+| `ALIVE` | 0x1 | healthy plant; target of troopers, UFO, bombs, spray, nuke | high |
+| `BURNING` | 0x29 | burning animation frames 2..4 for counter1 (180) frames, then DEAD (frame 5) | high |
+| `CHARGE_PLANTED` | 0x32 | explosive charge planted by a ground trooper; counter2 fuse, then BURNING with an explosion sound | high |
+| `REGROWING` | 0x33 | replanted by Jah / '420' cheat (frame 6); after counter3 frames becomes ALIVE | high |
+
+### `BOMB`: `sprite(bombs, i).state`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `INACTIVE` | 0x0 | free slot | high |
+| `FALLING` | 0x1 | dropped by the A-10, moves with counter1/counter2; explodes on the ground burning plants | high |
+
+### `DUSTER_SPRAY`: `sprite(dusterSpray, i).state`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `INACTIVE` | 0x0 | free slot, parked at x=-200 | high |
+| `FALLING` | 0x1 | herbicide droplet drifting down (y += 1, random x jitter); kills a live plant it reaches, then INACTIVE | high |
+
+### `CROP_DUSTER`: `sprite(cropDusters, i).state`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `INACTIVE` | 0x0 | shot down / level ending; respawns as FLYING when level not ending | high |
+| `FLYING` | 0x1 | flying across (x += counter1); can switch to SPRAYING | high |
+| `SPRAYING` | 0x2d | spraying herbicide over the plants (counter3 = spray duration) | high |
+
+### `RASTA`: `sprite(rasta, i).state`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `AIMING` | 0x1 | normal player control: aims and fires the current weapon | high |
+| `LIGHTING_UP` | 0x2b | idle start (no mouse activity for idleTimer, or level end): frames 0xa..0xf advance, then SMOKING | medium |
+| `SMOKING` | 0x2c | idle joint-smoking loop with joint glow colour; each full puff +1000 score; mouse activity -> AIMING | high |
+| `LOADING_BONG` | 0x3a | bong weapon reloading animation frames 0x1e..0x22, then BONG_HIT (sndBongBubble) | high |
+| `BONG_HIT` | 0x3b | holds frame 0x22 while bubble sound plays / bongHitTimer runs, then AIMING with bong loaded (bongState 0x3c) | high |
+
+### `JAH`: `sprite(jah, i).state`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `FLYING_LEFT` | 0x1b | powerup pass: x -= 3, drops the powerup when over the rasta; IDLE when off the left edge | high |
+| `FLYING_RIGHT` | 0x1c | powerup pass: x += 3, drops the powerup when over the rasta; IDLE past x>0x154 | high |
+| `IDLE` | 0x20 | not on a pass; during replant sequence rises away (y -= 2), ending the level-end loop; in game starts a powerup pass when threshold3 == 0x41 | medium |
+| `DESCENDING_TO_REPLANT` | 0x21 | level-end: descends to the herb row and moves right replanting dead plants (updateJahReplant else-branch), then IDLE | high |
+
+### `LEVEL_END_LOOP`: `G.levelEndLoopState`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `DONE` | 0x1c | set by updateJahReplant when Jah has flown off the top; ends the loop | high |
+| `RUNNING` | 0x22 | level-complete sequence loop runs while == 0x22 | high |
+
+### `POWERUP_DROP`: `sprite(powerupDrop, i).state`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `INACTIVE` | 0x0 | no crate; Jah may drop one only when 0 | high |
+| `FALLING` | 0x1 | crate falling (y += 3, drawn); on reaching rasta's y it is collected and becomes INACTIVE | high |
+
+### `WEAPON`: `G.currentWeapon`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `MISSILE_LAUNCHER` | 0x35 | fires the homing missile when none is flying (powerup kind 1) | high |
+| `DEFAULT_GUN` | 0x36 | starting semi-automatic gun: fires bullets, fireReady cleared after each shot until button released | high |
+| `AUTO_GUN` | 0x37 | automatic gun: fireReady toggles every frame, fires bullets (powerup kind 0 / hasAutoGun) | high |
+| `BONG` | 0x38 | fires bong smoke clouds, needs reloading (bongState) (powerup kind 2) | high |
+
+### `BONG_STATE`: `G.bongState`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `NEEDS_RELOAD` | 0x39 | bong empty: rasta switched to LOADING_BONG animation | high |
+| `LOADED` | 0x3c | bong loaded: fires smoke while bongShotsLeft > 0, then NEEDS_RELOAD | high |
+
+### `NUKE_CLOUD`: `sprite(nukeCloud, i).state`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `HIDDEN` | 0x0 | not drawn | high |
+| `VISIBLE` | 0x1 | mushroom cloud shown after cruise missile detonation | high |
+
+### `MISSILE`: `sprite(missile, i).state`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `INACTIVE` | 0x0 | no missile in flight (hit something or lifetime expired) | high |
+| `FLYING` | 0x1 | homing missile in flight (drawn); new one can't be fired | high |
+
+### `MISSILE_TARGET`: `sprite(missileTarget, i).state`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `INACTIVE` | 0x0 | no target marker | high |
+| `ACTIVE` | 0x1 | target marker for the fired missile, drawn while the missile flies | high |
+
+### `MISSILE_SMOKE`: `sprite(missileSmoke, i).state`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `INACTIVE` | 0x0 | expired / unused | high |
+| `ACTIVE` | 0x1 | smoke puff behind the missile, drawn until counter1 runs out | high |
+
+### `BONG_SMOKE`: `sprite(bongSmoke, i).state`
+
+| name | value | meaning | confidence |
+| --- | --- | --- | --- |
+| `INACTIVE` | 0x0 | free slot / hit something / expired | high |
+| `FLYING` | 0x1 | smoke cloud shot by the bong, moving and hitting enemies (drawn) | high |
+
 ## Notes
 
 Coverage: every inventory address is either a named global, inside a named struct/table (field of an element), a string literal, or listed here.

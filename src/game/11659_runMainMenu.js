@@ -42,6 +42,7 @@ import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 import { stackAlloc, stackFree } from '../runtime/stack.js';
 import { yieldCpu } from '../runtime/cpu.js';
+import { GAME_STATE } from './states.js';
 import { KEY, gunSight, mainMenuPcx, mainMenuPcx2, mainMenuPcx3, mainMenuPcx4, mainMenuPcx5, mouseButtons, mouseX, mouseY, pcxScratch, sndClick, sndDoubleClick } from './data.js';
 import { G, keyDown, sprite } from './access.js';
 
@@ -134,14 +135,14 @@ register(0x11659, 'runMainMenu_11659', async function runMainMenu() {
     // 0x1190c..0x1193d: 0xf < x < 0x7e && 9 < y < 0x34 && [0x60b50] == 1
     if ((sprite(gunSight).x | 0) > 0xf && (sprite(gunSight).x | 0) < 0x7e &&
         (sprite(gunSight).y | 0) > 9 && (sprite(gunSight).y | 0) < 0x34 && G.mouseButtons === 1) {
-      G.gameState = 0x22;                                                   // 0x11941
+      G.gameState = GAME_STATE.START_GAME;                                                   // 0x11941
       exitCode = 0x22;                                                       // 0x1194b
       F.dws_DPlay_1eff8(sndDoubleClick);                                     // 0x11952..0x1195d
     }
     // 0x11960..0x1199d: 0xca < x < 0x132 && 0x93 < y < 0xb5 && [0x60b50] == 1
     if ((sprite(gunSight).x | 0) > 0xca && (sprite(gunSight).x | 0) < 0x132 &&
         (sprite(gunSight).y | 0) > 0x93 && (sprite(gunSight).y | 0) < 0xb5 && G.mouseButtons === 1) {
-      G.gameState = 0x25;                                                   // 0x119a1
+      G.gameState = GAME_STATE.EXIT_PROGRAM;                                                   // 0x119a1
       exitCode = 0x22;                                                       // 0x119ab
       F.dws_DPlay_1eff8(sndDoubleClick);                                     // 0x119b2..0x119bd
     }

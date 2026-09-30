@@ -5,6 +5,7 @@
 // EAX at RET is the leftover 0 from `mov eax,[ebp-4]` at 15c55 on the exiting pass; no caller reads it -> no return value.
 import { register } from '../runtime/registry.js';
 import { W32 } from '../runtime/mem.js';
+import { A10_JET } from './states.js';
 import { a10Jets } from './data.js';
 import { sprite } from './access.js';
 
@@ -13,6 +14,6 @@ register(0x15c34, 'activateA10Jet_15c34', function activateA10Jet() {
   // 15c4c..15c72; the `mov eax,[ebp-4]` at 15c55 before `inc` is overwritten by imul on a continuing pass and
   // is the leftover EAX on the exiting pass (unobservable)
   for (i = 0; i < 1; i++) {
-    sprite(a10Jets, i).state = 1;
+    sprite(a10Jets, i).state = A10_JET.FLYING;
   }
 });

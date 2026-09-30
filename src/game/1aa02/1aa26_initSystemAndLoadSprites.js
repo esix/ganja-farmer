@@ -16,6 +16,7 @@
 import { F } from '../../runtime/registry.js';
 import { R32, W16, W32 } from '../../runtime/mem.js';
 import { imod } from '../../runtime/cpu.js';
+import { CHOPPER } from '../states.js';
 import { DETECT_OVERRIDES, SPRITE, choppers, gunSight, paratroopers, pcxScratch, sndDetectOverrides, sndDetectResults, sndIdeal, statusBar, van } from '../data.js';
 import { ideal, sprite } from '../access.js';
 
@@ -78,7 +79,7 @@ export function initSystemAndLoadSprites() {
     for (j = 2; j < 4; j++) {                                    // 1acd9..1acec, 1ace2..1ace5 (signed jge)
       F.PCX_Get_Sprite_20c12(pcxScratch, sprite(choppers, i).addr, j, (j - 2) | 0, 1); // 1acee..1ad0c
     }                                                            // 1ad11 jmp
-    sprite(choppers, i).state = 0x1b;              // 1ad13..1ad1a (+0x170)
+    sprite(choppers, i).state = CHOPPER.FLYING_LEFT;              // 1ad13..1ad1a (+0x170)
     let r = F.rand_232c7();                                // 1ad24
     sprite(choppers, i).counter1 = (-1 - imod(r, 5)) | 0; // 1ad29..1ad45 (sar edx,31; idiv; 0xffffffff - edx) (+0x10)
     r = F.rand_232c7();                                    // 1ad4b

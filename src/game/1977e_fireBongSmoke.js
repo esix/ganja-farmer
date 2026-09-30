@@ -33,6 +33,7 @@ import { F, register } from '../runtime/registry.js';
 import { R32, W32, RF64, WF64 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
 import * as x87 from '../runtime/x87.js';
+import { BONG_SMOKE } from './states.js';
 import { bongSmoke, gunSight, rasta } from './data.js';
 import { G, sprite } from './access.js';
 
@@ -46,7 +47,7 @@ register(0x1977e, 'fireBongSmoke_1977e', function fireBongSmoke() {
   n = 0;                                                                        // 19796
   i = 0;                                                                        // 1979d
   while (n < 3) {                                                               // 197a4..197a8
-    if (sprite(bongSmoke, i).state === 0) {                                       // 197ae..197bc
+    if (sprite(bongSmoke, i).state === BONG_SMOKE.INACTIVE) {                                       // 197ae..197bc
       sprite(bongSmoke, i).counter1 = 0;                                              // 197c2..197c9
       sprite(bongSmoke, i).counter2 = -7;                                             // 197d3..197da
 
@@ -90,7 +91,7 @@ register(0x1977e, 'fireBongSmoke_1977e', function fireBongSmoke() {
 
       sprite(bongSmoke, i).x = (sprite(rasta).x + 0xc) | 0;                       // 19a77..19a87
       sprite(bongSmoke, i).y = (sprite(rasta).y + 7) | 0;                         // 19a8d..19a9d
-      sprite(bongSmoke, i).state = 1;                                              // 19aa3..19aaa
+      sprite(bongSmoke, i).state = BONG_SMOKE.FLYING;                                              // 19aa3..19aaa
       n++;                                                                      // 19ab4..19ab7
     }
     i++;                                                                        // 19aba..19abd

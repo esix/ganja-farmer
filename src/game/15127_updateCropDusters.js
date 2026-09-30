@@ -23,66 +23,65 @@ import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
 import { SPRITE, cropDusters, dusterSpray } from './data.js';
-import { G } from './access.js';
+import { G, sprite } from './access.js';
+import { CROP_DUSTER } from './states.js';
 
 register(0x15127, 'updateCropDusters_15127', function updateCropDusters() {
   let i; // [ebp-4]
-  let o; // i * 0x18c (imul eax/edx, [ebp-4], 0x18c — recomputed from [ebp-4] each time in the original)
   let k; // [0x60bac] * 0x18c, recomputed from memory at each use as the binary does (15471, 15495, 154b5)
 
   i = 0;                                                            // 1513f
   for (i = 0; i < 3; i++) {                                         // 15146..15159, 1514f..15152
-    o = Math.imul(i, SPRITE.SIZE);
-    if (R32((cropDusters + SPRITE.counter1) + o) < 0) {                                     // 15166: cmp ..,0; jge 15198
-      W32((cropDusters + SPRITE.currFrame) + o, (R32((cropDusters + SPRITE.currFrame) + o) + 1) | 0);                 // 15176: inc
-      if (R32((cropDusters + SPRITE.currFrame) + o) > 1) {                                   // 1517c: cmp ..,1; jle
-        W32((cropDusters + SPRITE.currFrame) + o, 0);                                        // 1518c
+    if (sprite(cropDusters, i).counter1 < 0) {                                     // 15166: cmp ..,0; jge 15198
+      sprite(cropDusters, i).currFrame = (sprite(cropDusters, i).currFrame + 1) | 0;                 // 15176: inc
+      if (sprite(cropDusters, i).currFrame > 1) {                                   // 1517c: cmp ..,1; jle
+        sprite(cropDusters, i).currFrame = 0;                                        // 1518c
       }
     } else {
-      W32((cropDusters + SPRITE.currFrame) + o, (R32((cropDusters + SPRITE.currFrame) + o) + 1) | 0);                 // 1519f: inc
-      if (R32((cropDusters + SPRITE.currFrame) + o) > 3) {                                   // 151a5: cmp ..,3; jle
-        W32((cropDusters + SPRITE.currFrame) + o, 2);                                        // 151b5
+      sprite(cropDusters, i).currFrame = (sprite(cropDusters, i).currFrame + 1) | 0;                 // 1519f: inc
+      if (sprite(cropDusters, i).currFrame > 3) {                                   // 151a5: cmp ..,3; jle
+        sprite(cropDusters, i).currFrame = 2;                                        // 151b5
       }
     }
 
-    if (R32((cropDusters + SPRITE.state) + o) !== 0) {                                   // 151c6: cmp ..,0; je 15328
-      W32(cropDusters + o, (R32(cropDusters + o) + R32((cropDusters + SPRITE.counter1) + o)) | 0);  // 151e1..151e7: add
-      if (R32(cropDusters + o) < -200 && R32((cropDusters + SPRITE.counter1) + o) < 0) {        // 151f4: jge ->skip; 15207: jl 15215
+    if (sprite(cropDusters, i).state !== CROP_DUSTER.INACTIVE) {                                   // 151c6: cmp ..,0; je 15328
+      sprite(cropDusters, i).x = (sprite(cropDusters, i).x + sprite(cropDusters, i).counter1) | 0;  // 151e1..151e7: add
+      if (sprite(cropDusters, i).x < -200 && sprite(cropDusters, i).counter1 < 0) {        // 151f4: jge ->skip; 15207: jl 15215
         if (imod(F.rand_232c7(), 3) === 1) {                  // 15215..1522b
-          W32(cropDusters + o, (imod(F.rand_232c7(), 500) + 0x190) | 0);   // 1522d..1524d
-          W32((cropDusters + SPRITE.counter1) + o, (-2 - imod(F.rand_232c7(), 2)) | 0);         // 15253..15276
-          W32((cropDusters + SPRITE.counter2) + o, 4);                                                // 15283
+          sprite(cropDusters, i).x = (imod(F.rand_232c7(), 500) + 0x190) | 0;   // 1522d..1524d
+          sprite(cropDusters, i).counter1 = (-2 - imod(F.rand_232c7(), 2)) | 0;         // 15253..15276
+          sprite(cropDusters, i).counter2 = 4;                                                // 15283
         } else {
-          W32((cropDusters + SPRITE.counter1) + o, (imod(F.rand_232c7(), 2) + 2) | 0);          // 1528f..152ac
-          W32((cropDusters + SPRITE.currFrame) + o, 2);                                                // 152b9
-          W32(cropDusters + o, (-100 - imod(F.rand_232c7(), 500)) | 0);     // 152c3..152e6
-          W32((cropDusters + SPRITE.counter2) + o, 4);                                                // 152f3
+          sprite(cropDusters, i).counter1 = (imod(F.rand_232c7(), 2) + 2) | 0;          // 1528f..152ac
+          sprite(cropDusters, i).currFrame = 2;                                                // 152b9
+          sprite(cropDusters, i).x = (-100 - imod(F.rand_232c7(), 500)) | 0;     // 152c3..152e6
+          sprite(cropDusters, i).counter2 = 4;                                                // 152f3
         }
         if (G.levelEnding !== 0) {                                   // 152fd: cmp [0x60bbc],0; je 15328
-          W32((cropDusters + SPRITE.state) + o, 0);                                      // 1530d
-          W32(cropDusters + o, -200);                                   // 1531e: 0xffffff38
+          sprite(cropDusters, i).state = CROP_DUSTER.INACTIVE;                                      // 1530d
+          sprite(cropDusters, i).x = -200;                                   // 1531e: 0xffffff38
         }
       }
     }
 
-    if (R32((cropDusters + SPRITE.state) + o) === 0) {                                   // 1532f: cmp ..,0; jne 1542e
-      W32((cropDusters + SPRITE.y) + o, 0x6b);                                       // 15343
+    if (sprite(cropDusters, i).state === CROP_DUSTER.INACTIVE) {                                   // 1532f: cmp ..,0; jne 1542e
+      sprite(cropDusters, i).y = 0x6b;                                       // 15343
       if (G.levelEnding === 0) {                                     // 1534d: jne 15367
-        W32((cropDusters + SPRITE.state) + o, 1);                                        // 1535d
+        sprite(cropDusters, i).state = CROP_DUSTER.FLYING;                                        // 1535d
       }
-      W32((cropDusters + SPRITE.counter2) + o, 4);                                          // 1536e
+      sprite(cropDusters, i).counter2 = 4;                                          // 1536e
       if (imod(F.rand_232c7(), 3) === 1) {                    // 15378..1538e
-        W32(cropDusters + o, (imod(F.rand_232c7(), 500) + 0x190) | 0);     // 15390..153b1
-        W32((cropDusters + SPRITE.counter1) + o, (-2 - imod(F.rand_232c7(), 2)) | 0);           // 153b7..153da
+        sprite(cropDusters, i).x = (imod(F.rand_232c7(), 500) + 0x190) | 0;     // 15390..153b1
+        sprite(cropDusters, i).counter1 = (-2 - imod(F.rand_232c7(), 2)) | 0;           // 153b7..153da
       } else {
-        W32(cropDusters + o, (-100 - imod(F.rand_232c7(), 500)) | 0);       // 153e2..15403
-        W32((cropDusters + SPRITE.counter1) + o, (imod(F.rand_232c7(), 2) + 2) | 0);            // 15409..15428
+        sprite(cropDusters, i).x = (-100 - imod(F.rand_232c7(), 500)) | 0;       // 153e2..15403
+        sprite(cropDusters, i).counter1 = (imod(F.rand_232c7(), 2) + 2) | 0;            // 15409..15428
       }
     }
 
-    if (R32((cropDusters + SPRITE.state) + o) === 0x2d) {                                // 15435: cmp ..,0x2d; jne 154d8
-      W32((cropDusters + SPRITE.counter3) + o, (R32((cropDusters + SPRITE.counter3) + o) - 1) | 0);                 // 15449: dec
-      if (R32((cropDusters + SPRITE.counter3) + o) > 0) {                                   // 1544f: cmp ..,0; jle 154c7
+    if (sprite(cropDusters, i).state === CROP_DUSTER.SPRAYING) {                                // 15435: cmp ..,0x2d; jne 154d8
+      sprite(cropDusters, i).counter3 = (sprite(cropDusters, i).counter3 - 1) | 0;                 // 15449: dec
+      if (sprite(cropDusters, i).counter3 > 0) {                                   // 1544f: cmp ..,0; jle 154c7
         G.dusterSprayNext = (G.dusterSprayNext + 1) | 0;                       // 15458: inc [0x60bac]
         if (G.dusterSprayNext > 0x3e) {                                  // 1545e: cmp ..,0x3e; jle
           G.dusterSprayNext = 0;                                          // 15467
@@ -90,21 +89,21 @@ register(0x15127, 'updateCropDusters_15127', function updateCropDusters() {
         k = Math.imul(G.dusterSprayNext, SPRITE.SIZE);                          // 15471: imul [0x60bac]
         W32((dusterSpray + SPRITE.state) + k, 1);                                        // 1547b
         k = Math.imul(G.dusterSprayNext, SPRITE.SIZE);                          // 15495: re-read [0x60bac] (store above may alias it)
-        W32(dusterSpray + k, (R32(cropDusters + o) + 0x19) | 0);            // 1548c..1549f
+        W32(dusterSpray + k, (sprite(cropDusters, i).x + 0x19) | 0);            // 1548c..1549f
         k = Math.imul(G.dusterSprayNext, SPRITE.SIZE);
-        W32((dusterSpray + SPRITE.y) + k, (R32((cropDusters + SPRITE.y) + o) + 0xf) | 0);             // 154ac..154bf
+        W32((dusterSpray + SPRITE.y) + k, (sprite(cropDusters, i).y + 0xf) | 0);             // 154ac..154bf
       } else {
-        W32((cropDusters + SPRITE.state) + o, 1);                                        // 154ce
+        sprite(cropDusters, i).state = CROP_DUSTER.FLYING;                                        // 154ce
       }
     }
 
     // 154df..15525: short-circuit chain; rand() is called only when state == 1.
-    if (R32((cropDusters + SPRITE.state) + o) === 1 &&
+    if (sprite(cropDusters, i).state === CROP_DUSTER.FLYING &&
         imod(F.rand_232c7(), 0x4b) === 4 &&                   // 154e8..154fe
-        R32(cropDusters + o) > -0x14 &&                                 // 15509: cmp ..,-0x14; jg
-        R32(cropDusters + o) < 0x140) {                                 // 1551b: cmp ..,0x140; jl
-      W32((cropDusters + SPRITE.state) + o, 0x2d);                                       // 15530
-      W32((cropDusters + SPRITE.counter3) + o, imod(F.rand_232c7(), 0x3f));           // 1553a..15556
+        sprite(cropDusters, i).x > -0x14 &&                                 // 15509: cmp ..,-0x14; jg
+        sprite(cropDusters, i).x < 0x140) {                                 // 1551b: cmp ..,0x140; jl
+      sprite(cropDusters, i).state = CROP_DUSTER.SPRAYING;                                       // 15530
+      sprite(cropDusters, i).counter3 = imod(F.rand_232c7(), 0x3f);           // 1553a..15556
     }
   }
 });

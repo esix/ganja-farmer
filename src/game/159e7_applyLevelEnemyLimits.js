@@ -15,6 +15,7 @@
 // All comparisons are signed (jge/jl/jle). Element address = base + imul(i, 0x18c), 32-bit wrap (>>> 0).
 import { register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
+import { CRUISE_MISSILE, UFO } from './states.js';
 import { SPRITE, a10Jets, choppers, cropDusters, cruiseMissile, ufo } from './data.js';
 import { G, sprite } from './access.js';
 
@@ -48,9 +49,9 @@ register(0x159e7, 'applyLevelEnemyLimits_159e7', function applyLevelEnemyLimits(
   }
 
   // 15b99: cmp [0x30bec],0x13; jge 15bac
-  if ((G.level | 0) < 0x13) sprite(ufo).state = 0;
+  if ((G.level | 0) < 0x13) sprite(ufo).state = UFO.INACTIVE;
   // 15bac: cmp [0x30bec],0x19; jge 15bbf
-  if ((G.level | 0) < 0x19) sprite(cruiseMissile).state = 0;
+  if ((G.level | 0) < 0x19) sprite(cruiseMissile).state = CRUISE_MISSILE.INACTIVE;
 
   // 15bbf: cmp [0x30bec],0x12; jle skip; cmp [0x30bec],0x18; jl body (else 15c2b)
   if ((G.level | 0) > 0x12 && (G.level | 0) < 0x18) {

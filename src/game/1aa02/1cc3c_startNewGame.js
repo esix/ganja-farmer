@@ -9,6 +9,7 @@
 // The `mov eax,[ebp-8]` before every `inc [ebp-8]` is a dead read and produces nothing.
 import { F } from '../../runtime/registry.js';
 import { R32, W32 } from '../../runtime/mem.js';
+import { A10_JET, BOMB, BONG_SMOKE, CHOPPER, CROP_DUSTER, CRUISE_MISSILE, DUSTER_SPRAY, EXPLOSION, GROUND_TROOP, MISSILE, MISSILE_TARGET, NUKE_CLOUD, PARATROOPER, PLANT, RASTA, WEAPON } from '../states.js';
 import { a10Jets, bombs, bongSmoke, choppers, cropDusters, cruiseMissile, dusterSpray, explosions, groundTroops, gunSight, jah, killsDigits, levelDigits, missile, missileTarget, mouseButtons, nukeCloud, paratroopers, pcxScratch, plants, rasta, scoreDigits } from '../data.js';
 import { G, bullet, sprite } from '../access.js';
 
@@ -44,48 +45,48 @@ export function startNewGame() {
   G.level = 1;                                                            // 0x1cd50
   G.kills = 0;                                                            // 0x1cd5a
   sprite(jah).threshold3 = 0x42;                                                         // 0x1cd64
-  sprite(nukeCloud).state = 0;                                                            // 0x1cd6e
-  sprite(cruiseMissile).state = 0;                                                            // 0x1cd78
-  sprite(rasta).state = 1;                                                            // 0x1cd82
+  sprite(nukeCloud).state = NUKE_CLOUD.HIDDEN;                                                            // 0x1cd6e
+  sprite(cruiseMissile).state = CRUISE_MISSILE.INACTIVE;                                                            // 0x1cd78
+  sprite(rasta).state = RASTA.AIMING;                                                            // 0x1cd82
   G.levelTimer = 0x438;                                                        // 0x1cd8c
-  G.currentWeapon = 0x36;                                                         // 0x1cd96
+  G.currentWeapon = WEAPON.DEFAULT_GUN;                                                         // 0x1cd96
   G.levelEnding = 0;                                                            // 0x1cda0
   G.hasAutoGun = 0;                                                            // 0x1cdaa
   G.hasMissileLauncher = 0;                                                            // 0x1cdb4
   G.hasBong = 0;                                                            // 0x1cdbe
 
   for (i = 0; i < 0x1a; i++) {                                                // 0x1cdc8..0x1cddb, 0x1cdff
-    sprite(plants, i).state = 1;                                              // 0x1cddd..0x1cde4
+    sprite(plants, i).state = PLANT.ALIVE;                                              // 0x1cddd..0x1cde4
     sprite(plants, i).currFrame = 0;                                              // 0x1cdee..0x1cdf5
   }
   for (i = 0; i < 0x19; i++) {                                                // 0x1ce01..0x1ce14, 0x1ce38
-    sprite(paratroopers, i).state = 0;                                              // 0x1ce16..0x1ce1d
+    sprite(paratroopers, i).state = PARATROOPER.INACTIVE;                                              // 0x1ce16..0x1ce1d
     sprite(paratroopers, i).y = -0x46;                                          // 0x1ce27..0x1ce2e (0xffffffba)
   }
   for (i = 0; i < 0x19; i++) {                                                // 0x1ce3a..0x1ce4d, 0x1ce71
-    sprite(groundTroops, i).state = 0;                                              // 0x1ce4f..0x1ce56
+    sprite(groundTroops, i).state = GROUND_TROOP.INACTIVE;                                              // 0x1ce4f..0x1ce56
     sprite(groundTroops, i).y = -0x46;                                          // 0x1ce60..0x1ce67 (0xffffffba)
   }
   for (i = 0; i < 4; i++) {                                                   // 0x1ce73..0x1ce86, 0x1ce99
-    sprite(bombs, i).state = 0;                                              // 0x1ce88..0x1ce8f
+    sprite(bombs, i).state = BOMB.INACTIVE;                                              // 0x1ce88..0x1ce8f
   }
   for (i = 0; i < 1; i++) {                                                   // 0x1ce9b..0x1ceae, 0x1cec1
-    sprite(a10Jets, i).state = 0;                                              // 0x1ceb0..0x1ceb7
+    sprite(a10Jets, i).state = A10_JET.INACTIVE;                                              // 0x1ceb0..0x1ceb7
   }
   for (i = 0; i < 3; i++) {                                                   // 0x1cec3..0x1ced6, 0x1cee9
-    sprite(cropDusters, i).state = 0;                                              // 0x1ced8..0x1cedf
+    sprite(cropDusters, i).state = CROP_DUSTER.INACTIVE;                                              // 0x1ced8..0x1cedf
   }
   for (i = 0; i < 0x3f; i++) {                                                // 0x1ceeb..0x1cefe, 0x1cf11
-    sprite(dusterSpray, i).state = 0;                                              // 0x1cf00..0x1cf07
+    sprite(dusterSpray, i).state = DUSTER_SPRAY.INACTIVE;                                              // 0x1cf00..0x1cf07
   }
   for (i = 0; i < 0xd; i++) {                                                 // 0x1cf13..0x1cf26, 0x1cf39
-    sprite(explosions, i).state = 0;                                              // 0x1cf28..0x1cf2f
+    sprite(explosions, i).state = EXPLOSION.IDLE;                                              // 0x1cf28..0x1cf2f
   }
   for (i = 0; i < 0xc8; i++) {                                                // 0x1cf3b..0x1cf51, 0x1cf64
-    sprite(bongSmoke, i).state = 0;                                              // 0x1cf53..0x1cf5a
+    sprite(bongSmoke, i).state = BONG_SMOKE.INACTIVE;                                              // 0x1cf53..0x1cf5a
   }
   for (i = 0; i < 5; i++) {                                                   // 0x1cf66..0x1cf79, 0x1cf8c
-    sprite(choppers, i).state = 0;                                              // 0x1cf7b..0x1cf82
+    sprite(choppers, i).state = CHOPPER.INACTIVE;                                              // 0x1cf7b..0x1cf82
   }
   for (i = 0; i < 7; i++) {                                                   // 0x1cf8e..0x1cfa1, 0x1cfe3
     sprite(scoreDigits, i).x = ((i << 2) + 0x30) | 0;                          // 0x1cfa3..0x1cfb3 (shl edx,2; add edx,0x30)
@@ -103,7 +104,7 @@ export function startNewGame() {
     sprite(levelDigits, i).y = 3;                                              // 0x1d083..0x1d08a
   }
 
-  sprite(missile).state = 0;                                                            // 0x1d096
-  sprite(missileTarget).state = 0;                                                            // 0x1d0a0
+  sprite(missile).state = MISSILE.INACTIVE;                                                            // 0x1d096
+  sprite(missileTarget).state = MISSILE_TARGET.INACTIVE;                                                            // 0x1d0a0
   G.levelTimer = 0x438;                                                        // 0x1d0aa
 }

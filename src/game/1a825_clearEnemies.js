@@ -10,6 +10,7 @@
 // (signatures.json returns=false), so nothing is returned.
 import { register } from '../runtime/registry.js';
 import { W32 } from '../runtime/mem.js';
+import { A10_JET, BOMB, BONG_SMOKE, CHOPPER, CROP_DUSTER, CRUISE_MISSILE, DUSTER_SPRAY, EXPLOSION, GROUND_TROOP, MISSILE, MISSILE_TARGET, PARATROOPER, UFO } from './states.js';
 import { a10Jets, bombs, bongSmoke, choppers, cropDusters, cruiseMissile, dusterSpray, explosions, groundTroops, missile, missileTarget, paratroopers, ufo } from './data.js';
 import { sprite } from './access.js';
 
@@ -18,36 +19,36 @@ register(0x1a825, 'clearEnemies_1a825', function clearEnemies() {
 
   i = 0; // 0x1a83d (dead store)
   for (i = 0; i < 0x19; i++) {
-    sprite(paratroopers, i).state = 0;
+    sprite(paratroopers, i).state = PARATROOPER.INACTIVE;
     sprite(paratroopers, i).y = -70; // 0xffffffba
   }
   for (i = 0; i < 0x19; i++) {
-    sprite(groundTroops, i).state = 0;
+    sprite(groundTroops, i).state = GROUND_TROOP.INACTIVE;
     sprite(groundTroops, i).y = -70; // 0xffffffba
   }
   for (i = 0; i < 4; i++) {
-    sprite(bombs, i).state = 0;
+    sprite(bombs, i).state = BOMB.INACTIVE;
   }
   for (i = 0; i < 1; i++) {
-    sprite(a10Jets, i).state = 0;
+    sprite(a10Jets, i).state = A10_JET.INACTIVE;
   }
   for (i = 0; i < 3; i++) {
-    sprite(cropDusters, i).state = 0;
+    sprite(cropDusters, i).state = CROP_DUSTER.INACTIVE;
   }
   for (i = 0; i < 0x3f; i++) {
-    sprite(dusterSpray, i).state = 0;
+    sprite(dusterSpray, i).state = DUSTER_SPRAY.INACTIVE;
   }
   for (i = 0; i < 0xd; i++) {
-    sprite(explosions, i).state = 0;
+    sprite(explosions, i).state = EXPLOSION.IDLE;
   }
   for (i = 0; i < 200; i++) {
-    sprite(bongSmoke, i).state = 0;
+    sprite(bongSmoke, i).state = BONG_SMOKE.INACTIVE;
   }
   for (i = 0; i < 5; i++) {
-    sprite(choppers, i).state = 0;
+    sprite(choppers, i).state = CHOPPER.INACTIVE;
   }
-  sprite(missile).state = 0;
-  sprite(missileTarget).state = 0;
-  sprite(cruiseMissile).state = 0;
-  sprite(ufo).state = 0;
+  sprite(missile).state = MISSILE.INACTIVE;
+  sprite(missileTarget).state = MISSILE_TARGET.INACTIVE;
+  sprite(cruiseMissile).state = CRUISE_MISSILE.INACTIVE;
+  sprite(ufo).state = UFO.INACTIVE;
 });

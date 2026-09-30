@@ -23,6 +23,7 @@
 import { F, register } from '../runtime/registry.js';
 import { R16, R32, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
+import { A10_JET, BOMB, BONG_SMOKE, CROP_DUSTER, CRUISE_MISSILE, PARATROOPER, UFO } from './states.js';
 import { a10Jets, bombs, bongSmoke, choppers, cropDusters, cruiseMissile, explosionDelays, paratroopers, sndExplosion, sndParaDie1, sndParaDie2, sndParaDie3, sndParaDie5, sndRicochet, ufo } from './data.js';
 import { G, dplay, sprite } from './access.js';
 
@@ -30,7 +31,7 @@ register(0x19ade, 'updateBongSmoke_19ade', function updateBongSmoke() {
   let i = 0;                                                     // 0x19af6 (dead store)
   let j, k;
   for (i = 0; i < 0xc8; i++) {                                   // 0x19afd..0x19b13 (jge: signed)
-    if (sprite(bongSmoke, i).state !== 1) continue;                // 0x19b19 state (+0x170) != 1 -> 0x1a817
+    if (sprite(bongSmoke, i).state !== BONG_SMOKE.FLYING) continue;                // 0x19b19 state (+0x170) != 1 -> 0x1a817
 
     // 0x19b2d: x (+0x000) += counter_1 (+0x010)
     sprite(bongSmoke, i).x = (sprite(bongSmoke, i).x + sprite(bongSmoke, i).counter1) | 0;
@@ -55,7 +56,7 @@ register(0x19ade, 'updateBongSmoke_19ade', function updateBongSmoke() {
     // 0x19bd1..0x19c04: x > 0x140 || x < -10 || y < 0 -> state = 0 (0x19c06)
     if (sprite(bongSmoke, i).x > 0x140 || sprite(bongSmoke, i).x < -0xa ||
         sprite(bongSmoke, i).y < 0) {
-      sprite(bongSmoke, i).state = 0;
+      sprite(bongSmoke, i).state = BONG_SMOKE.INACTIVE;
     }
 
     // 0x19c17: group 0x33f48, j = 0..4
@@ -66,7 +67,7 @@ register(0x19ade, 'updateBongSmoke_19ade', function updateBongSmoke() {
           ((sprite(bongSmoke, i).y + 8) | 0) > ((sprite(choppers, j).y + 5) | 0)) {                   // 0x19cb4
         // 0x19cda: counter_2 (+0x014) of 0x33f48[j] -= 1
         sprite(choppers, j).counter2 = (sprite(choppers, j).counter2 - 1) | 0;
-        sprite(bongSmoke, i).state = 0;                                   // 0x19ce7
+        sprite(bongSmoke, i).state = BONG_SMOKE.INACTIVE;                                   // 0x19ce7
         F.dws_DDiscard_1f770(dplay(sndRicochet).soundnum);                      // 0x19cf8
         F.dws_DPlay_1eff8(sndRicochet);                              // 0x19d09
       }
@@ -78,13 +79,13 @@ register(0x19ade, 'updateBongSmoke_19ade', function updateBongSmoke() {
           ((sprite(bombs, j).x + sprite(bombs, j).width) | 0) > sprite(bongSmoke, i).x &&      // 0x19d54
           ((sprite(bongSmoke, i).y + 8) | 0) > sprite(bombs, j).y &&                             // 0x19d81
           ((sprite(bombs, j).y + sprite(bombs, j).height) | 0) > sprite(bongSmoke, i).y &&      // 0x19da2
-          sprite(bombs, j).state === 1) {                                                              // 0x19dcf
-        sprite(bombs, j).state = 0;                                   // 0x19de4 state = 0
+          sprite(bombs, j).state === BOMB.FALLING) {                                                              // 0x19dcf
+        sprite(bombs, j).state = BOMB.INACTIVE;                                   // 0x19de4 state = 0
         G.explosionX = (sprite(bombs, j).x - 0xc) | 0;            // 0x19df5
         G.explosionY = (sprite(bombs, j).y - 0x16) | 0;           // 0x19e0a
         W32(((G.explosionNext << 2) + explosionDelays) | 0, 0x33);                // 0x19e1f
         F.spawnExplosion_1352c();                                           // 0x19e31
-        sprite(bongSmoke, i).state = 0;                                   // 0x19e36
+        sprite(bongSmoke, i).state = BONG_SMOKE.INACTIVE;                                   // 0x19e36
         F.dws_DDiscard_1f770(dplay(sndExplosion).soundnum);                      // 0x19e47
         F.dws_DPlay_1eff8(sndExplosion);                              // 0x19e58
         G.score = (G.score + 0x1f5) | 0;                      // 0x19e66
@@ -97,13 +98,13 @@ register(0x19ade, 'updateBongSmoke_19ade', function updateBongSmoke() {
         ((sprite(cruiseMissile).x + sprite(cruiseMissile).width) | 0) > sprite(bongSmoke, i).x &&                                // 0x19e93
         ((sprite(bongSmoke, i).y + 8) | 0) > sprite(cruiseMissile).y &&                                           // 0x19eaf
         ((sprite(cruiseMissile).y + sprite(cruiseMissile).height) | 0) > sprite(bongSmoke, i).y &&                                // 0x19ec9
-        sprite(cruiseMissile).state !== 0) {                                                                            // 0x19ee5
-      sprite(cruiseMissile).state = 0;                                                 // 0x19ef0 state = 0
+        sprite(cruiseMissile).state !== CRUISE_MISSILE.INACTIVE) {                                                                            // 0x19ee5
+      sprite(cruiseMissile).state = CRUISE_MISSILE.INACTIVE;                                                 // 0x19ef0 state = 0
       G.explosionX = (sprite(cruiseMissile).x - 0xc) | 0;                          // 0x19efa
       G.explosionY = (sprite(cruiseMissile).y - 0x16) | 0;                         // 0x19f07
       W32(((G.explosionNext << 2) + explosionDelays) | 0, 0x33);                  // 0x19f14
       F.spawnExplosion_1352c();                                             // 0x19f26
-      sprite(bongSmoke, i).state = 0;                                     // 0x19f2b
+      sprite(bongSmoke, i).state = BONG_SMOKE.INACTIVE;                                     // 0x19f2b
       F.dws_DDiscard_1f770(dplay(sndExplosion).soundnum);                        // 0x19f3c
       F.dws_DPlay_1eff8(sndExplosion);                                // 0x19f4d
       G.score = (G.score + 0x7d1) | 0;                        // 0x19f5b
@@ -116,16 +117,16 @@ register(0x19ade, 'updateBongSmoke_19ade', function updateBongSmoke() {
           ((sprite(a10Jets, k).x + sprite(a10Jets, k).width) | 0) > sprite(bongSmoke, i).x &&      // 0x19fa3
           ((sprite(bongSmoke, i).y + 8) | 0) > sprite(a10Jets, k).y &&                             // 0x19fd0
           ((sprite(a10Jets, k).y + sprite(a10Jets, k).height) | 0) > sprite(bongSmoke, i).y &&      // 0x19ff1
-          sprite(a10Jets, k).state !== 0) {                                                              // 0x1a01e
+          sprite(a10Jets, k).state !== A10_JET.INACTIVE) {                                                              // 0x1a01e
         // 0x1a030: threshold_1 (+0x01c) of 0x3d0b0[k] -= 1
         sprite(a10Jets, k).threshold1 = (sprite(a10Jets, k).threshold1 - 1) | 0;
-        sprite(bongSmoke, i).state = 0;                                   // 0x1a03d
+        sprite(bongSmoke, i).state = BONG_SMOKE.INACTIVE;                                   // 0x1a03d
         F.dws_DDiscard_1f770(dplay(sndRicochet).soundnum);                      // 0x1a04e
         F.dws_DPlay_1eff8(sndRicochet);                              // 0x1a05f
       }
       // 0x1a06d: cmp threshold_1, 0; jge -> next k
       if (sprite(a10Jets, k).threshold1 < 0) {
-        sprite(a10Jets, k).state = 0;                                   // 0x1a081 state = 0
+        sprite(a10Jets, k).state = A10_JET.INACTIVE;                                   // 0x1a081 state = 0
         for (j = 0; j < 4; j++) {                                      // 0x1a092
           // 0x1a0ab..0x1a0cd: ecx = k*0x18c; rand() % 0x1e; x read after the call
           {
@@ -153,7 +154,7 @@ register(0x19ade, 'updateBongSmoke_19ade', function updateBongSmoke() {
           ((sprite(cropDusters, j).x + sprite(cropDusters, j).width) | 0) > sprite(bongSmoke, i).x &&      // 0x1a185
           ((sprite(bongSmoke, i).y + 8) | 0) > sprite(cropDusters, j).y &&                             // 0x1a1b2
           ((sprite(cropDusters, j).y + sprite(cropDusters, j).height) | 0) > sprite(bongSmoke, i).y &&      // 0x1a1d3
-          sprite(cropDusters, j).state !== 0) {                                                              // 0x1a200
+          sprite(cropDusters, j).state !== CROP_DUSTER.INACTIVE) {                                                              // 0x1a200
         // 0x1a215: counter_2 (+0x014) of 0x3d86c[j] -= 1
         sprite(cropDusters, j).counter2 = (sprite(cropDusters, j).counter2 - 1) | 0;
         // 0x1a222..0x1a253: x += rand()%3 - rand()%3 (EBX kept across the second rand: rand saves only EDX
@@ -171,13 +172,13 @@ register(0x19ade, 'updateBongSmoke_19ade', function updateBongSmoke() {
           b = (b - r2) | 0;
           sprite(cropDusters, j).y = (sprite(cropDusters, j).y + b) | 0;
         }
-        sprite(bongSmoke, i).state = 0;                                   // 0x1a290
+        sprite(bongSmoke, i).state = BONG_SMOKE.INACTIVE;                                   // 0x1a290
         F.dws_DDiscard_1f770(dplay(sndRicochet).soundnum);                      // 0x1a2a1
         F.dws_DPlay_1eff8(sndRicochet);                              // 0x1a2b3
       }
       // 0x1a2c1: cmp counter_2, 0; jge -> next j
       if (sprite(cropDusters, j).counter2 < 0) {
-        sprite(cropDusters, j).state = 0;                                   // 0x1a2d5 state = 0
+        sprite(cropDusters, j).state = CROP_DUSTER.INACTIVE;                                   // 0x1a2d5 state = 0
         G.explosionX = (sprite(cropDusters, j).x - 0xc) | 0;            // 0x1a2e6
         G.explosionY = (sprite(cropDusters, j).y - 0x16) | 0;           // 0x1a2fb
         W32(((G.explosionNext << 2) + explosionDelays) | 0, 0x33);                // 0x1a310
@@ -196,8 +197,8 @@ register(0x19ade, 'updateBongSmoke_19ade', function updateBongSmoke() {
           ((sprite(paratroopers, j).x + sprite(paratroopers, j).width) | 0) > sprite(bongSmoke, i).x &&      // 0x1a39c
           sprite(bongSmoke, i).y > sprite(paratroopers, j).y &&                                         // 0x1a3c9
           ((sprite(paratroopers, j).y + 0x11) | 0) > sprite(bongSmoke, i).y &&                          // 0x1a3e7
-          (sprite(paratroopers, j).state === 0x1c || sprite(paratroopers, j).state === 0x1b)) {                    // 0x1a408
-        sprite(paratroopers, j).state = 0x21;                                // 0x1a42f state
+          (sprite(paratroopers, j).state === PARATROOPER.DESCENDING_SWING_FORWARD || sprite(paratroopers, j).state === PARATROOPER.DESCENDING_SWING_BACK)) {                    // 0x1a408
+        sprite(paratroopers, j).state = PARATROOPER.CHUTE_SHOT_FALLING;                                // 0x1a42f state
         sprite(paratroopers, j).counter2 = 0;                                   // 0x1a440 counter_2
         sprite(paratroopers, j).currFrame = 5;                                   // 0x1a451 curr_frame
         G.randomVoice = imod(F.rand_232c7(), 3);                   // 0x1a462..0x1a475
@@ -215,17 +216,17 @@ register(0x19ade, 'updateBongSmoke_19ade', function updateBongSmoke() {
           ((sprite(paratroopers, j).x + sprite(paratroopers, j).width) | 0) > sprite(bongSmoke, i).x &&      // 0x1a52e
           ((sprite(paratroopers, j).y + 0x11) | 0) < sprite(bongSmoke, i).y &&                          // 0x1a55b (jl)
           ((sprite(paratroopers, j).y + sprite(paratroopers, j).height) | 0) > sprite(bongSmoke, i).y &&      // 0x1a57c
-          (sprite(paratroopers, j).state === 0x1c || sprite(paratroopers, j).state === 0x1b)) {                    // 0x1a5a9
+          (sprite(paratroopers, j).state === PARATROOPER.DESCENDING_SWING_FORWARD || sprite(paratroopers, j).state === PARATROOPER.DESCENDING_SWING_BACK)) {                    // 0x1a5a9
         if (imod(F.rand_232c7(), 0xa) === 1) {                   // 0x1a5d0..0x1a5e6
           if (sprite(paratroopers, j).x > 0xa0) {                       // 0x1a5e8 (jle: signed)
-            sprite(paratroopers, j).state = 2;                               // 0x1a5fb
+            sprite(paratroopers, j).state = PARATROOPER.SHOT_FALLING_RIGHT;                               // 0x1a5fb
           } else {
-            sprite(paratroopers, j).state = 3;                               // 0x1a60e
+            sprite(paratroopers, j).state = PARATROOPER.SHOT_FALLING_LEFT;                               // 0x1a60e
           }
           // 0x1a61f..0x1a63c: curr_frame = rand()%3 + 0x13
           sprite(paratroopers, j).currFrame = (imod(F.rand_232c7(), 3) + 0x13) | 0;
         } else {
-          sprite(paratroopers, j).state = 4;                                 // 0x1a644
+          sprite(paratroopers, j).state = PARATROOPER.SHOT_DYING;                                 // 0x1a644
           sprite(paratroopers, j).currFrame = 0x15;                              // 0x1a655
         }
         F.dws_DDiscard_1f770(dplay(sndParaDie5).soundnum);                      // 0x1a666
@@ -240,16 +241,16 @@ register(0x19ade, 'updateBongSmoke_19ade', function updateBongSmoke() {
         ((sprite(ufo).x + sprite(ufo).width) | 0) > sprite(bongSmoke, i).x &&                                // 0x1a6b9
         sprite(bongSmoke, i).y > sprite(ufo).y &&                                                       // 0x1a6d5
         ((sprite(ufo).y + sprite(ufo).height) | 0) > sprite(bongSmoke, i).y &&                                // 0x1a6ec
-        sprite(ufo).state !== 0) {                                                                            // 0x1a708
+        sprite(ufo).state !== UFO.INACTIVE) {                                                                            // 0x1a708
       sprite(ufo).threshold2 = (sprite(ufo).threshold2 - 2) | 0;                            // 0x1a713 threshold_2 (+0x020) -= 2
       sprite(ufo).counter2 = Math.imul(sprite(ufo).counter2, -1);                       // 0x1a71a counter_2 (+0x014) *= -1
-      sprite(bongSmoke, i).state = 0;                                     // 0x1a726
+      sprite(bongSmoke, i).state = BONG_SMOKE.INACTIVE;                                     // 0x1a726
       F.dws_DDiscard_1f770(dplay(sndRicochet).soundnum);                        // 0x1a737
       F.dws_DPlay_1eff8(sndRicochet);                                // 0x1a748
     }
     // 0x1a756: threshold_2 > 0 or state == 0 -> 0x1a817
-    if (!(sprite(ufo).threshold2 > 0) && sprite(ufo).state !== 0) {
-      sprite(ufo).state = 0;                                                 // 0x1a76d state = 0
+    if (!(sprite(ufo).threshold2 > 0) && sprite(ufo).state !== UFO.INACTIVE) {
+      sprite(ufo).state = UFO.INACTIVE;                                                 // 0x1a76d state = 0
       for (j = 0; j < 4; j++) {                                        // 0x1a777
         // 0x1a78c..0x1a7a6: x read after the call, eax = x + rem
         {

@@ -2392,5 +2392,518 @@
    "name": "sndUfo2"
   }
  ],
- "notes": "Coverage: every inventory address is either a named global, inside a named struct/table (field of an element), a string literal, or listed here.\nLayout: the sprite structs are one contiguous block 0x33918..0x5ff1c (statusBar, gunSight, van, rasta, choppers[5], (gap 0x345c4..0x34704 unused by game code), explosions[13], paratroopers[25], groundTroops[25], plants[26], a10Jets[1], bombs[4], cropDusters[3], messageBox, dusterSpray[63], scoreDigits[7], killsDigits[5], levelDigits[3], volumeSliders[3], soundMenu, jah, missile, missileTarget, missileSmoke[63], ufo, bongSmoke[200], powerupDrop, cruiseMissile, nukeCloud), followed by bullets[60] 0x5ff20, frameStartTime, score, kills, highScores[9], mouseX/Y/buttons, ... The pcx_pictures pcxScratch + 5 menu frames are consecutive at stride 0x398 (0x31ee4..0x33474) but are used as separate objects.\nStruct-array element vs true array: choppers/paratroopers/groundTroops/plants/bombs/cropDusters/explosions/dusterSpray/missileSmoke/bongSmoke/score-kills-levelDigits are true arrays indexed in loops; volumeSliders are 3 separately initialised objects (fx, music, master) that happen to be contiguous; a10Jets is an array of 1 (all loops have bound 1). keyboardState, explosionDelays, chopperSoundStatus, highScoreRowColors are true arrays.\nORIGINAL BUG (known): updateChoppers reads paratroopers[25].state = groundTroops[0].state (0x3833c) when paratrooperNext==24.\nWeapons (currentWeapon 0x60ee8): 0x36 default gun (semi-auto, bullets, sndGunShot), 0x37 automatic gun (hasAutoGun, pickup voice sndAutomatic), 0x35 missile launcher (hasMissileLauncher, fires missile+missileTarget, pickup voice sndRastaRocket), 0x38 bong (hasBong, fires bongSmoke, pickup voice sndBongDeath). Weapon names are inferred from DRPSHOOT/RASTA/MISSLE sprite sheets and sound names (medium confidence for the exact wording; roles are high).\nKill points: chopper crash 101, bomb 501, A-10 300, duster 100, UFO 1000, paratrooper chute 15, body 11, landed trooper squashed 100, Jah replant bonus 8000, powerup +42000, idle smoke +1000, cheat F3+F4 +5000; each bullet -1.\nKeyboard (keyboardState index = scancode): Esc quit prompt (Y/N), P pause, F2 sound menu, Space/Enter continue. Cheats: F3+F4 +5000; L+V+U level+1; L+V+D level-1; N+U+K clear all enemies (clearEnemies); 4+2+0 (\"420\") regrow all plants + sndYaMon; G+N auto gun, G+M missile launcher, G+B bong; J + arrow keys move Jah; debug level select keys 3,5..9 -> level 3,5..9 and A -> level 14 (updateGameFrame.js:40-66).\nPlant/enemy state values are the game's own codes (e.g. 0x1b/0x1c direction, 0x26 explosion pending); described in each entry, no names claimed for the numeric codes.\nNot named (left out): 0x3000c/0x30019/0x30026 fopen mode strings \"w\"/\"r\"/\"r\"; double constants 0x3014c=5.0, 0x30154=-5.0, 0x3015c=0.1, 0x30164=-5.0, 0x3016c=0.1 (bullet speed), 0x30184=7.0, 0x3018c=-7.0, 0x30194=-7.0 (bong smoke speed); 0x61669 = jointGlowColor.g (byte +1 of the RGB_color at 0x61668); 0x64e78..0x64e7a = 3 bytes (BSS, just before doubleBuffer) copied as the initialiser of a local RGB_color in updateUfo and immediately overwritten -> probably a compiler-emitted zero initialiser, no meaning.\nLoad_File buffers 0x60f20..0x60fec: the raw pointers returned by Load_File, each copied once into the .snd/.track field of its STK struct; named <struct>Data.\nMost uncertain: smokeGlowPhase, fireReady, bongState/bongShotsLeft/bongBlowPending, bongHitTimer, frameCounter10, inLevelEndSequence, musicSamplesEnabled, sndPdie4 (pdie4.dwd used only for the idle-smoke bonus), sndLogo, resetHighScores."
+ "notes": "Coverage: every inventory address is either a named global, inside a named struct/table (field of an element), a string literal, or listed here.\nLayout: the sprite structs are one contiguous block 0x33918..0x5ff1c (statusBar, gunSight, van, rasta, choppers[5], (gap 0x345c4..0x34704 unused by game code), explosions[13], paratroopers[25], groundTroops[25], plants[26], a10Jets[1], bombs[4], cropDusters[3], messageBox, dusterSpray[63], scoreDigits[7], killsDigits[5], levelDigits[3], volumeSliders[3], soundMenu, jah, missile, missileTarget, missileSmoke[63], ufo, bongSmoke[200], powerupDrop, cruiseMissile, nukeCloud), followed by bullets[60] 0x5ff20, frameStartTime, score, kills, highScores[9], mouseX/Y/buttons, ... The pcx_pictures pcxScratch + 5 menu frames are consecutive at stride 0x398 (0x31ee4..0x33474) but are used as separate objects.\nStruct-array element vs true array: choppers/paratroopers/groundTroops/plants/bombs/cropDusters/explosions/dusterSpray/missileSmoke/bongSmoke/score-kills-levelDigits are true arrays indexed in loops; volumeSliders are 3 separately initialised objects (fx, music, master) that happen to be contiguous; a10Jets is an array of 1 (all loops have bound 1). keyboardState, explosionDelays, chopperSoundStatus, highScoreRowColors are true arrays.\nORIGINAL BUG (known): updateChoppers reads paratroopers[25].state = groundTroops[0].state (0x3833c) when paratrooperNext==24.\nWeapons (currentWeapon 0x60ee8): 0x36 default gun (semi-auto, bullets, sndGunShot), 0x37 automatic gun (hasAutoGun, pickup voice sndAutomatic), 0x35 missile launcher (hasMissileLauncher, fires missile+missileTarget, pickup voice sndRastaRocket), 0x38 bong (hasBong, fires bongSmoke, pickup voice sndBongDeath). Weapon names are inferred from DRPSHOOT/RASTA/MISSLE sprite sheets and sound names (medium confidence for the exact wording; roles are high).\nKill points: chopper crash 101, bomb 501, A-10 300, duster 100, UFO 1000, paratrooper chute 15, body 11, landed trooper squashed 100, Jah replant bonus 8000, powerup +42000, idle smoke +1000, cheat F3+F4 +5000; each bullet -1.\nKeyboard (keyboardState index = scancode): Esc quit prompt (Y/N), P pause, F2 sound menu, Space/Enter continue. Cheats: F3+F4 +5000; L+V+U level+1; L+V+D level-1; N+U+K clear all enemies (clearEnemies); 4+2+0 (\"420\") regrow all plants + sndYaMon; G+N auto gun, G+M missile launcher, G+B bong; J + arrow keys move Jah; debug level select keys 3,5..9 -> level 3,5..9 and A -> level 14 (updateGameFrame.js:40-66).\nPlant/enemy state values are the game's own codes (e.g. 0x1b/0x1c direction, 0x26 explosion pending); described in each entry, no names claimed for the numeric codes.\nNot named (left out): 0x3000c/0x30019/0x30026 fopen mode strings \"w\"/\"r\"/\"r\"; double constants 0x3014c=5.0, 0x30154=-5.0, 0x3015c=0.1, 0x30164=-5.0, 0x3016c=0.1 (bullet speed), 0x30184=7.0, 0x3018c=-7.0, 0x30194=-7.0 (bong smoke speed); 0x61669 = jointGlowColor.g (byte +1 of the RGB_color at 0x61668); 0x64e78..0x64e7a = 3 bytes (BSS, just before doubleBuffer) copied as the initialiser of a local RGB_color in updateUfo and immediately overwritten -> probably a compiler-emitted zero initialiser, no meaning.\nLoad_File buffers 0x60f20..0x60fec: the raw pointers returned by Load_File, each copied once into the .snd/.track field of its STK struct; named <struct>Data.\nMost uncertain: smokeGlowPhase, fireReady, bongState/bongShotsLeft/bongBlowPending, bongHitTimer, frameCounter10, inLevelEndSequence, musicSamplesEnabled, sndPdie4 (pdie4.dwd used only for the idle-smoke bonus), sndLogo, resetHighScores.",
+ "states": {
+  "G.gameState": {
+   "object": "GAME_STATE",
+   "values": {
+    "0x1c": {
+     "name": "RETURN_TO_MENU",
+     "meaning": "game loop exits back to the main menu: set on game over (drawGameFrame, all herb dead) or quit confirmed with Y (confirmQuit); main's game loops run while !== 0x1c",
+     "confidence": "high"
+    },
+    "0x22": {
+     "name": "START_GAME",
+     "meaning": "set by main menu 'play' button; main then starts a new game",
+     "confidence": "high"
+    },
+    "0x25": {
+     "name": "EXIT_PROGRAM",
+     "meaning": "set by main menu exit button; main breaks out of its outer loop and quits",
+     "confidence": "high"
+    }
+   }
+  },
+  "cruiseMissile": {
+   "object": "CRUISE_MISSILE",
+   "values": {
+    "0x0": {
+     "name": "INACTIVE",
+     "meaning": "not present; respawns (as 0x46/0x45) when level not ending; also forced by applyLevelEnemyLimits below level 25, and when shot",
+     "confidence": "high"
+    },
+    "0x46": {
+     "name": "FLYING_RIGHT",
+     "meaning": "x += 5, frames 0-1, gone past x>0x140",
+     "confidence": "high"
+    },
+    "0x45": {
+     "name": "FLYING_LEFT",
+     "meaning": "x -= 5, frames 2-3, gone past x<-0x1e",
+     "confidence": "high"
+    },
+    "0x44": {
+     "name": "DETONATED",
+     "meaning": "hit ground (y>0xa0): nuke cloud shown, palette flash countdown threshold1, burns every live plant; not drawn",
+     "confidence": "high"
+    }
+   }
+  },
+  "a10Jets": {
+   "object": "A10_JET",
+   "values": {
+    "0x0": {
+     "name": "INACTIVE",
+     "meaning": "not flying (shot down / level ending); respawned to FLYING when level not ending",
+     "confidence": "high"
+    },
+    "0x1": {
+     "name": "FLYING",
+     "meaning": "crossing the screen; randomly switches to BOMBING when bomb slot 3 is free",
+     "confidence": "high"
+    },
+    "0x2a": {
+     "name": "BOMBING",
+     "meaning": "bombing run: drops a bomb every 5 frames into bombs[bombNext], back to FLYING after 4",
+     "confidence": "high"
+    }
+   }
+  },
+  "ufo": {
+   "object": "UFO",
+   "values": {
+    "0x0": {
+     "name": "INACTIVE",
+     "meaning": "not present (shot down / level start limits); respawns above screen into DESCENDING",
+     "confidence": "high"
+    },
+    "0x3d": {
+     "name": "ASCENDING",
+     "meaning": "y -= 3; checked in updateUfo but never assigned anywhere in the game (dead state)",
+     "confidence": "low"
+    },
+    "0x3e": {
+     "name": "DESCENDING",
+     "meaning": "y += 3 while wandering horizontally; once y>0x6c picks nearest live plant (ufoTargetPlant) and moves toward it",
+     "confidence": "high"
+    },
+    "0x3f": {
+     "name": "LEAVING",
+     "meaning": "after abducting a plant: y -= 5 until off the top, then back to DESCENDING",
+     "confidence": "high"
+    },
+    "0x1b": {
+     "name": "MOVING_LEFT_TO_PLANT",
+     "meaning": "x -= 3 until centered over target plant, then ABDUCTING (plays sndUfo)",
+     "confidence": "high"
+    },
+    "0x1c": {
+     "name": "MOVING_RIGHT_TO_PLANT",
+     "meaning": "x += 3 until centered over target plant, then ABDUCTING",
+     "confidence": "high"
+    },
+    "0x40": {
+     "name": "ABDUCTING",
+     "meaning": "beam (height 0x43) over the plant for counter3 frames, then plant state 0 frame 7 (abducted) and LEAVING",
+     "confidence": "high"
+    }
+   }
+  },
+  "choppers": {
+   "object": "CHOPPER",
+   "values": {
+    "0x1c": {
+     "name": "FLYING_RIGHT",
+     "meaning": "x += counter1 (positive), frames 2-3; drops paratroopers; wraps or turns to FLYING_LEFT past x>0x154",
+     "confidence": "high"
+    },
+    "0x1b": {
+     "name": "FLYING_LEFT",
+     "meaning": "x += counter1 (negative), frames 0-1; drops paratroopers; wraps or turns to FLYING_RIGHT past x<-0x82",
+     "confidence": "high"
+    },
+    "0x1a": {
+     "name": "CRASHING",
+     "meaning": "hit points gone: explosions spawned, animates for counter3 frames, then INACTIVE with +101 score and a kill",
+     "confidence": "high"
+    },
+    "0x0": {
+     "name": "INACTIVE",
+     "meaning": "destroyed/unused slot; next update respawns it off-screen flying left or right (unless level ending)",
+     "confidence": "high"
+    }
+   }
+  },
+  "paratroopers": {
+   "object": "PARATROOPER",
+   "values": {
+    "0x0": {
+     "name": "INACTIVE",
+     "meaning": "free slot (chopper only drops into a slot with state 0)",
+     "confidence": "high"
+    },
+    "0x1b": {
+     "name": "DESCENDING_SWING_BACK",
+     "meaning": "under parachute, y += 1, curr_frame decreasing to 0 then DESCENDING_SWING_FORWARD; initial state when dropped; reaching y>0x96 -> LANDING",
+     "confidence": "medium"
+    },
+    "0x1c": {
+     "name": "DESCENDING_SWING_FORWARD",
+     "meaning": "under parachute, y += 1, curr_frame increasing to >4 then DESCENDING_SWING_BACK; reaching y>0x96 -> LANDING",
+     "confidence": "medium"
+    },
+    "0x27": {
+     "name": "LANDING",
+     "meaning": "on the ground, landing animation frames 0xc..0x12, then LANDED; can be squished by a falling trooper",
+     "confidence": "high"
+    },
+    "0x28": {
+     "name": "LANDED",
+     "meaning": "converted next update into a groundTroops entry (WALKING) and slot freed",
+     "confidence": "high"
+    },
+    "0x21": {
+     "name": "CHUTE_SHOT_FALLING",
+     "meaning": "parachute shot: free fall with accelerating counter2, squishes landed troopers below, then INACTIVE",
+     "confidence": "high"
+    },
+    "0x2": {
+     "name": "SHOT_FALLING_RIGHT",
+     "meaning": "body shot (1/10 case, x>0xa0): drifts x += 2, y += 1 until off screen / ground, then INACTIVE",
+     "confidence": "high"
+    },
+    "0x3": {
+     "name": "SHOT_FALLING_LEFT",
+     "meaning": "body shot (1/10 case, x<=0xa0): drifts x -= 2, y += 1 until off screen / ground, then INACTIVE",
+     "confidence": "high"
+    },
+    "0x4": {
+     "name": "SHOT_DYING",
+     "meaning": "body shot (9/10 case): death animation frames 0x15..0x1a in place, then INACTIVE",
+     "confidence": "high"
+    }
+   }
+  },
+  "explosions": {
+   "object": "EXPLOSION",
+   "values": {
+    "0x26": {
+     "name": "PENDING",
+     "meaning": "spawned by spawnExplosion; waits until its explosionDelays counter exceeds 0x32, then ANIMATING",
+     "confidence": "high"
+    },
+    "0x1": {
+     "name": "ANIMATING",
+     "meaning": "drawn; frames advance to 0xb, then IDLE",
+     "confidence": "high"
+    },
+    "0x0": {
+     "name": "IDLE",
+     "meaning": "finished / unused slot, not drawn",
+     "confidence": "high"
+    }
+   }
+  },
+  "groundTroops": {
+   "object": "GROUND_TROOP",
+   "values": {
+    "0x2f": {
+     "name": "WALKING_TO_PLANT",
+     "meaning": "walks 2 px/frame (direction counter3) toward the herb; next to a live plant -> PLANTING_CHARGE",
+     "confidence": "high"
+    },
+    "0x2e": {
+     "name": "RUNNING_AWAY_RIGHT",
+     "meaning": "after planting (x>0xa0): x += 4 until off the right edge, then INACTIVE",
+     "confidence": "high"
+    },
+    "0x31": {
+     "name": "RUNNING_AWAY_LEFT",
+     "meaning": "after planting (x<=0xa0): x -= 4 until off the left edge, then INACTIVE",
+     "confidence": "high"
+    },
+    "0x30": {
+     "name": "PLANTING_CHARGE",
+     "meaning": "animates frames 4..0xc, then sets adjacent live plants to CHARGE_PLANTED and runs away (RUNNING_RIGHT/LEFT)",
+     "confidence": "high"
+    },
+    "0x0": {
+     "name": "INACTIVE",
+     "meaning": "unused slot / squished / walked off screen",
+     "confidence": "high"
+    }
+   }
+  },
+  "plants": {
+   "object": "PLANT",
+   "values": {
+    "0x1": {
+     "name": "ALIVE",
+     "meaning": "healthy plant; target of troopers, UFO, bombs, spray, nuke",
+     "confidence": "high"
+    },
+    "0x32": {
+     "name": "CHARGE_PLANTED",
+     "meaning": "explosive charge planted by a ground trooper; counter2 fuse, then BURNING with an explosion sound",
+     "confidence": "high"
+    },
+    "0x33": {
+     "name": "REGROWING",
+     "meaning": "replanted by Jah / '420' cheat (frame 6); after counter3 frames becomes ALIVE",
+     "confidence": "high"
+    },
+    "0x29": {
+     "name": "BURNING",
+     "meaning": "burning animation frames 2..4 for counter1 (180) frames, then DEAD (frame 5)",
+     "confidence": "high"
+    },
+    "0x0": {
+     "name": "DEAD",
+     "meaning": "no live plant: burnt (frame 5), sprayed (frame 1) or abducted by UFO (frame 7); all 0 -> game over",
+     "confidence": "high"
+    }
+   }
+  },
+  "bombs": {
+   "object": "BOMB",
+   "values": {
+    "0x0": {
+     "name": "INACTIVE",
+     "meaning": "free slot",
+     "confidence": "high"
+    },
+    "0x1": {
+     "name": "FALLING",
+     "meaning": "dropped by the A-10, moves with counter1/counter2; explodes on the ground burning plants",
+     "confidence": "high"
+    }
+   }
+  },
+  "dusterSpray": {
+   "object": "DUSTER_SPRAY",
+   "values": {
+    "0x0": {
+     "name": "INACTIVE",
+     "meaning": "free slot, parked at x=-200",
+     "confidence": "high"
+    },
+    "0x1": {
+     "name": "FALLING",
+     "meaning": "herbicide droplet drifting down (y += 1, random x jitter); kills a live plant it reaches, then INACTIVE",
+     "confidence": "high"
+    }
+   }
+  },
+  "cropDusters": {
+   "object": "CROP_DUSTER",
+   "values": {
+    "0x0": {
+     "name": "INACTIVE",
+     "meaning": "shot down / level ending; respawns as FLYING when level not ending",
+     "confidence": "high"
+    },
+    "0x1": {
+     "name": "FLYING",
+     "meaning": "flying across (x += counter1); can switch to SPRAYING",
+     "confidence": "high"
+    },
+    "0x2d": {
+     "name": "SPRAYING",
+     "meaning": "spraying herbicide over the plants (counter3 = spray duration)",
+     "confidence": "high"
+    }
+   }
+  },
+  "rasta": {
+   "object": "RASTA",
+   "values": {
+    "0x2b": {
+     "name": "LIGHTING_UP",
+     "meaning": "idle start (no mouse activity for idleTimer, or level end): frames 0xa..0xf advance, then SMOKING",
+     "confidence": "medium"
+    },
+    "0x1": {
+     "name": "AIMING",
+     "meaning": "normal player control: aims and fires the current weapon",
+     "confidence": "high"
+    },
+    "0x2c": {
+     "name": "SMOKING",
+     "meaning": "idle joint-smoking loop with joint glow colour; each full puff +1000 score; mouse activity -> AIMING",
+     "confidence": "high"
+    },
+    "0x3a": {
+     "name": "LOADING_BONG",
+     "meaning": "bong weapon reloading animation frames 0x1e..0x22, then BONG_HIT (sndBongBubble)",
+     "confidence": "high"
+    },
+    "0x3b": {
+     "name": "BONG_HIT",
+     "meaning": "holds frame 0x22 while bubble sound plays / bongHitTimer runs, then AIMING with bong loaded (bongState 0x3c)",
+     "confidence": "high"
+    }
+   }
+  },
+  "jah": {
+   "object": "JAH",
+   "values": {
+    "0x21": {
+     "name": "DESCENDING_TO_REPLANT",
+     "meaning": "level-end: descends to the herb row and moves right replanting dead plants (updateJahReplant else-branch), then IDLE",
+     "confidence": "high"
+    },
+    "0x20": {
+     "name": "IDLE",
+     "meaning": "not on a pass; during replant sequence rises away (y -= 2), ending the level-end loop; in game starts a powerup pass when threshold3 == 0x41",
+     "confidence": "medium"
+    },
+    "0x1c": {
+     "name": "FLYING_RIGHT",
+     "meaning": "powerup pass: x += 3, drops the powerup when over the rasta; IDLE past x>0x154",
+     "confidence": "high"
+    },
+    "0x1b": {
+     "name": "FLYING_LEFT",
+     "meaning": "powerup pass: x -= 3, drops the powerup when over the rasta; IDLE when off the left edge",
+     "confidence": "high"
+    }
+   }
+  },
+  "G.levelEndLoopState": {
+   "object": "LEVEL_END_LOOP",
+   "values": {
+    "0x22": {
+     "name": "RUNNING",
+     "meaning": "level-complete sequence loop runs while == 0x22",
+     "confidence": "high"
+    },
+    "0x1c": {
+     "name": "DONE",
+     "meaning": "set by updateJahReplant when Jah has flown off the top; ends the loop",
+     "confidence": "high"
+    }
+   }
+  },
+  "powerupDrop": {
+   "object": "POWERUP_DROP",
+   "values": {
+    "0x0": {
+     "name": "INACTIVE",
+     "meaning": "no crate; Jah may drop one only when 0",
+     "confidence": "high"
+    },
+    "0x1": {
+     "name": "FALLING",
+     "meaning": "crate falling (y += 3, drawn); on reaching rasta's y it is collected and becomes INACTIVE",
+     "confidence": "high"
+    }
+   }
+  },
+  "G.currentWeapon": {
+   "object": "WEAPON",
+   "values": {
+    "0x37": {
+     "name": "AUTO_GUN",
+     "meaning": "automatic gun: fireReady toggles every frame, fires bullets (powerup kind 0 / hasAutoGun)",
+     "confidence": "high"
+    },
+    "0x35": {
+     "name": "MISSILE_LAUNCHER",
+     "meaning": "fires the homing missile when none is flying (powerup kind 1)",
+     "confidence": "high"
+    },
+    "0x38": {
+     "name": "BONG",
+     "meaning": "fires bong smoke clouds, needs reloading (bongState) (powerup kind 2)",
+     "confidence": "high"
+    },
+    "0x36": {
+     "name": "DEFAULT_GUN",
+     "meaning": "starting semi-automatic gun: fires bullets, fireReady cleared after each shot until button released",
+     "confidence": "high"
+    }
+   }
+  },
+  "G.bongState": {
+   "object": "BONG_STATE",
+   "values": {
+    "0x39": {
+     "name": "NEEDS_RELOAD",
+     "meaning": "bong empty: rasta switched to LOADING_BONG animation",
+     "confidence": "high"
+    },
+    "0x3c": {
+     "name": "LOADED",
+     "meaning": "bong loaded: fires smoke while bongShotsLeft > 0, then NEEDS_RELOAD",
+     "confidence": "high"
+    }
+   }
+  },
+  "nukeCloud": {
+   "object": "NUKE_CLOUD",
+   "values": {
+    "0x1": {
+     "name": "VISIBLE",
+     "meaning": "mushroom cloud shown after cruise missile detonation",
+     "confidence": "high"
+    },
+    "0x0": {
+     "name": "HIDDEN",
+     "meaning": "not drawn",
+     "confidence": "high"
+    }
+   }
+  },
+  "missile": {
+   "object": "MISSILE",
+   "values": {
+    "0x1": {
+     "name": "FLYING",
+     "meaning": "homing missile in flight (drawn); new one can't be fired",
+     "confidence": "high"
+    },
+    "0x0": {
+     "name": "INACTIVE",
+     "meaning": "no missile in flight (hit something or lifetime expired)",
+     "confidence": "high"
+    }
+   }
+  },
+  "missileTarget": {
+   "object": "MISSILE_TARGET",
+   "values": {
+    "0x0": {
+     "name": "INACTIVE",
+     "meaning": "no target marker",
+     "confidence": "high"
+    },
+    "0x1": {
+     "name": "ACTIVE",
+     "meaning": "target marker for the fired missile, drawn while the missile flies",
+     "confidence": "high"
+    }
+   }
+  },
+  "missileSmoke": {
+   "object": "MISSILE_SMOKE",
+   "values": {
+    "0x1": {
+     "name": "ACTIVE",
+     "meaning": "smoke puff behind the missile, drawn until counter1 runs out",
+     "confidence": "high"
+    },
+    "0x0": {
+     "name": "INACTIVE",
+     "meaning": "expired / unused",
+     "confidence": "high"
+    }
+   }
+  },
+  "bongSmoke": {
+   "object": "BONG_SMOKE",
+   "values": {
+    "0x0": {
+     "name": "INACTIVE",
+     "meaning": "free slot / hit something / expired",
+     "confidence": "high"
+    },
+    "0x1": {
+     "name": "FLYING",
+     "meaning": "smoke cloud shot by the bong, moving and hitting enemies (drawn)",
+     "confidence": "high"
+    }
+   }
+  }
+ },
+ "stateNotes": "Shared codes: 0x1b/0x1c mean left/right movement for choppers, jah, ufo (x -= / x +=); paratroopers reuse 0x1b/0x1c but there they are the two swing directions of the parachute animation (both descend). 0 = inactive/free slot for most sprite arrays; plants 0 = DEAD; nukeCloud 0 = HIDDEN; explosions 0 = IDLE. Binary 0/1 arrays (bombs, dusterSpray, powerupDrop, missile, missileTarget, missileSmoke, bongSmoke, nukeCloud) could share a generic ACTIVE/INACTIVE pair. G.gameState 0x1c and G.levelEndLoopState 0x1c/0x22 reuse the same numbers but with loop-exit meanings. cropDusters also uses 0x2d (spraying) via raw R32 in updateCropDusters (not in state-uses.json). ufo 0x3d is never assigned (dead state). Paratrooper swing names (0x1b/0x1c) and rasta 0x2b LIGHTING_UP and jah 0x20 IDLE are medium confidence."
 }

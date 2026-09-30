@@ -19,6 +19,7 @@
 // No address-taken locals, no x87 instructions.
 import { F, register } from '../runtime/registry.js';
 import { R16, R32, W32 } from '../runtime/mem.js';
+import { BOMB, PLANT } from './states.js';
 import { SPRITE, bombs, explosionDelays, plants, sndExplosion } from './data.js';
 import { G, dplay, sprite } from './access.js';
 
@@ -30,10 +31,10 @@ register(0x14c6a, 'updateBombs_14c6a', function updateBombs() {
   let t; // ECX at 0x14d83 / 0x14db3
 
   for (i = 0; i < 4; i++) {                                              // 0x14c82..0x14c95 (jge, signed)
-    if (sprite(bombs, i).state === 0) {                                     // 0x14ca2: state
+    if (sprite(bombs, i).state === BOMB.INACTIVE) {                                     // 0x14ca2: state
       sprite(bombs, i).y = -100;                                         // 0x14cb2: y = 0xffffff9c
     }
-    if (sprite(bombs, i).state !== 1) continue;                             // 0x14cc3 jne 0x14fac
+    if (sprite(bombs, i).state !== BOMB.FALLING) continue;                             // 0x14cc3 jne 0x14fac
     if (sprite(bombs, i).counter1 < 0) {                                       // 0x14cd7 jge
       sprite(bombs, i).currFrame = (sprite(bombs, i).currFrame + 1) | 0;                // 0x14ce7 inc curr_frame
       if (sprite(bombs, i).currFrame > 2) {                                     // 0x14ced jle
@@ -62,7 +63,7 @@ register(0x14c6a, 'updateBombs_14c6a', function updateBombs() {
     }
     sprite(bombs, i).y = (sprite(bombs, i).y + sprite(bombs, i).counter2) | 0; // 0x14dd3..0x14dd9 y += counter_2
     if (sprite(bombs, i).y >= 0xa0) {                                   // 0x14de6 jl
-      sprite(bombs, i).state = 0;                                            // 0x14df9 state = 0
+      sprite(bombs, i).state = BOMB.INACTIVE;                                            // 0x14df9 state = 0
       G.explosionX = (sprite(bombs, i).x - 0xc) | 0;                     // 0x14e0a..0x14e13
       G.explosionY = (sprite(bombs, i).y - 0x16) | 0;                    // 0x14e1f..0x14e28
       W32((G.explosionNext << 2) + explosionDelays, 0x33);                          // 0x14e2d..0x14e35
@@ -71,7 +72,7 @@ register(0x14c6a, 'updateBombs_14c6a', function updateBombs() {
       F.dws_DPlay_1eff8(sndExplosion);                                  // 0x14e55..0x14e60 cdecl
     }
     for (j = 0; j < 0x1a; j++) {                                         // 0x14e63..0x14e76 (jge, signed)
-      if (sprite(bombs, i).state !== 0) continue;                           // 0x14e83 jne 0x14f4e -> next j
+      if (sprite(bombs, i).state !== BOMB.INACTIVE) continue;                           // 0x14e83 jne 0x14f4e -> next j
       // 0x14e90..0x14f48: hit if (x_i-2 < x_j && x_i+w_i+2 > x_j) || (x_i-2 < x_j+w_j && x_i+w_i+2 > x_j+w_j)
       let hit = false;
       if (((sprite(bombs, i).x - 2) | 0) < sprite(plants, j).x &&                        // 0x14ea7 jge 0x14edd
@@ -84,9 +85,9 @@ register(0x14c6a, 'updateBombs_14c6a', function updateBombs() {
         hit = true;
       }
       if (!hit) continue;                                                // 0x14f4a -> 0x14f4e -> 0x14f60 -> 0x14f72
-      if (sprite(plants, j).state !== 1) continue;                           // 0x14f57 je 0x14f62
+      if (sprite(plants, j).state !== PLANT.ALIVE) continue;                           // 0x14f57 je 0x14f62
       if (!(sprite(bombs, i).y > 0)) continue;                          // 0x14f69 jg 0x14f74
-      sprite(plants, j).state = 0x29;                                         // 0x14f7b state
+      sprite(plants, j).state = PLANT.BURNING;                                         // 0x14f7b state
       sprite(plants, j).counter1 = 0xb4;                                         // 0x14f8c counter_1
       sprite(plants, j).currFrame = 2;                                            // 0x14f9d curr_frame
     }

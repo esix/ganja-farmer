@@ -43,7 +43,11 @@ The headless runner (`tests/run-headless.mjs`) does the same in Node with a virt
 - `src/game/`: the game's own functions, one file each, named `<address>_<name>.js` (list:
   [FUNCTIONS.md](FUNCTIONS.md)). `main` (0x1aa02) is split into phases in `src/game/1aa02/`. The game's
   data keeps its original addresses, but the code uses names for them from `src/game/data.js`
-  ([DATA.md](DATA.md)): `W32(score, …)`, `R32(choppers + k * SPRITE.SIZE + SPRITE.y)`.
+  ([DATA.md](DATA.md)). The code reads and writes it through typed views from `src/game/access.js`:
+  `sprite(choppers, k).y`, `G.score`, `bullet(i).x`, `keyDown(KEY.space)`. Each property reads/writes the
+  original address with the original width. State codes are named in `src/game/states.js`
+  (`sprite(choppers, k).state === CHOPPER.FLYING_LEFT`), and locals are plain JS variables except where their
+  address is passed to a callee.
 - `src/lib/`: André LaMothe's graphics and input library as used by the game (PCX loading, sprites,
   palette, double buffer, keyboard driver, mouse wrapper, timer), the DiamondWare sound client
   (`stk_client.js`) and the Watcom C runtime subset (`crt*.js`: file streams on the virtual file system

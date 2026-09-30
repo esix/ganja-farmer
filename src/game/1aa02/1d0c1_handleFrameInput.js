@@ -18,6 +18,7 @@
 // (`xor eax,eax; mov ax,[m]; push eax`), hence R16.
 import { F } from '../../runtime/registry.js';
 import { R16, R32, W32 } from '../../runtime/mem.js';
+import { BONG_STATE, PLANT, RASTA, WEAPON } from '../states.js';
 import { KEY, gunSight, mouseButtons, mouseX, mouseY, plants, rasta, sndAutomatic, sndBongBubble, sndBongDeath, sndRastaRocket, sndYaMon } from '../data.js';
 import { G, dplay, keyDown, sprite } from '../access.js';
 
@@ -29,7 +30,7 @@ export async function handleFrameInput() {
   G.frameStartTime = F.Timer_Query_235f9();                     // 1d0c1 call, 1d0c6 mov [0x60a64],eax
   G.allHerbDead = 1;                                               // 1d0cb
   for (i = 0; i < 0x1a; i++) {                                   // 1d0d5 =0; 1d0e4 cmp 0x1a / jge 1d106; 1d0de..1d0e1 inc
-    if (sprite(plants, i).state !== 0) {              // 1d0ea imul, 1d0f1 cmp [eax+0x3a9e8],0, 1d0f8 je 1d104
+    if (sprite(plants, i).state !== PLANT.DEAD) {              // 1d0ea imul, 1d0f1 cmp [eax+0x3a9e8],0, 1d0f8 je 1d104
       G.allHerbDead = 0;                                           // 1d0fa
     }
   }                                                              // 1d104 jmp 1d0de
@@ -71,7 +72,7 @@ export async function handleFrameInput() {
   if (keyDown(KEY.d4) !== 0 && keyDown(KEY.d2) !== 0 && keyDown(KEY.d0) !== 0) { // 1d233/1d23a, 1d23c/1d243, 1d247/1d24e
     F.dws_DPlay_1eff8(sndYaMon);                            // 1d252..1d25d (cdecl, add esp,4)
     for (i = 0; i < 0x1a; i++) {                                 // 1d260 =0; 1d26f cmp 0x1a / jge 1d2aa; 1d269..1d26c inc
-      sprite(plants, i).state = 0x33;                  // 1d275 imul, 1d27c
+      sprite(plants, i).state = PLANT.REGROWING;                  // 1d275 imul, 1d27c
       sprite(plants, i).currFrame = 6;                     // 1d286 imul, 1d28d
       sprite(plants, i).counter3 = 0x3c;                  // 1d297 imul, 1d29e
     }                                                            // 1d2a8 jmp 1d269
@@ -82,7 +83,7 @@ export async function handleFrameInput() {
   }
   if (keyDown(KEY.g) !== 0 && keyDown(KEY.b) !== 0) {                // 1d2d6/1d2dd je 1d2e8(->1d30c); 1d2df/1d2e6 jne 1d2ea
     G.hasBong = 1;                                             // 1d2ea
-    G.bongState = 0x39;                                          // 1d2f4
+    G.bongState = BONG_STATE.NEEDS_RELOAD;                                          // 1d2f4
     F.dws_DPlay_1eff8(sndBongDeath);                            // 1d2fe..1d309
   }
   if (keyDown(KEY.g) !== 0 && keyDown(KEY.n) !== 0) {                // 1d30c/1d313 je 1d31e(->1d338); 1d315/1d31c jne 1d320
@@ -103,44 +104,44 @@ export async function handleFrameInput() {
           if (G.hasAutoGun === 1) {                              // 1d35c cmp, 1d363 jne 1d3b8
             F.dws_DDiscard_1f770(dplay(sndBongDeath).soundnum);            // 1d365..1d373 (zero-extended word)
             F.dws_DDiscard_1f770(dplay(sndBongBubble).soundnum);            // 1d376..1d384
-            G.currentWeapon = 0x37;                                  // 1d387
-            sprite(rasta).state = 1;                                     // 1d391
+            G.currentWeapon = WEAPON.AUTO_GUN;                                  // 1d387
+            sprite(rasta).state = RASTA.AIMING;                                     // 1d391
             sprite(rasta).currFrame = 0;                                     // 1d39b
             F.dws_DPlay_1eff8(sndAutomatic);                    // 1d3a5..1d3b0; 1d3b3 jmp 1d613
           } else if (G.hasMissileLauncher === 1) {                       // 1d3b8 cmp, 1d3bf jne 1d3ef
             F.dws_DDiscard_1f770(dplay(sndAutomatic).soundnum);            // 1d3c1..1d3cf
-            G.currentWeapon = 0x35;                                  // 1d3d2
+            G.currentWeapon = WEAPON.MISSILE_LAUNCHER;                                  // 1d3d2
             F.dws_DPlay_1eff8(sndRastaRocket);                    // 1d3dc..1d3e7; 1d3ea jmp 1d613
           } else if (G.hasBong === 1) {                       // 1d3ef cmp, 1d3f6 jne 1d430
             F.dws_DDiscard_1f770(dplay(sndRastaRocket).soundnum);            // 1d3f8..1d406
-            G.currentWeapon = 0x38;                                  // 1d409
-            G.bongState = 0x39;                                  // 1d413
+            G.currentWeapon = WEAPON.BONG;                                  // 1d409
+            G.bongState = BONG_STATE.NEEDS_RELOAD;                                  // 1d413
             F.dws_DPlay_1eff8(sndBongDeath);                    // 1d41d..1d428; 1d42b jmp 1d613
           }                                                      // 1d430 jmp 1d613
           break;
         case 2:                                                  // [0x60ee8] == 0x37 -> 0x1d435
           if (G.hasMissileLauncher === 1) {                              // 1d435 cmp, 1d43c jne 1d46c
             F.dws_DDiscard_1f770(dplay(sndAutomatic).soundnum);            // 1d43e..1d44c
-            G.currentWeapon = 0x35;                                  // 1d44f
+            G.currentWeapon = WEAPON.MISSILE_LAUNCHER;                                  // 1d44f
             F.dws_DPlay_1eff8(sndRastaRocket);                    // 1d459..1d464; 1d467 jmp 1d613
           } else if (G.hasBong === 1) {                       // 1d46c cmp, 1d473 jne 1d4ad
             F.dws_DDiscard_1f770(dplay(sndRastaRocket).soundnum);            // 1d475..1d483
-            G.currentWeapon = 0x38;                                  // 1d486
-            G.bongState = 0x39;                                  // 1d490
+            G.currentWeapon = WEAPON.BONG;                                  // 1d486
+            G.bongState = BONG_STATE.NEEDS_RELOAD;                                  // 1d490
             F.dws_DPlay_1eff8(sndBongDeath);                    // 1d49a..1d4a5; 1d4a8 jmp 1d613
           }                                                      // 1d4ad jmp 1d613
           break;
         case 0:                                                  // [0x60ee8] == 0x35 -> 0x1d4b2
           if (G.hasBong === 1) {                              // 1d4b2 cmp, 1d4b9 jne 1d4f3
             F.dws_DDiscard_1f770(dplay(sndRastaRocket).soundnum);            // 1d4bb..1d4c9
-            G.currentWeapon = 0x38;                                  // 1d4cc
-            G.bongState = 0x39;                                  // 1d4d6
+            G.currentWeapon = WEAPON.BONG;                                  // 1d4cc
+            G.bongState = BONG_STATE.NEEDS_RELOAD;                                  // 1d4d6
             F.dws_DPlay_1eff8(sndBongDeath);                    // 1d4e0..1d4eb; 1d4ee jmp 1d613
           } else if (G.hasAutoGun === 1) {                       // 1d4f3 cmp, 1d4fa jne 1d54f
             F.dws_DDiscard_1f770(dplay(sndBongDeath).soundnum);            // 1d4fc..1d50a
             F.dws_DDiscard_1f770(dplay(sndBongBubble).soundnum);            // 1d50d..1d51b
-            G.currentWeapon = 0x37;                                  // 1d51e
-            sprite(rasta).state = 1;                                     // 1d528
+            G.currentWeapon = WEAPON.AUTO_GUN;                                  // 1d51e
+            sprite(rasta).state = RASTA.AIMING;                                     // 1d528
             sprite(rasta).currFrame = 0;                                     // 1d532
             F.dws_DPlay_1eff8(sndAutomatic);                    // 1d53c..1d547; 1d54a jmp 1d613
           }                                                      // 1d54f jmp 1d613
@@ -149,13 +150,13 @@ export async function handleFrameInput() {
           if (G.hasAutoGun === 1) {                              // 1d554 cmp, 1d55b jne 1d5ad
             F.dws_DDiscard_1f770(dplay(sndBongDeath).soundnum);            // 1d55d..1d56b
             F.dws_DDiscard_1f770(dplay(sndBongBubble).soundnum);            // 1d56e..1d57c
-            G.currentWeapon = 0x37;                                  // 1d57f
-            sprite(rasta).state = 1;                                     // 1d589
+            G.currentWeapon = WEAPON.AUTO_GUN;                                  // 1d57f
+            sprite(rasta).state = RASTA.AIMING;                                     // 1d589
             sprite(rasta).currFrame = 0;                                     // 1d593
             F.dws_DPlay_1eff8(sndAutomatic);                    // 1d59d..1d5a8; 1d5ab jmp 1d613
           } else if (G.hasMissileLauncher === 1) {                       // 1d5ad cmp, 1d5b4 jne 1d5e1
             F.dws_DDiscard_1f770(dplay(sndAutomatic).soundnum);            // 1d5b6..1d5c4
-            G.currentWeapon = 0x35;                                  // 1d5c7
+            G.currentWeapon = WEAPON.MISSILE_LAUNCHER;                                  // 1d5c7
             F.dws_DPlay_1eff8(sndRastaRocket);                    // 1d5d1..1d5dc; 1d5df jmp 1d613
           }                                                      // 1d5e1 jmp 1d613
           break;

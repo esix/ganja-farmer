@@ -18,6 +18,7 @@
 import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
+import { DUSTER_SPRAY, PLANT } from './states.js';
 import { dusterSpray, plants } from './data.js';
 import { sprite } from './access.js';
 
@@ -33,11 +34,11 @@ register(0x1556a, 'updateDusterSpray_1556a', function updateDusterSpray() {
   // 0x15590..0x155a3: for (i = 0; i < 0x3f; i++)  (signed jge)
   for (i = 0; i < 0x3f; i++) {
     // 0x155a9: if (A[i].state == 0) A[i].x = -200
-    if (sprite(dusterSpray, i).state === 0) {
+    if (sprite(dusterSpray, i).state === DUSTER_SPRAY.INACTIVE) {
       sprite(dusterSpray, i).x = -200; // 0x155c0: 0xffffff38
     }
     // 0x155ca: if (A[i].state == 1)
-    if (sprite(dusterSpray, i).state === 1) {
+    if (sprite(dusterSpray, i).state === DUSTER_SPRAY.FALLING) {
       // 0x155e5..0x155f6: rand(); cdq; idiv 4 -> remainder (EBX)
       r1 = imod(F.rand_232c7(), 4);
       // 0x155fa..0x1560b: rand(); cdq; idiv 4 -> remainder (EDX)
@@ -49,12 +50,12 @@ register(0x1556a, 'updateDusterSpray_1556a', function updateDusterSpray() {
       sprite(dusterSpray, i).y = (sprite(dusterSpray, i).y + 1) | 0;
       // 0x15628: cmp old, 0xa4; jle (signed)
       if (old > 0xa4) {
-        sprite(dusterSpray, i).state = 0; // 0x15637: A[i].state = 0
+        sprite(dusterSpray, i).state = DUSTER_SPRAY.INACTIVE; // 0x15637: A[i].state = 0
       }
       // 0x15641..0x15654: for (j = 0; j < 0x1a; j++)  (signed jge)
       for (j = 0; j < 0x1a; j++) {
         // 0x1565a: A[i].state != 0 -> next j
-        if (sprite(dusterSpray, i).state !== 0) continue;
+        if (sprite(dusterSpray, i).state !== DUSTER_SPRAY.INACTIVE) continue;
         // 0x1567c..0x15688: cmp A.x, B.x; jge 0x156b5
         let inRange = false;
         if (sprite(dusterSpray, i).x < sprite(plants, j).x) {
@@ -74,10 +75,10 @@ register(0x1556a, 'updateDusterSpray_1556a', function updateDusterSpray() {
         // 0x1571a -> 0x1571e -> 0x15730 -> 0x15751 -> 0x15775: next j
         if (!inRange) continue;
         // 0x15720: B[j].state != 1 -> next j
-        if (sprite(plants, j).state !== 1) continue;
+        if (sprite(plants, j).state !== PLANT.ALIVE) continue;
         // 0x15732..0x1574f: cmp B[j].y + 10, A[i].y; jl (signed) -> hit, else next j
         if (!(((sprite(plants, j).y + 10) | 0) < sprite(dusterSpray, i).y)) continue;
-        sprite(plants, j).state = 0; // 0x1575a: B[j].state = 0
+        sprite(plants, j).state = PLANT.DEAD; // 0x1575a: B[j].state = 0
         sprite(plants, j).currFrame = 1; // 0x1576b: B[j].curr_frame = 1
       }
     }

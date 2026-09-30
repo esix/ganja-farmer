@@ -21,6 +21,7 @@
 import { F, register } from '../runtime/registry.js';
 import { R16, R32, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
+import { GROUND_TROOP, PARATROOPER, PLANT } from './states.js';
 import { BULLETS_FIELD, SPRITE, bullets, explosionDelays, groundTroops, paratroopers, plants, sndParaDie1, sndParaDie2, sndParaDie3, sndParaDie5, sndParaSquish } from './data.js';
 import { G, dplay, sprite } from './access.js';
 
@@ -42,43 +43,43 @@ register(0x136a5, 'updateParatroopers_136a5', function updateParatroopers() {
     sprite(paratroopers, i).counter1 = (sprite(paratroopers, i).counter1 + 1) | 0;
     if (sprite(paratroopers, i).counter1 > 3) {
       // 0x136fe: state (+0x170) == 0x1c
-      if (sprite(paratroopers, i).state === 0x1c) {
+      if (sprite(paratroopers, i).state === PARATROOPER.DESCENDING_SWING_FORWARD) {
         sprite(paratroopers, i).currFrame = (sprite(paratroopers, i).currFrame + 1) | 0;     // 0x13719 curr_frame++
         if (sprite(paratroopers, i).currFrame > 4) {
-          sprite(paratroopers, i).state = 0x1b;                            // 0x1372f
+          sprite(paratroopers, i).state = PARATROOPER.DESCENDING_SWING_BACK;                            // 0x1372f
         }
         sprite(paratroopers, i).y = (sprite(paratroopers, i).y + 1) | 0;     // 0x13740 y++
         if (sprite(paratroopers, i).y > 0x96) {
           sprite(paratroopers, i).y = 0x96;                            // 0x13760
-          sprite(paratroopers, i).state = 0x27;                            // 0x13771
+          sprite(paratroopers, i).state = PARATROOPER.LANDING;                            // 0x13771
           sprite(paratroopers, i).currFrame = 0xc;                             // 0x13782
         }
       }
       // 0x1378c: state == 0x1b
-      if (sprite(paratroopers, i).state === 0x1b) {
+      if (sprite(paratroopers, i).state === PARATROOPER.DESCENDING_SWING_BACK) {
         sprite(paratroopers, i).currFrame = (sprite(paratroopers, i).currFrame - 1) | 0;     // 0x137a7 curr_frame--
         if (sprite(paratroopers, i).currFrame < 0) {
-          sprite(paratroopers, i).state = 0x1c;                            // 0x137bd
+          sprite(paratroopers, i).state = PARATROOPER.DESCENDING_SWING_FORWARD;                            // 0x137bd
           sprite(paratroopers, i).currFrame = 0;                               // 0x137ce
         }
         sprite(paratroopers, i).y = (sprite(paratroopers, i).y + 1) | 0;     // 0x137df
         if (sprite(paratroopers, i).y > 0x96) {
           sprite(paratroopers, i).y = 0x96;                            // 0x137ff
-          sprite(paratroopers, i).state = 0x27;                            // 0x13810
+          sprite(paratroopers, i).state = PARATROOPER.LANDING;                            // 0x13810
           sprite(paratroopers, i).currFrame = 0xc;                             // 0x13821
         }
       }
       // 0x1382b: state == 0x27
-      if (sprite(paratroopers, i).state === 0x27) {
+      if (sprite(paratroopers, i).state === PARATROOPER.LANDING) {
         sprite(paratroopers, i).currFrame = (sprite(paratroopers, i).currFrame + 1) | 0;     // 0x13842
         if (sprite(paratroopers, i).currFrame > 0x12) {
-          sprite(paratroopers, i).state = 0x28;                            // 0x13858
+          sprite(paratroopers, i).state = PARATROOPER.LANDED;                            // 0x13858
         }
       }
     }
 
     // 0x13862: A[i].state != 0 -> test Q[0..59]
-    if (sprite(paratroopers, i).state !== 0) {
+    if (sprite(paratroopers, i).state !== PARATROOPER.INACTIVE) {
       for (j = 0; j < 0x3c; j++) {                              // 0x13876..0x13889
         // 0x1388f..0x13938
         if (R32((bullets + BULLETS_FIELD.active) + Qo(j)) === 1 &&
@@ -86,8 +87,8 @@ register(0x136a5, 'updateParatroopers_136a5', function updateParatroopers() {
             ((sprite(paratroopers, i).x + sprite(paratroopers, i).width) | 0) > R32(bullets + Qo(j)) &&
             R32((bullets + BULLETS_FIELD.y) + Qo(j)) > sprite(paratroopers, i).y &&
             ((sprite(paratroopers, i).y + 0x11) | 0) > R32((bullets + BULLETS_FIELD.y) + Qo(j)) &&
-            (sprite(paratroopers, i).state === 0x1c || sprite(paratroopers, i).state === 0x1b)) {
-          sprite(paratroopers, i).state = 0x21;                            // 0x13941
+            (sprite(paratroopers, i).state === PARATROOPER.DESCENDING_SWING_FORWARD || sprite(paratroopers, i).state === PARATROOPER.DESCENDING_SWING_BACK)) {
+          sprite(paratroopers, i).state = PARATROOPER.CHUTE_SHOT_FALLING;                            // 0x13941
           sprite(paratroopers, i).counter2 = 0;                               // 0x13952 counter_2 (+0x14)
           sprite(paratroopers, i).currFrame = 5;                               // 0x13963
           r = imod(F.rand_232c7(), 3);                    // 0x13974..0x13987
@@ -113,16 +114,16 @@ register(0x136a5, 'updateParatroopers_136a5', function updateParatroopers() {
             ((sprite(paratroopers, i).x + sprite(paratroopers, i).width) | 0) > R32(bullets + Qo(j)) &&
             ((sprite(paratroopers, i).y + 0x11) | 0) < R32((bullets + BULLETS_FIELD.y) + Qo(j)) &&
             ((sprite(paratroopers, i).y + sprite(paratroopers, i).height) | 0) > R32((bullets + BULLETS_FIELD.y) + Qo(j)) &&
-            (sprite(paratroopers, i).state === 0x1c || sprite(paratroopers, i).state === 0x1b)) {
+            (sprite(paratroopers, i).state === PARATROOPER.DESCENDING_SWING_FORWARD || sprite(paratroopers, i).state === PARATROOPER.DESCENDING_SWING_BACK)) {
           if (imod(F.rand_232c7(), 10) === 1) {           // 0x13ad8..0x13aee
             if (sprite(paratroopers, i).x > 0xa0) {                   // 0x13af0 (jle)
-              sprite(paratroopers, i).state = 2;                           // 0x13b03
+              sprite(paratroopers, i).state = PARATROOPER.SHOT_FALLING_RIGHT;                           // 0x13b03
             } else {
-              sprite(paratroopers, i).state = 3;                           // 0x13b16
+              sprite(paratroopers, i).state = PARATROOPER.SHOT_FALLING_LEFT;                           // 0x13b16
             }
             sprite(paratroopers, i).currFrame = (imod(F.rand_232c7(), 3) + 0x13) | 0;  // 0x13b27..0x13b44
           } else {
-            sprite(paratroopers, i).state = 4;                             // 0x13b4c
+            sprite(paratroopers, i).state = PARATROOPER.SHOT_DYING;                             // 0x13b4c
             sprite(paratroopers, i).currFrame = 0x15;                          // 0x13b5d
           }
           F.dws_DDiscard_1f770(dplay(sndParaDie5).soundnum);             // 0x13b6e
@@ -135,7 +136,7 @@ register(0x136a5, 'updateParatroopers_136a5', function updateParatroopers() {
     }
 
     // 0x13bad: A[i].state == 0x21
-    if (sprite(paratroopers, i).state === 0x21) {
+    if (sprite(paratroopers, i).state === PARATROOPER.CHUTE_SHOT_FALLING) {
       sprite(paratroopers, i).currFrame = (sprite(paratroopers, i).currFrame + 1) | 0;       // 0x13bc1
       if (sprite(paratroopers, i).currFrame > 0xa) {
         sprite(paratroopers, i).currFrame = 6;                                 // 0x13bd7
@@ -151,22 +152,22 @@ register(0x136a5, 'updateParatroopers_136a5', function updateParatroopers() {
           // 0x13c59..0x13cb0 (width of A[i], 0x13c89)
           if (sprite(paratroopers, i).x > sprite(paratroopers, k).x &&
               ((sprite(paratroopers, k).x + sprite(paratroopers, i).width) | 0) > sprite(paratroopers, i).x &&
-              sprite(paratroopers, k).state === 0x27) {
-            sprite(paratroopers, k).state = 0;                             // 0x13cb4
+              sprite(paratroopers, k).state === PARATROOPER.LANDING) {
+            sprite(paratroopers, k).state = PARATROOPER.INACTIVE;                             // 0x13cb4
             sprite(paratroopers, k).currFrame = 0xb;                           // 0x13cc5
             G.score = (G.score + 0x64) | 0;            // 0x13cd6
           }
           // 0x13cdd..0x13d68 (width of B[i], 0x13d0d)
           if (sprite(paratroopers, i).x > sprite(groundTroops, k).x &&
               ((sprite(groundTroops, k).x + sprite(groundTroops, i).width) | 0) > sprite(paratroopers, i).x &&
-              (sprite(groundTroops, k).state === 0x2f || sprite(groundTroops, k).state === 0x2e ||
-               sprite(groundTroops, k).state === 0x31 || sprite(groundTroops, k).state === 0x30)) {
-            sprite(groundTroops, k).state = 0;                             // 0x13d6e
+              (sprite(groundTroops, k).state === GROUND_TROOP.WALKING_TO_PLANT || sprite(groundTroops, k).state === GROUND_TROOP.RUNNING_AWAY_RIGHT ||
+               sprite(groundTroops, k).state === GROUND_TROOP.RUNNING_AWAY_LEFT || sprite(groundTroops, k).state === GROUND_TROOP.PLANTING_CHARGE)) {
+            sprite(groundTroops, k).state = GROUND_TROOP.INACTIVE;                             // 0x13d6e
             sprite(groundTroops, k).y = -0x46;                         // 0x13d7f (0xffffffba)
             G.score = (G.score + 0x64) | 0;            // 0x13d90
           }
         }
-        sprite(paratroopers, i).state = 0;                                 // 0x13d9c
+        sprite(paratroopers, i).state = PARATROOPER.INACTIVE;                                 // 0x13d9c
         F.dws_DDiscard_1f770(dplay(sndParaSquish).soundnum);               // 0x13dad
         F.dws_DPlay_1eff8(sndParaSquish);                       // 0x13dbe
         sprite(paratroopers, i).currFrame = 0xb;                               // 0x13dcc
@@ -174,45 +175,45 @@ register(0x136a5, 'updateParatroopers_136a5', function updateParatroopers() {
     }
 
     // 0x13ddd: B[i].state == 0x2e
-    if (sprite(groundTroops, i).state === 0x2e) {
+    if (sprite(groundTroops, i).state === GROUND_TROOP.RUNNING_AWAY_RIGHT) {
       sprite(groundTroops, i).currFrame = (sprite(groundTroops, i).currFrame + 1) | 0;       // 0x13df4
       if (sprite(groundTroops, i).currFrame > 3) {
         sprite(groundTroops, i).currFrame = 0;                                 // 0x13e03
       }
       sprite(groundTroops, i).x = (sprite(groundTroops, i).x + 4) | 0;       // 0x13e14
       if (sprite(groundTroops, i).x > 0x140) {
-        sprite(groundTroops, i).state = 0;                                 // 0x13e35
+        sprite(groundTroops, i).state = GROUND_TROOP.INACTIVE;                                 // 0x13e35
       }
     }
     // 0x13e46: B[i].state == 0x31
-    if (sprite(groundTroops, i).state === 0x31) {
+    if (sprite(groundTroops, i).state === GROUND_TROOP.RUNNING_AWAY_LEFT) {
       sprite(groundTroops, i).currFrame = (sprite(groundTroops, i).currFrame + 1) | 0;       // 0x13e5d
       if (sprite(groundTroops, i).currFrame > 0x10) {
         sprite(groundTroops, i).currFrame = 0xd;                               // 0x13e6c
       }
       sprite(groundTroops, i).x = (sprite(groundTroops, i).x - 4) | 0;       // 0x13e7d
       if (sprite(groundTroops, i).x < -0x1e) {                        // jge
-        sprite(groundTroops, i).state = 0;                                 // 0x13e9b
+        sprite(groundTroops, i).state = GROUND_TROOP.INACTIVE;                                 // 0x13e9b
       }
     }
     // 0x13eac: B[i].state == 0x30
-    if (sprite(groundTroops, i).state === 0x30) {
+    if (sprite(groundTroops, i).state === GROUND_TROOP.PLANTING_CHARGE) {
       sprite(groundTroops, i).currFrame = (sprite(groundTroops, i).currFrame + 1) | 0;       // 0x13ec7
       if (sprite(groundTroops, i).currFrame > 0xc) {
         if (sprite(groundTroops, i).x > 0xa0) {                       // 0x13eda (jle)
-          sprite(groundTroops, i).state = 0x2e;                            // 0x13eed
+          sprite(groundTroops, i).state = GROUND_TROOP.RUNNING_AWAY_RIGHT;                            // 0x13eed
           sprite(groundTroops, i).currFrame = 0;                               // 0x13efe
         } else {
-          sprite(groundTroops, i).state = 0x31;                            // 0x13f11
+          sprite(groundTroops, i).state = GROUND_TROOP.RUNNING_AWAY_LEFT;                            // 0x13f11
           sprite(groundTroops, i).currFrame = 0xd;                             // 0x13f22
         }
         for (j = 0; j < 0x1a; j++) {                            // 0x13f33..0x13f46
           // 0x13f4c..0x13fae
-          if (sprite(plants, j).state === 1 &&
+          if (sprite(plants, j).state === PLANT.ALIVE &&
               ((sprite(groundTroops, i).x - 4) | 0) < sprite(plants, j).x &&
               ((sprite(plants, j).x + 0xc) | 0) <
                 ((((sprite(groundTroops, i).x + sprite(groundTroops, i).width) | 0) + 4) | 0)) {
-            sprite(plants, j).state = 0x32;                          // 0x13fb2 P[j].state
+            sprite(plants, j).state = PLANT.CHARGE_PLANTED;                          // 0x13fb2 P[j].state
             sprite(plants, j).counter2 = 0x24;                          // 0x13fc3 P[j].counter_2 (+0x14)
             G.explosionX = sprite(groundTroops, i).x;                  // 0x13fd4
             G.explosionY = (sprite(groundTroops, i).y - 0x16) | 0;     // 0x13fe6
@@ -223,7 +224,7 @@ register(0x136a5, 'updateParatroopers_136a5', function updateParatroopers() {
       }
     }
     // 0x14017: B[i].state == 0x2f
-    if (sprite(groundTroops, i).state === 0x2f) {
+    if (sprite(groundTroops, i).state === GROUND_TROOP.WALKING_TO_PLANT) {
       if (sprite(groundTroops, i).counter3 === 1) {                          // 0x1402b counter_3 (+0x18)
         sprite(groundTroops, i).currFrame = (sprite(groundTroops, i).currFrame + 1) | 0;     // 0x14042
         if (sprite(groundTroops, i).currFrame > 3) {
@@ -231,7 +232,7 @@ register(0x136a5, 'updateParatroopers_136a5', function updateParatroopers() {
         }
         sprite(groundTroops, i).x = (sprite(groundTroops, i).x + 2) | 0;     // 0x14062
         if (sprite(groundTroops, i).x > 0x140) {
-          sprite(groundTroops, i).state = 0;                               // 0x14083
+          sprite(groundTroops, i).state = GROUND_TROOP.INACTIVE;                               // 0x14083
         }
       }
       if (sprite(groundTroops, i).counter3 === 0) {                          // 0x14094
@@ -241,31 +242,31 @@ register(0x136a5, 'updateParatroopers_136a5', function updateParatroopers() {
         }
         sprite(groundTroops, i).x = (sprite(groundTroops, i).x - 2) | 0;     // 0x140cb
         if (sprite(groundTroops, i).x < -0x1e) {
-          sprite(groundTroops, i).state = 0;                               // 0x140e9
+          sprite(groundTroops, i).state = GROUND_TROOP.INACTIVE;                               // 0x140e9
         }
       }
       for (j = 0; j < 0x1a; j++) {                              // 0x140fa..0x1410d
         // 0x14113..0x14175
-        if (sprite(plants, j).state === 1 &&
+        if (sprite(plants, j).state === PLANT.ALIVE &&
             ((sprite(groundTroops, i).x + 4) | 0) < sprite(plants, j).x &&
             ((sprite(plants, j).x + 0xc) | 0) <
               ((((sprite(groundTroops, i).x + sprite(groundTroops, i).width) | 0) - 4) | 0)) {
-          sprite(groundTroops, i).state = 0x30;                            // 0x14179
+          sprite(groundTroops, i).state = GROUND_TROOP.PLANTING_CHARGE;                            // 0x14179
           sprite(groundTroops, i).currFrame = 4;                               // 0x1418a
         }
       }
     }
     // 0x141a0: A[i].state == 0x28
-    if (sprite(paratroopers, i).state === 0x28) {
+    if (sprite(paratroopers, i).state === PARATROOPER.LANDED) {
       sprite(groundTroops, i).currFrame = 0;                                   // 0x141b4
-      sprite(groundTroops, i).state = 0x2f;                                // 0x141c5
+      sprite(groundTroops, i).state = GROUND_TROOP.WALKING_TO_PLANT;                                // 0x141c5
       sprite(groundTroops, i).x = sprite(paratroopers, i).x;                 // 0x141d6
       sprite(groundTroops, i).y = sprite(paratroopers, i).y;                 // 0x141f0
-      sprite(paratroopers, i).state = 0;                                   // 0x1420a
+      sprite(paratroopers, i).state = PARATROOPER.INACTIVE;                                   // 0x1420a
       sprite(paratroopers, i).y = -0x46;                               // 0x1421b (0xffffffba)
       for (j = 0; j < 0x1a; j++) {                              // 0x1422c..0x1423f
         d = (sprite(groundTroops, i).x - sprite(plants, j).x) | 0;    // 0x14245..0x1425f
-        if (d < best && sprite(plants, j).state === 1) {            // 0x14262..0x14278 (jge: signed)
+        if (d < best && sprite(plants, j).state === PLANT.ALIVE) {            // 0x14262..0x14278 (jge: signed)
           best = d;                                             // 0x1427c
           if (sprite(plants, j).x > sprite(groundTroops, i).x) {      // 0x14282 (jle)
             sprite(groundTroops, i).counter3 = 1;                             // 0x1429e counter_3 (+0x18)
@@ -277,34 +278,34 @@ register(0x136a5, 'updateParatroopers_136a5', function updateParatroopers() {
       }
     }
     // 0x142d8: A[i].state == 2
-    if (sprite(paratroopers, i).state === 2) {
+    if (sprite(paratroopers, i).state === PARATROOPER.SHOT_FALLING_RIGHT) {
       sprite(paratroopers, i).x = (sprite(paratroopers, i).x + 2) | 0;       // 0x142e8
       sprite(paratroopers, i).y = (sprite(paratroopers, i).y + 1) | 0;       // 0x142f6
       if (sprite(paratroopers, i).y > 0x96) {
-        sprite(paratroopers, i).state = 0;                                 // 0x1430f
+        sprite(paratroopers, i).state = PARATROOPER.INACTIVE;                                 // 0x1430f
         sprite(paratroopers, i).y = -0x32;                             // 0x14320 (0xffffffce)
       }
       if (sprite(paratroopers, i).x > 0x140) {                        // 0x14331
-        sprite(paratroopers, i).state = 0;                                 // 0x14344
+        sprite(paratroopers, i).state = PARATROOPER.INACTIVE;                                 // 0x14344
       }
     }
     // 0x14355: A[i].state == 3
-    if (sprite(paratroopers, i).state === 3) {
+    if (sprite(paratroopers, i).state === PARATROOPER.SHOT_FALLING_LEFT) {
       sprite(paratroopers, i).x = (sprite(paratroopers, i).x - 2) | 0;       // 0x14365
       sprite(paratroopers, i).y = (sprite(paratroopers, i).y + 1) | 0;       // 0x14373
       if (sprite(paratroopers, i).y > 0x96) {
-        sprite(paratroopers, i).state = 0;                                 // 0x1438c
+        sprite(paratroopers, i).state = PARATROOPER.INACTIVE;                                 // 0x1438c
         sprite(paratroopers, i).y = -0x32;                             // 0x1439d
       }
       if (sprite(paratroopers, i).x < -0x1e) {                        // 0x143ae (jge)
-        sprite(paratroopers, i).state = 0;                                 // 0x143be
+        sprite(paratroopers, i).state = PARATROOPER.INACTIVE;                                 // 0x143be
       }
     }
     // 0x143cf: A[i].state == 4
-    if (sprite(paratroopers, i).state === 4) {
+    if (sprite(paratroopers, i).state === PARATROOPER.SHOT_DYING) {
       sprite(paratroopers, i).currFrame = (sprite(paratroopers, i).currFrame + 1) | 0;       // 0x143df
       if (sprite(paratroopers, i).currFrame > 0x1a) {
-        sprite(paratroopers, i).state = 0;                                 // 0x143f5
+        sprite(paratroopers, i).state = PARATROOPER.INACTIVE;                                 // 0x143f5
         sprite(paratroopers, i).y = -0x32;                             // 0x14406
       }
     }

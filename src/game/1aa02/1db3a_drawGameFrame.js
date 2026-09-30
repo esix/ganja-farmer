@@ -14,6 +14,7 @@
 import { F } from '../../runtime/registry.js';
 import { R32, W32 } from '../../runtime/mem.js';
 import { yieldCpu } from '../../runtime/cpu.js';
+import { BONG_SMOKE, EXPLOSION, GAME_STATE, MISSILE, MISSILE_SMOKE, MISSILE_TARGET, POWERUP_DROP } from '../states.js';
 import { BULLETS_FIELD, a10Jets, bombs, bongSmoke, bullets, choppers, cropDusters, dusterSpray, explosions, groundTroops, gunSight, jah, killsDigits, levelDigits, missile, missileSmoke, missileTarget, paratroopers, plants, powerupDrop, rasta, scoreDigits, statusBar, ufo, van } from '../data.js';
 import { G, sprite } from '../access.js';
 
@@ -40,11 +41,11 @@ export async function drawGameFrame() {
   }
   F.Draw_Sprite_Clip_212c0(ufo, G.doubleBuffer, 1);                     // 0x1dc78..0x1dc88
   F.Draw_Sprite_Clip_212c0(jah, G.doubleBuffer, 1);                     // 0x1dc8d..0x1dc9d
-  if (sprite(powerupDrop).state === 1) {                                                     // 0x1dca2..0x1dca9 jne 0x1dcc0
+  if (sprite(powerupDrop).state === POWERUP_DROP.FALLING) {                                                     // 0x1dca2..0x1dca9 jne 0x1dcc0
     F.Draw_Sprite_Clip_212c0(powerupDrop, G.doubleBuffer, 1);                   // 0x1dcab..0x1dcbb
   }
   for (i = 0; i < 0xd; i++) {                                                   // 0x1dcc0..0x1dcd3, 0x1dd03
-    if (sprite(explosions, i).state === 1) {                       // 0x1dcd5..0x1dce3 jne 0x1dd03
+    if (sprite(explosions, i).state === EXPLOSION.ANIMATING) {                       // 0x1dcd5..0x1dce3 jne 0x1dd03
       F.Draw_Sprite_Clip_212c0(sprite(explosions, i).addr, G.doubleBuffer, 1); // 0x1dce5..0x1dcfe
     }
   }
@@ -54,19 +55,19 @@ export async function drawGameFrame() {
   for (i = 0; i < 0x19; i++) {                                                  // 0x1dd3a..0x1dd4d, 0x1dd6d
     F.Draw_Sprite_Clip_212c0(sprite(paratroopers, i).addr, G.doubleBuffer, 1); // 0x1dd4f..0x1dd68
   }
-  if (sprite(missile).state === 1) {                                                     // 0x1dd6f..0x1dd76 jne 0x1dd8d
+  if (sprite(missile).state === MISSILE.FLYING) {                                                     // 0x1dd6f..0x1dd76 jne 0x1dd8d
     F.Draw_Sprite_Clip_212c0(missile, G.doubleBuffer, 1);                   // 0x1dd78..0x1dd88
   }
-  if (sprite(missileTarget).state === 1) {                                                     // 0x1dd8d..0x1dd94 jne 0x1ddab
+  if (sprite(missileTarget).state === MISSILE_TARGET.ACTIVE) {                                                     // 0x1dd8d..0x1dd94 jne 0x1ddab
     F.Draw_Sprite_Clip_212c0(missileTarget, G.doubleBuffer, 1);                   // 0x1dd96..0x1dda6
   }
   for (i = 0; i < 0x3f; i++) {                                                  // 0x1ddab..0x1ddbe, 0x1ddee
-    if (sprite(missileSmoke, i).state === 1) {                       // 0x1ddc0..0x1ddce jne 0x1ddee
+    if (sprite(missileSmoke, i).state === MISSILE_SMOKE.ACTIVE) {                       // 0x1ddc0..0x1ddce jne 0x1ddee
       F.Draw_Sprite_Clip_212c0(sprite(missileSmoke, i).addr, G.doubleBuffer, 1); // 0x1ddd0..0x1dde9
     }
   }
   for (i = 0; i < 0xc8; i++) {                                                  // 0x1ddf0..0x1de06, 0x1de36
-    if (sprite(bongSmoke, i).state === 1) {                       // 0x1de08..0x1de16 jne 0x1de36
+    if (sprite(bongSmoke, i).state === BONG_SMOKE.FLYING) {                       // 0x1de08..0x1de16 jne 0x1de36
       F.Draw_Sprite_Clip_212c0(sprite(bongSmoke, i).addr, G.doubleBuffer, 1); // 0x1de18..0x1de31
     }
   }
@@ -114,6 +115,6 @@ export async function drawGameFrame() {
   if (G.allHerbDead === 1) {                                                     // 0x1dfde..0x1dfe5 jne 0x1dffd
     await F.showGameOver_16b96();                                                        // 0x1dfe7
     F.Fill_Screen_20768(0);                                               // 0x1dfec..0x1dfee (xor eax,eax)
-    G.gameState = 0x1c;                                                         // 0x1dff3
+    G.gameState = GAME_STATE.RETURN_TO_MENU;                                                         // 0x1dff3
   }
 }

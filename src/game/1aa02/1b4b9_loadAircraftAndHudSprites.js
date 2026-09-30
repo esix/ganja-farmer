@@ -8,6 +8,7 @@
 // Not an async-wait loop anywhere: all loops are counted loops on [ebp-4]/[ebp-8] (signed jge).
 import { F } from '../../runtime/registry.js';
 import { W32 } from '../../runtime/mem.js';
+import { A10_JET, BOMB, EXPLOSION } from '../states.js';
 import { a10Jets, bombs, bongSmoke, explosions, killsDigits, levelDigits, pcxScratch, scoreDigits } from '../data.js';
 import { sprite } from '../access.js';
 
@@ -36,7 +37,7 @@ export function loadAircraftAndHudSprites() {
     for (j = 0; j < 2; j++) {                                               // 0x1b5cc..0x1b5df, 0x1b5d5 inc, 0x1b601 jmp
       F.PCX_Get_Sprite_20c12(pcxScratch, sprite(a10Jets, i).addr, j, j, 0); // 0x1b5e1..0x1b5fc
     }
-    sprite(a10Jets, i).state = 1;                            // 0x1b603..0x1b60a
+    sprite(a10Jets, i).state = A10_JET.FLYING;                            // 0x1b603..0x1b60a
     sprite(a10Jets, i).counter1 = -9;                           // 0x1b614..0x1b61b (0xfffffff7)
     sprite(a10Jets, i).counter2 = 1;                            // 0x1b625..0x1b62c
   }
@@ -51,7 +52,7 @@ export function loadAircraftAndHudSprites() {
     for (j = 0; j < 6; j++) {                                               // 0x1b6a9..0x1b6bc, 0x1b6b2 inc, 0x1b6de jmp
       F.PCX_Get_Sprite_20c12(pcxScratch, sprite(bombs, i).addr, j, j, 0); // 0x1b6be..0x1b6d9
     }
-    sprite(bombs, i).state = 0;                            // 0x1b6e0..0x1b6e7
+    sprite(bombs, i).state = BOMB.INACTIVE;                            // 0x1b6e0..0x1b6e7
   }
   F.PCX_Delete_20b69(pcxScratch);                                        // 0x1b6f6..0x1b6fb
 
@@ -90,7 +91,7 @@ export function loadAircraftAndHudSprites() {
   for (i = 0; i < 0xd; i++) {                                               // 0x1b8cf..0x1b8e2, 0x1b8d8 inc, 0x1b99a jmp
     F.Sprite_Init_20ce5(sprite(explosions, i).addr, -50, -50, 0x2c,
       0x22, 0, 0, 0, 0, 0, 0);                                              // 0x1b8e8..0x1b913 (0xffffffce = -50)
-    sprite(explosions, i).state = 0;                            // 0x1b918..0x1b91f
+    sprite(explosions, i).state = EXPLOSION.IDLE;                            // 0x1b918..0x1b91f
     for (j = 0; j < 6; j++) {                                               // 0x1b929..0x1b93c, 0x1b932 inc, 0x1b95e jmp
       F.PCX_Get_Sprite_20c12(pcxScratch, sprite(explosions, i).addr, j, j, 0); // 0x1b93e..0x1b959
     }

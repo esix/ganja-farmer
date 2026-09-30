@@ -18,6 +18,7 @@
 // All dword comparisons signed (jge). No x87 instructions. No busy-wait loop (all loops have constant bounds).
 import { F, register } from '../runtime/registry.js';
 import { R32, W32 } from '../runtime/mem.js';
+import { A10_JET, BOMB, CHOPPER, CROP_DUSTER, GROUND_TROOP, PARATROOPER } from './states.js';
 import { a10Jets, bombs, choppers, cropDusters, groundTroops, paratroopers } from './data.js';
 import { G, sprite } from './access.js';
 
@@ -33,32 +34,32 @@ register(0x15c7d, 'updateLevelProgress_15c7d', async function updateLevelProgres
   if (G.levelEnding !== 0) {                                                   // 0x15cb5..0x15cbc
     // 0x15cc2..0x15cee (mov eax,[ebp-8] at 0x15ccb is a dead load, same in every loop below)
     for (i = 0; i < 5; i++) {
-      if (sprite(choppers, i).state !== 0) {                   // 0x15cd7..0x15ce5
+      if (sprite(choppers, i).state !== CHOPPER.INACTIVE) {                   // 0x15cd7..0x15ce5
         flag = 0;                                                             // 0x15ce7
       }
     }
     for (i = 0; i < 3; i++) {                                                 // 0x15cf0..0x15d1c
-      if (sprite(cropDusters, i).state !== 0) {
+      if (sprite(cropDusters, i).state !== CROP_DUSTER.INACTIVE) {
         flag = 0;
       }
     }
     for (i = 0; i < 4; i++) {                                                 // 0x15d1e..0x15d4a
-      if (sprite(bombs, i).state !== 0) {
+      if (sprite(bombs, i).state !== BOMB.INACTIVE) {
         flag = 0;
       }
     }
     for (i = 0; i < 1; i++) {                                                 // 0x15d4c..0x15d78
-      if (sprite(a10Jets, i).state !== 0) {
+      if (sprite(a10Jets, i).state !== A10_JET.INACTIVE) {
         flag = 0;
       }
     }
     for (i = 0; i < 0x19; i++) {                                              // 0x15d7a..0x15da6
-      if (sprite(paratroopers, i).state !== 0) {
+      if (sprite(paratroopers, i).state !== PARATROOPER.INACTIVE) {
         flag = 0;
       }
     }
     for (i = 0; i < 0x19; i++) {                                              // 0x15da8..0x15dd4
-      if (sprite(groundTroops, i).state !== 0) {
+      if (sprite(groundTroops, i).state !== GROUND_TROOP.INACTIVE) {
         flag = 0;
       }
     }

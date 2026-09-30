@@ -59,8 +59,9 @@
 import { F, register } from '../runtime/registry.js';
 import { R16, R32, W32, RF64 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
+import { A10_JET, BOMB, CROP_DUSTER, CRUISE_MISSILE, UFO } from './states.js';
 import { BULLETS_FIELD, SPRITE, a10Jets, bombs, bullets, choppers, cropDusters, cruiseMissile, explosionDelays, sndExplosion, sndRicochet, ufo } from './data.js';
-import { G, dplay, sprite } from './access.js';
+import { G, bullet, dplay, sprite } from './access.js';
 
 // fistp dword of an integral ST0 (see header)
 const fistp32 = (v) => (v >= -2147483648 && v <= 2147483647 ? v | 0 : -2147483648);
@@ -75,81 +76,79 @@ register(0x12130, 'updateBullets_12130', function updateBullets() {
   let k; // [ebp-4]
   let t; // [ebp-0x18] (double)
   let e; // i * 0x30 (imul eax, [ebp-0x10], 0x30 — recomputed from the local at every use)
-  let o; // k*0x18c or j*0x18c (loaded into ECX before rand calls)
   let d; // EBX after `sub ebx, edx`
   let r;
 
   for (i = 0; i < 0x3c; i++) {                                                  // 12148..1215b (jge: signed)
     e = Math.imul(i, 0x30);
-    if (R32((bullets + BULLETS_FIELD.active) + e) === 1) {                                               // 12165: cmp ..,1; jne 12ce7
+    if (bullet(i).active === 1) {                                               // 12165: cmp ..,1; jne 12ce7
       if (onScreen(e)) {                                                        // 12172..121ae
-        if (R32((bullets + BULLETS_FIELD.savedPixel) + e) === 0xe0) {                                        // 121b6
-          if (R32((bullets + BULLETS_FIELD.y) + e) < 0x82) {                                        // 121c6: jge 121e2
-            W32((bullets + BULLETS_FIELD.savedPixel) + e, 0x80);                                             // 121d6
+        if (bullet(i).savedPixel === 0xe0) {                                        // 121b6
+          if (bullet(i).y < 0x82) {                                        // 121c6: jge 121e2
+            bullet(i).savedPixel = 0x80;                                             // 121d6
           } else {
-            W32((bullets + BULLETS_FIELD.savedPixel) + e, 2);                                                // 121e6
+            bullet(i).savedPixel = 2;                                                // 121e6
           }
         }
-        F.Write_Pixel_DB_22219(R32(bullets + e), R32((bullets + BULLETS_FIELD.y) + e), R32((bullets + BULLETS_FIELD.savedPixel) + e)); // 121f0..1220e
+        F.Write_Pixel_DB_22219(bullet(i).x, bullet(i).y, bullet(i).savedPixel); // 121f0..1220e
       }
 
       // 12213..12222: fldz; fcomp [+0x40]; jb 12251 (0 < v or unordered)
       if (!(0 >= RF64((bullets + BULLETS_FIELD.vy) + e))) {
-        t = R32((bullets + BULLETS_FIELD.y) + e);                                                   // 12259..1225f fild; fstp
+        t = bullet(i).y;                                                   // 12259..1225f fild; fstp
         t = t - RF64((bullets + BULLETS_FIELD.vy) + e);                                              // 12262..1226b fld; fsub; fstp
-        W32((bullets + BULLETS_FIELD.y) + e, fistp32(F.__CHP_222a4(t)));                      // 1226e..12276 fld; __CHP; fistp
+        bullet(i).y = fistp32(F.__CHP_222a4(t));                      // 1226e..12276 fld; __CHP; fistp
       } else {
-        t = R32((bullets + BULLETS_FIELD.y) + e);                                                   // 1222c..12232
+        t = bullet(i).y;                                                   // 1222c..12232
         t = t + RF64((bullets + BULLETS_FIELD.vy) + e);                                              // 12235..1223e fld; fadd; fstp
-        W32((bullets + BULLETS_FIELD.y) + e, fistp32(F.__CHP_222a4(t)));                      // 12241..12249
+        bullet(i).y = fistp32(F.__CHP_222a4(t));                      // 12241..12249
       }
 
       if (G.frameCounter10 >= 0xa) {                                                // 1227c: jl 122ad
-        W32((bullets + BULLETS_FIELD.xStepCounter) + e, R32((bullets + BULLETS_FIELD.xStepTenths) + e));                                     // 12285..12293
-        W32((bullets + BULLETS_FIELD.yStepCounter) + e, R32((bullets + BULLETS_FIELD.yStepTenths) + e));                                     // 12299..122a7
+        bullet(i).xStepCounter = bullet(i).xStepTenths;                                     // 12285..12293
+        bullet(i).yStepCounter = bullet(i).yStepTenths;                                     // 12299..122a7
       }
-      W32((bullets + BULLETS_FIELD.yStepCounter) + e, (R32((bullets + BULLETS_FIELD.yStepCounter) + e) - 1) | 0);                             // 122b1 dec
-      if (R32((bullets + BULLETS_FIELD.yStepCounter) + e) >= 0) {                                              // 122b7: jl 122ca
-        W32((bullets + BULLETS_FIELD.y) + e, (R32((bullets + BULLETS_FIELD.y) + e) + 1) | 0);                           // 122c4 inc
+      bullet(i).yStepCounter = (bullet(i).yStepCounter - 1) | 0;                             // 122b1 dec
+      if (bullet(i).yStepCounter >= 0) {                                              // 122b7: jl 122ca
+        bullet(i).y = (bullet(i).y + 1) | 0;                           // 122c4 inc
       }
-      W32((bullets + BULLETS_FIELD.xStepCounter) + e, (R32((bullets + BULLETS_FIELD.xStepCounter) + e) - 1) | 0);                             // 122ce dec
-      if (R32((bullets + BULLETS_FIELD.xStepCounter) + e) >= 0) {                                              // 122d4: jl 122e7
-        W32(bullets + e, (R32(bullets + e) + 1) | 0);                           // 122e1 inc
+      bullet(i).xStepCounter = (bullet(i).xStepCounter - 1) | 0;                             // 122ce dec
+      if (bullet(i).xStepCounter >= 0) {                                              // 122d4: jl 122e7
+        bullet(i).x = (bullet(i).x + 1) | 0;                           // 122e1 inc
       }
-      t = R32(bullets + e);                                                     // 122ef..122f5
+      t = bullet(i).x;                                                     // 122ef..122f5
       t = t + RF64((bullets + BULLETS_FIELD.vx) + e);                                                // 122f8..12301
-      W32(bullets + e, fistp32(F.__CHP_222a4(t)));                        // 12304..1230c
+      bullet(i).x = fistp32(F.__CHP_222a4(t));                        // 12304..1230c
 
       // 12312..1233c: reset unless y > 0 && x > 0 && x < 0x140
-      if (!(R32((bullets + BULLETS_FIELD.y) + e) > 0 && R32(bullets + e) > 0 && R32(bullets + e) < 0x140)) {
-        W32((bullets + BULLETS_FIELD.active) + e, 0);                                                    // 12342
-        W32((bullets + BULLETS_FIELD.y) + e, 1);                                                    // 12350
-        W32(bullets + e, 1);                                                    // 1235e
+      if (!(bullet(i).y > 0 && bullet(i).x > 0 && bullet(i).x < 0x140)) {
+        bullet(i).active = 0;                                                    // 12342
+        bullet(i).y = 1;                                                    // 12350
+        bullet(i).x = 1;                                                    // 1235e
       }
       if (onScreen(e)) {                                                        // 12368..123a4
-        W32((bullets + BULLETS_FIELD.savedPixel) + e, F.Read_Pixel_DB_2225c(R32(bullets + e), R32((bullets + BULLETS_FIELD.y) + e))); // 123a8..123c5
+        bullet(i).savedPixel = F.Read_Pixel_DB_2225c(bullet(i).x, bullet(i).y); // 123a8..123c5
       }
 
       // 123cb..12524: sprites 0x33f48, k < 5
       for (k = 0; k < 5; k++) {
-        o = Math.imul(k, SPRITE.SIZE);
         // 123e4..12474: x+10 < px && x+w-10 > px && y+h-5 > py && y+5 < py
-        if (((R32(choppers + o) + 0xa) | 0) < R32(bullets + e) &&
-            ((((R32(choppers + o) + R32((choppers + SPRITE.width) + o)) | 0) - 0xa) | 0) > R32(bullets + e) &&
-            ((((R32((choppers + SPRITE.y) + o) + R32((choppers + SPRITE.height) + o)) | 0) - 5) | 0) > R32((bullets + BULLETS_FIELD.y) + e) &&
-            ((R32((choppers + SPRITE.y) + o) + 5) | 0) < R32((bullets + BULLETS_FIELD.y) + e)) {
-          W32((choppers + SPRITE.counter2) + o, (R32((choppers + SPRITE.counter2) + o) - 1) | 0);                         // 12482 dec counter_2
+        if (((sprite(choppers, k).x + 0xa) | 0) < bullet(i).x &&
+            ((((sprite(choppers, k).x + sprite(choppers, k).width) | 0) - 0xa) | 0) > bullet(i).x &&
+            ((((sprite(choppers, k).y + sprite(choppers, k).height) | 0) - 5) | 0) > bullet(i).y &&
+            ((sprite(choppers, k).y + 5) | 0) < bullet(i).y) {
+          sprite(choppers, k).counter2 = (sprite(choppers, k).counter2 - 1) | 0;                         // 12482 dec counter_2
           r = F.rand_232c7();                                             // 1248f
           d = imod(r, 3);
           r = F.rand_232c7();                                             // 124a4
           d = (d - imod(r, 3)) | 0;                                             // 124b7 sub ebx, edx
-          W32(choppers + o, (R32(choppers + o) + d) | 0);                         // 124b9 add [ecx+0x33f48]
+          sprite(choppers, k).x = (sprite(choppers, k).x + d) | 0;                         // 124b9 add [ecx+0x33f48]
           r = F.rand_232c7();                                             // 124c6
           d = imod(r, 3);
           r = F.rand_232c7();                                             // 124db
           d = (d - imod(r, 3)) | 0;                                             // 124ee
-          W32((choppers + SPRITE.y) + o, (R32((choppers + SPRITE.y) + o) + d) | 0);                         // 124f0 add [ecx+0x33f4c]
-          W32((bullets + BULLETS_FIELD.active) + e, 0);                                                  // 124fa
+          sprite(choppers, k).y = (sprite(choppers, k).y + d) | 0;                         // 124f0 add [ecx+0x33f4c]
+          bullet(i).active = 0;                                                  // 124fa
           F.dws_DDiscard_1f770(dplay(sndRicochet).soundnum);                             // 12504..1250e (cdecl)
           F.dws_DPlay_1eff8(sndRicochet);                                     // 12516..1251c (cdecl)
         }
@@ -157,32 +156,31 @@ register(0x12130, 'updateBullets_12130', function updateBullets() {
 
       // 12529..1266e: sprites 0x3d23c, k < 4
       for (k = 0; k < 4; k++) {
-        o = Math.imul(k, SPRITE.SIZE);
         // 12542..125d8: px > x && x+w > px && py > y && y+h > py && state == 1
-        if (R32(bullets + e) > R32(bombs + o) &&
-            ((R32(bombs + o) + R32((bombs + SPRITE.width) + o)) | 0) > R32(bullets + e) &&
-            R32((bullets + BULLETS_FIELD.y) + e) > R32((bombs + SPRITE.y) + o) &&
-            ((R32((bombs + SPRITE.y) + o) + R32((bombs + SPRITE.height) + o)) | 0) > R32((bullets + BULLETS_FIELD.y) + e) &&
-            R32((bombs + SPRITE.state) + o) === 1) {
-          W32((bombs + SPRITE.state) + o, 0);                                                  // 125df
-          G.explosionX = (R32(bombs + o) - 0xc) | 0;                           // 125f0..12600
-          G.explosionY = (R32((bombs + SPRITE.y) + o) - 0x16) | 0;                          // 12605..12615
+        if (bullet(i).x > sprite(bombs, k).x &&
+            ((sprite(bombs, k).x + sprite(bombs, k).width) | 0) > bullet(i).x &&
+            bullet(i).y > sprite(bombs, k).y &&
+            ((sprite(bombs, k).y + sprite(bombs, k).height) | 0) > bullet(i).y &&
+            sprite(bombs, k).state === BOMB.FALLING) {
+          sprite(bombs, k).state = BOMB.INACTIVE;                                                  // 125df
+          G.explosionX = (sprite(bombs, k).x - 0xc) | 0;                           // 125f0..12600
+          G.explosionY = (sprite(bombs, k).y - 0x16) | 0;                          // 12605..12615
           W32(explosionDelays + (G.explosionNext << 2), 0x33);                             // 1261a..12622
           F.spawnExplosion_1352c();                                                  // 1262c
           F.dws_DDiscard_1f770(dplay(sndExplosion).soundnum);                             // 12631..1263a (cdecl)
           F.dws_DPlay_1eff8(sndExplosion);                                     // 12642..12648 (cdecl)
-          W32((bullets + BULLETS_FIELD.active) + e, 0);                                                  // 12650
+          bullet(i).active = 0;                                                  // 12650
           G.score = (G.score + 0x1f5) | 0;                             // 1265e
           G.kills = (G.kills + 1) | 0;                                 // 12668
         }
       }
 
       // 12673..126c7: sprite 0x5fc04: px > x && x+w > px && py > y && y+h > py
-      if (R32(bullets + e) > sprite(cruiseMissile).x &&
-          ((sprite(cruiseMissile).x + sprite(cruiseMissile).width) | 0) > R32(bullets + e) &&
-          R32((bullets + BULLETS_FIELD.y) + e) > sprite(cruiseMissile).y &&
-          ((sprite(cruiseMissile).y + sprite(cruiseMissile).height) | 0) > R32((bullets + BULLETS_FIELD.y) + e)) {
-        sprite(cruiseMissile).state = 0;                                                        // 126cb state
+      if (bullet(i).x > sprite(cruiseMissile).x &&
+          ((sprite(cruiseMissile).x + sprite(cruiseMissile).width) | 0) > bullet(i).x &&
+          bullet(i).y > sprite(cruiseMissile).y &&
+          ((sprite(cruiseMissile).y + sprite(cruiseMissile).height) | 0) > bullet(i).y) {
+        sprite(cruiseMissile).state = CRUISE_MISSILE.INACTIVE;                                                        // 126cb state
         G.explosionX = (sprite(cruiseMissile).x - 0xc) | 0;                                 // 126d5..126dd
         G.explosionY = (sprite(cruiseMissile).y - 0x16) | 0;                                // 126e2..126ea
         W32(explosionDelays + (G.explosionNext << 2), 0x33);                               // 126ef..126f7
@@ -193,43 +191,40 @@ register(0x12130, 'updateBullets_12130', function updateBullets() {
 
       // 12725..1296d: sprites 0x3d0b0, j < 1
       for (j = 0; j < 1; j++) {
-        o = Math.imul(j, SPRITE.SIZE);
         // 1273e..127d4: px > x && x+w > px && py > y && y+h > py && state != 0
-        if (R32(bullets + e) > R32(a10Jets + o) &&
-            ((R32(a10Jets + o) + R32((a10Jets + SPRITE.width) + o)) | 0) > R32(bullets + e) &&
-            R32((bullets + BULLETS_FIELD.y) + e) > R32((a10Jets + SPRITE.y) + o) &&
-            ((R32((a10Jets + SPRITE.y) + o) + R32((a10Jets + SPRITE.height) + o)) | 0) > R32((bullets + BULLETS_FIELD.y) + e) &&
-            R32((a10Jets + SPRITE.state) + o) !== 0) {
-          W32((a10Jets + SPRITE.threshold1) + o, (R32((a10Jets + SPRITE.threshold1) + o) - 1) | 0);                         // 127e2 dec threshold_1
+        if (bullet(i).x > sprite(a10Jets, j).x &&
+            ((sprite(a10Jets, j).x + sprite(a10Jets, j).width) | 0) > bullet(i).x &&
+            bullet(i).y > sprite(a10Jets, j).y &&
+            ((sprite(a10Jets, j).y + sprite(a10Jets, j).height) | 0) > bullet(i).y &&
+            sprite(a10Jets, j).state !== A10_JET.INACTIVE) {
+          sprite(a10Jets, j).threshold1 = (sprite(a10Jets, j).threshold1 - 1) | 0;                         // 127e2 dec threshold_1
           r = F.rand_232c7();                                             // 127ef
           d = imod(r, 3);
           r = F.rand_232c7();                                             // 12804
           d = (d - imod(r, 3)) | 0;                                             // 12817
-          W32(a10Jets + o, (R32(a10Jets + o) + d) | 0);                         // 12819
+          sprite(a10Jets, j).x = (sprite(a10Jets, j).x + d) | 0;                         // 12819
           r = F.rand_232c7();                                             // 12826
           d = imod(r, 3);
           r = F.rand_232c7();                                             // 1283b
           d = (d - imod(r, 3)) | 0;                                             // 1284e
-          W32((a10Jets + SPRITE.y) + o, (R32((a10Jets + SPRITE.y) + o) + d) | 0);                         // 12850
-          W32((bullets + BULLETS_FIELD.active) + e, 0);                                                  // 1285a
+          sprite(a10Jets, j).y = (sprite(a10Jets, j).y + d) | 0;                         // 12850
+          bullet(i).active = 0;                                                  // 1285a
           F.dws_DDiscard_1f770(dplay(sndRicochet).soundnum);                             // 12864..1286e (cdecl)
           F.dws_DPlay_1eff8(sndRicochet);                                     // 12876..1287c (cdecl)
         }
         if (sprite(a10Jets, j).threshold1 < 0) {                           // 12884: jge 1296d
-          sprite(a10Jets, j).state = 0;                                // 12898 state
+          sprite(a10Jets, j).state = A10_JET.INACTIVE;                                // 12898 state
           for (k = 0; k < 4; k++) {                                             // 128a9..128bc
-            o = Math.imul(j, SPRITE.SIZE);                                            // 128c2 imul ecx
             r = F.rand_232c7();                                           // 128c9
-            G.explosionX = (imod(r, 0x1e) + R32(a10Jets + o)) | 0;               // 128dc..128e4 (x read after rand)
-            o = Math.imul(j, SPRITE.SIZE);                                            // 128ea
+            G.explosionX = (imod(r, 0x1e) + sprite(a10Jets, j).x) | 0;               // 128dc..128e4 (x read after rand)
             r = F.rand_232c7();                                           // 128f1
-            G.explosionY = (imod(r, 0x14) + R32((a10Jets + SPRITE.y) + o)) | 0;               // 12904..1290c
+            G.explosionY = (imod(r, 0x14) + sprite(a10Jets, j).y) | 0;               // 12904..1290c
             W32(explosionDelays + (G.explosionNext << 2), 0x33);                           // 12912..1291b
             F.spawnExplosion_1352c();                                                // 12925
             F.dws_DDiscard_1f770(dplay(sndExplosion).soundnum);                           // 1292a..12934 (cdecl)
             F.dws_DPlay_1eff8(sndExplosion);                                   // 1293c..12942 (cdecl)
           }
-          W32((bullets + BULLETS_FIELD.active) + e, 0);                                                  // 1294f
+          bullet(i).active = 0;                                                  // 1294f
           G.score = (G.score + 0x12c) | 0;                             // 1295d
           G.kills = (G.kills + 1) | 0;                                 // 12967
         }
@@ -237,56 +232,55 @@ register(0x12130, 'updateBullets_12130', function updateBullets() {
 
       // 12972..12b71: sprites 0x3d86c, k < 3
       for (k = 0; k < 3; k++) {
-        o = Math.imul(k, SPRITE.SIZE);
         // 1298b..12a21: px > x && x+w > px && py > y && y+h > py && state != 0
-        if (R32(bullets + e) > R32(cropDusters + o) &&
-            ((R32(cropDusters + o) + R32((cropDusters + SPRITE.width) + o)) | 0) > R32(bullets + e) &&
-            R32((bullets + BULLETS_FIELD.y) + e) > R32((cropDusters + SPRITE.y) + o) &&
-            ((R32((cropDusters + SPRITE.y) + o) + R32((cropDusters + SPRITE.height) + o)) | 0) > R32((bullets + BULLETS_FIELD.y) + e) &&
-            R32((cropDusters + SPRITE.state) + o) !== 0) {
-          W32((cropDusters + SPRITE.counter2) + o, (R32((cropDusters + SPRITE.counter2) + o) - 1) | 0);                         // 12a2f dec counter_2
+        if (bullet(i).x > sprite(cropDusters, k).x &&
+            ((sprite(cropDusters, k).x + sprite(cropDusters, k).width) | 0) > bullet(i).x &&
+            bullet(i).y > sprite(cropDusters, k).y &&
+            ((sprite(cropDusters, k).y + sprite(cropDusters, k).height) | 0) > bullet(i).y &&
+            sprite(cropDusters, k).state !== CROP_DUSTER.INACTIVE) {
+          sprite(cropDusters, k).counter2 = (sprite(cropDusters, k).counter2 - 1) | 0;                         // 12a2f dec counter_2
           r = F.rand_232c7();                                             // 12a3c
           d = imod(r, 3);
           r = F.rand_232c7();                                             // 12a51
           d = (d - imod(r, 3)) | 0;                                             // 12a64
-          W32(cropDusters + o, (R32(cropDusters + o) + d) | 0);                         // 12a66
+          sprite(cropDusters, k).x = (sprite(cropDusters, k).x + d) | 0;                         // 12a66
           r = F.rand_232c7();                                             // 12a73
           d = imod(r, 3);
           r = F.rand_232c7();                                             // 12a88
           d = (d - imod(r, 3)) | 0;                                             // 12a9b
-          W32((cropDusters + SPRITE.y) + o, (R32((cropDusters + SPRITE.y) + o) + d) | 0);                         // 12a9d
-          W32((bullets + BULLETS_FIELD.active) + e, 0);                                                  // 12aa7
+          sprite(cropDusters, k).y = (sprite(cropDusters, k).y + d) | 0;                         // 12a9d
+          bullet(i).active = 0;                                                  // 12aa7
           F.dws_DDiscard_1f770(dplay(sndRicochet).soundnum);                             // 12ab1..12abb (cdecl)
           F.dws_DPlay_1eff8(sndRicochet);                                     // 12ac3..12ac9 (cdecl)
         }
-        if (R32((cropDusters + SPRITE.counter2) + o) < 0) {                                             // 12ad1: jge 12b71
-          W32((cropDusters + SPRITE.state) + o, 0);                                                  // 12ae5 state
-          G.explosionX = (R32(cropDusters + o) - 0xc) | 0;                           // 12af6..12b06
-          G.explosionY = (R32((cropDusters + SPRITE.y) + o) - 0x16) | 0;                          // 12b0b..12b1b
+        if (sprite(cropDusters, k).counter2 < 0) {                                             // 12ad1: jge 12b71
+          sprite(cropDusters, k).state = CROP_DUSTER.INACTIVE;                                                  // 12ae5 state
+          G.explosionX = (sprite(cropDusters, k).x - 0xc) | 0;                           // 12af6..12b06
+          G.explosionY = (sprite(cropDusters, k).y - 0x16) | 0;                          // 12b0b..12b1b
           W32(explosionDelays + (G.explosionNext << 2), 0x33);                             // 12b20..12b28
           F.spawnExplosion_1352c();                                                  // 12b32
           F.dws_DDiscard_1f770(dplay(sndExplosion).soundnum);                             // 12b37..12b40 (cdecl)
           F.dws_DPlay_1eff8(sndExplosion);                                     // 12b48..12b4e (cdecl)
-          W32((bullets + BULLETS_FIELD.active) + e, 0);                                                  // 12b56
+          bullet(i).active = 0;                                                  // 12b56
           G.score = (G.score + 0x64) | 0;                              // 12b64
           G.kills = (G.kills + 1) | 0;                                 // 12b6b
         }
       }
 
       // 12b76..12bd5: sprite 0x4c38c: px > x && x+w > px && py > y && y+h > py && state != 0
-      if (R32(bullets + e) > sprite(ufo).x &&
-          ((sprite(ufo).x + sprite(ufo).width) | 0) > R32(bullets + e) &&
-          R32((bullets + BULLETS_FIELD.y) + e) > sprite(ufo).y &&
-          ((sprite(ufo).y + sprite(ufo).height) | 0) > R32((bullets + BULLETS_FIELD.y) + e) &&
-          sprite(ufo).state !== 0) {
+      if (bullet(i).x > sprite(ufo).x &&
+          ((sprite(ufo).x + sprite(ufo).width) | 0) > bullet(i).x &&
+          bullet(i).y > sprite(ufo).y &&
+          ((sprite(ufo).y + sprite(ufo).height) | 0) > bullet(i).y &&
+          sprite(ufo).state !== UFO.INACTIVE) {
         sprite(ufo).threshold2 = (sprite(ufo).threshold2 - 1) | 0;                                   // 12bd9 dec threshold_2
         sprite(ufo).counter2 = Math.imul(sprite(ufo).counter2, -1);                              // 12bdf imul eax, [..], -1
-        W32((bullets + BULLETS_FIELD.active) + e, 0);                                                    // 12beb
+        bullet(i).active = 0;                                                    // 12beb
         F.dws_DDiscard_1f770(dplay(sndRicochet).soundnum);                               // 12bf9..12c02 (cdecl)
         F.dws_DPlay_1eff8(sndRicochet);                                       // 12c0a..12c10 (cdecl)
       }
-      if (sprite(ufo).threshold2 < 0 && sprite(ufo).state !== 0) {                             // 12c18..12c28
-        sprite(ufo).state = 0;                                                        // 12c2f state
+      if (sprite(ufo).threshold2 < 0 && sprite(ufo).state !== UFO.INACTIVE) {                             // 12c18..12c28
+        sprite(ufo).state = UFO.INACTIVE;                                                        // 12c2f state
         for (k = 0; k < 4; k++) {                                               // 12c39..12c4c
           r = F.rand_232c7();                                             // 12c4e
           G.explosionX = (sprite(ufo).x + imod(r, 0x1e)) | 0;                     // 12c5f..12c68 (x read after rand)
@@ -297,37 +291,37 @@ register(0x12130, 'updateBullets_12130', function updateBullets() {
           F.dws_DDiscard_1f770(dplay(sndExplosion).soundnum);                             // 12ca5..12cae (cdecl)
           F.dws_DPlay_1eff8(sndExplosion);                                     // 12cb6..12cbc (cdecl)
         }
-        W32((bullets + BULLETS_FIELD.active) + e, 0);                                                    // 12cc9
+        bullet(i).active = 0;                                                    // 12cc9
         G.score = (G.score + 0x3e8) | 0;                               // 12cd7
         G.kills = (G.kills + 1) | 0;                                   // 12ce1
       }
     }
 
     // 12ce7..12d23: reset unless y > 0 && x > 0 && x < 0x140 && y < 0xc8
-    if (!(R32((bullets + BULLETS_FIELD.y) + e) > 0 && R32(bullets + e) > 0 &&
-          R32(bullets + e) < 0x140 && R32((bullets + BULLETS_FIELD.y) + e) < 0xc8)) {
-      W32((bullets + BULLETS_FIELD.active) + e, 0);                                                      // 12d25
-      W32((bullets + BULLETS_FIELD.y) + e, 1);                                                      // 12d33
-      W32(bullets + e, 1);                                                      // 12d41
+    if (!(bullet(i).y > 0 && bullet(i).x > 0 &&
+          bullet(i).x < 0x140 && bullet(i).y < 0xc8)) {
+      bullet(i).active = 0;                                                      // 12d25
+      bullet(i).y = 1;                                                      // 12d33
+      bullet(i).x = 1;                                                      // 12d41
       W32((bullets + BULLETS_FIELD.vx) + e, 0);                                                      // 12d53: +0x48 = 0.0 (lo)
       W32((bullets + 0x2c) + e, 0);                                                      // 12d5d (hi)
       W32((bullets + BULLETS_FIELD.vy) + e, 0);                                                      // 12d6b: +0x40 = -5.0 (lo)
       W32((bullets + 0x24) + e, 0xc0140000 | 0);                                         // 12d75 (hi)
-      W32((bullets + BULLETS_FIELD.xStepTenths) + e, 0);                                                      // 12d83
-      W32((bullets + BULLETS_FIELD.yStepTenths) + e, 0);                                                      // 12d91
+      bullet(i).xStepTenths = 0;                                                      // 12d83
+      bullet(i).yStepTenths = 0;                                                      // 12d91
     }
-    if (R32((bullets + BULLETS_FIELD.active) + e) === 0) {                                               // 12d9f: jne 12e77
+    if (bullet(i).active === 0) {                                               // 12d9f: jne 12e77
       if (onScreen(e)) {                                                        // 12dac..12de8
-        F.Write_Pixel_DB_22219(R32(bullets + e), R32((bullets + BULLETS_FIELD.y) + e), R32((bullets + BULLETS_FIELD.savedPixel) + e)); // 12dec..12e0a
+        F.Write_Pixel_DB_22219(bullet(i).x, bullet(i).y, bullet(i).savedPixel); // 12dec..12e0a
       }
-      W32((bullets + BULLETS_FIELD.y) + e, 1);                                                      // 12e13
-      W32(bullets + e, 1);                                                      // 12e21
+      bullet(i).y = 1;                                                      // 12e13
+      bullet(i).x = 1;                                                      // 12e21
       W32((bullets + BULLETS_FIELD.vx) + e, 0);                                                      // 12e2f: +0x48 = 0.0
       W32((bullets + 0x2c) + e, 0);                                                      // 12e39
       W32((bullets + BULLETS_FIELD.vy) + e, 0);                                                      // 12e47: +0x40 = -5.0
       W32((bullets + 0x24) + e, 0xc0140000 | 0);                                         // 12e51
-      W32((bullets + BULLETS_FIELD.xStepTenths) + e, 0);                                                      // 12e5f
-      W32((bullets + BULLETS_FIELD.yStepTenths) + e, 0);                                                      // 12e6d
+      bullet(i).xStepTenths = 0;                                                      // 12e5f
+      bullet(i).yStepTenths = 0;                                                      // 12e6d
     }
   }                                                                             // 12e77 jmp 12151 (i++)
 });

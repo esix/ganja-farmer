@@ -16,6 +16,7 @@ import { F, register } from '../runtime/registry.js';
 import { R8, R32, W8, W32 } from '../runtime/mem.js';
 import { imod } from '../runtime/cpu.js';
 import { stackAlloc, stackFree } from '../runtime/stack.js';
+import { CRUISE_MISSILE, NUKE_CLOUD, PLANT } from './states.js';
 import { cruiseMissile, nukeCloud, plants, savedPalette, sndNuke } from './data.js';
 import { G, sprite } from './access.js';
 
@@ -25,18 +26,18 @@ register(0x16fbb, 'updateCruiseMissile_16fbb', function updateCruiseMissile() {
   let j;                   // [ebp-0xc]
 
   // 16fd3..17008: state 0x46
-  if (sprite(cruiseMissile).state === 0x46) {
+  if (sprite(cruiseMissile).state === CRUISE_MISSILE.FLYING_RIGHT) {
     sprite(cruiseMissile).currFrame = sprite(cruiseMissile).currFrame + 1;
     if (sprite(cruiseMissile).currFrame > 1) sprite(cruiseMissile).currFrame = 0;
     sprite(cruiseMissile).x = sprite(cruiseMissile).x + 5;
-    if (sprite(cruiseMissile).x > 0x140) sprite(cruiseMissile).state = 0;
+    if (sprite(cruiseMissile).x > 0x140) sprite(cruiseMissile).state = CRUISE_MISSILE.INACTIVE;
   }
   // 17012..17044: state 0x45
-  if (sprite(cruiseMissile).state === 0x45) {
+  if (sprite(cruiseMissile).state === CRUISE_MISSILE.FLYING_LEFT) {
     sprite(cruiseMissile).currFrame = sprite(cruiseMissile).currFrame + 1;
     if (sprite(cruiseMissile).currFrame > 3) sprite(cruiseMissile).currFrame = 2;
     sprite(cruiseMissile).x = sprite(cruiseMissile).x - 5;
-    if (sprite(cruiseMissile).x < -0x1e) sprite(cruiseMissile).state = 0;
+    if (sprite(cruiseMissile).x < -0x1e) sprite(cruiseMissile).state = CRUISE_MISSILE.INACTIVE;
   }
   // 1704e..17083
   if (sprite(cruiseMissile).x > 0 && sprite(cruiseMissile).x < 0x140) {
@@ -45,17 +46,17 @@ register(0x16fbb, 'updateCruiseMissile_16fbb', function updateCruiseMissile() {
     sprite(cruiseMissile).y = sprite(cruiseMissile).y + sprite(cruiseMissile).counter2;
   }
   // 17089..17100
-  if (sprite(cruiseMissile).y > 0xa0 && (sprite(cruiseMissile).state === 0x46 || sprite(cruiseMissile).state === 0x45)) {
-    sprite(cruiseMissile).state = 0x44;
+  if (sprite(cruiseMissile).y > 0xa0 && (sprite(cruiseMissile).state === CRUISE_MISSILE.FLYING_RIGHT || sprite(cruiseMissile).state === CRUISE_MISSILE.FLYING_LEFT)) {
+    sprite(cruiseMissile).state = CRUISE_MISSILE.DETONATED;
     sprite(cruiseMissile).threshold1 = 0xc;
     F.Read_Palette_20618(0, 0xff, savedPalette);  // 170bf..170cb
-    sprite(nukeCloud).state = 1;
+    sprite(nukeCloud).state = NUKE_CLOUD.VISIBLE;
     F.dws_DPlay_1eff8(sndNuke);               // 170da..170e5 (cdecl, add esp,4)
     sprite(nukeCloud).x = sprite(cruiseMissile).x - 0x28;
     sprite(nukeCloud).y = sprite(cruiseMissile).y - sprite(nukeCloud).height;
   }
   // 17105..172bd: state 0x44
-  if (sprite(cruiseMissile).state === 0x44) {
+  if (sprite(cruiseMissile).state === CRUISE_MISSILE.DETONATED) {
     sprite(nukeCloud).counter2 = sprite(nukeCloud).counter2 + 1;
     if (sprite(nukeCloud).counter2 === 1) {
       sprite(nukeCloud).currFrame = sprite(nukeCloud).currFrame + 1;
@@ -94,16 +95,16 @@ register(0x16fbb, 'updateCruiseMissile_16fbb', function updateCruiseMissile() {
     // 1721e..17257
     sprite(cruiseMissile).threshold1 = sprite(cruiseMissile).threshold1 - 1;
     if (sprite(cruiseMissile).threshold1 < 0) {
-      sprite(cruiseMissile).state = 0;
-      sprite(nukeCloud).state = 0;
+      sprite(cruiseMissile).state = CRUISE_MISSILE.INACTIVE;
+      sprite(nukeCloud).state = NUKE_CLOUD.HIDDEN;
       sprite(nukeCloud).currFrame = 0;
       F.Write_Palette_2069f(0, 0xff, savedPalette);
     }
     // 1725c..172bd
     if (sprite(cruiseMissile).threshold1 < 4) {
       for (j = 0; j < 0x1a; j++) {
-        if (sprite(plants, j).state === 1) {
-          sprite(plants, j).state = 0x29;
+        if (sprite(plants, j).state === PLANT.ALIVE) {
+          sprite(plants, j).state = PLANT.BURNING;
           sprite(plants, j).counter1 = 0xb4;
           sprite(plants, j).currFrame = 2;
         }
@@ -111,21 +112,21 @@ register(0x16fbb, 'updateCruiseMissile_16fbb', function updateCruiseMissile() {
     }
   }
   // 172bf..1738f
-  if (sprite(cruiseMissile).state === 0 && G.levelEnding === 0) {
+  if (sprite(cruiseMissile).state === CRUISE_MISSILE.INACTIVE && G.levelEnding === 0) {
     // 172d9..172ec: rand() % 2 via cdq-style `sar edx,0x1f; idiv ecx` (signed remainder)
     if (imod(F.rand_232c7(), 2) === 1) {
-      sprite(cruiseMissile).state = 0x46;
+      sprite(cruiseMissile).state = CRUISE_MISSILE.FLYING_RIGHT;
       sprite(cruiseMissile).x = (Math.imul(G.level - 0x14, 0x64) - 0x320) | 0;
     } else {
-      sprite(cruiseMissile).state = 0x45;
+      sprite(cruiseMissile).state = CRUISE_MISSILE.FLYING_LEFT;
       sprite(cruiseMissile).x = (0x320 - Math.imul(G.level - 0x14, 0x64)) | 0;
     }
     // 17334..17356
-    if (sprite(cruiseMissile).state === 0x46 && (sprite(cruiseMissile).x < -0x320 || sprite(cruiseMissile).x > -0x1e)) {
+    if (sprite(cruiseMissile).state === CRUISE_MISSILE.FLYING_RIGHT && (sprite(cruiseMissile).x < -0x320 || sprite(cruiseMissile).x > -0x1e)) {
       sprite(cruiseMissile).x = -0x1e;
     }
     // 17360..17385
-    if (sprite(cruiseMissile).state === 0x45 && (sprite(cruiseMissile).x > 0x320 || sprite(cruiseMissile).x < 0x15e)) {
+    if (sprite(cruiseMissile).state === CRUISE_MISSILE.FLYING_LEFT && (sprite(cruiseMissile).x > 0x320 || sprite(cruiseMissile).x < 0x15e)) {
       sprite(cruiseMissile).x = 0x15e;
     }
     sprite(cruiseMissile).y = 0x1e;

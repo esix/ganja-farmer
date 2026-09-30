@@ -9,6 +9,7 @@
 // PCX_Get_Sprite(EAX, EDX, EBX, ECX, 1 pushed arg). Constant registers 0xffffffce/0xffffff38 = -50/-200.
 import { F } from '../../runtime/registry.js';
 import { R32, W32 } from '../../runtime/mem.js';
+import { CROP_DUSTER, PLANT } from '../states.js';
 import { SPRITE, cropDusters, dusterSpray, groundTroops, missileSmoke, pcxScratch, plants, soundMenu, volumeSliders } from '../data.js';
 import { sprite } from '../access.js';
 
@@ -70,7 +71,7 @@ export function loadMenuAndGroundSprites() {
       F.PCX_Get_Sprite_20c12(pcxScratch, sprite(cropDusters, i).addr, j, j, 0); // 1b283..1b29e
     }                                                                // 1b2a3 jmp
     sprite(cropDusters, i).counter1 = -3;                              // 1b2a5..1b2ac  +0x10 counter_1 (LIBRARY.md)
-    sprite(cropDusters, i).state = 1;                               // 1b2b6..1b2bd  +0x170 state (LIBRARY.md)
+    sprite(cropDusters, i).state = CROP_DUSTER.FLYING;                               // 1b2b6..1b2bd  +0x170 state (LIBRARY.md)
     sprite(cropDusters, i).counter2 = 4;                               // 1b2c7..1b2ce  +0x14 counter_2 (LIBRARY.md)
   }                                                                  // 1b2d8 jmp
   F.PCX_Delete_20b69(pcxScratch);                                 // 1b2dd..1b2e2
@@ -84,7 +85,7 @@ export function loadMenuAndGroundSprites() {
     for (j = 0; j < 8; j++) {                                        // 1b34d..1b360
       F.PCX_Get_Sprite_20c12(pcxScratch, sprite(plants, i).addr, j, j, 0); // 1b362..1b37d
     }                                                                // 1b382 jmp
-    sprite(plants, i).state = 1;                               // 1b384..1b38b  +0x170 state (LIBRARY.md)
+    sprite(plants, i).state = PLANT.ALIVE;                               // 1b384..1b38b  +0x170 state (LIBRARY.md)
   }                                                                  // 1b395 jmp
   F.PCX_Delete_20b69(pcxScratch);                                 // 1b39a..1b39f
 

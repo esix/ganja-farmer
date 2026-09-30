@@ -18,6 +18,7 @@ import { handleFrameInput } from './1aa02/1d0c1_handleFrameInput.js';
 import { updateGameFrame } from './1aa02/1d630_updateGameFrame.js';
 import { drawGameFrame } from './1aa02/1db3a_drawGameFrame.js';
 import { shutdown } from './1aa02/1e018_shutdown.js';
+import { GAME_STATE, JAH } from './states.js';
 import { jah } from './data.js';
 import { G, sprite } from './access.js';
 
@@ -34,17 +35,17 @@ register(0x1aa02, 'main_1aa02', async function main(a1, a2) {
   loadMusicAndSounds();                                       // I5 0x1bed0..0x1c567
   await loadMoreSoundsAndShowLogos();                                       // I6 0x1c567..0x1cbe4
   for (;;) {
-    if (G.gameState === 0x25) break;                        // 0x1cbe4 cmp [0x30be4],0x25; je 0x1e018
+    if (G.gameState === GAME_STATE.EXIT_PROGRAM) break;                        // 0x1cbe4 cmp [0x30be4],0x25; je 0x1e018
     await F.runMainMenu_11659();                                     // 0x1cbf1
     F.Fill_Screen_20768(0);                            // 0x1cbf6 xor eax,eax; 0x1cbf8 call
-    if (G.gameState === 0x25) break;                        // 0x1cbfd cmp; 0x1cc04 jne; 0x1cc06 jmp 0x1e018
+    if (G.gameState === GAME_STATE.EXIT_PROGRAM) break;                        // 0x1cbfd cmp; 0x1cc04 jne; 0x1cc06 jmp 0x1e018
     sprite(jah).x = 0;                                         // 0x1cc0b
     sprite(jah).y = sprite(jah).height;                              // 0x1cc15..0x1cc1a
     sprite(jah).y = -sprite(jah).y | 0;                         // 0x1cc1f neg dword [0x45d78]
-    sprite(jah).state = 0x21;                                      // 0x1cc25
-    while (G.gameState !== 0x1c) {                          // 0x1cc2f cmp [0x30be4],0x1c; je 0x1e013
+    sprite(jah).state = JAH.DESCENDING_TO_REPLANT;                                      // 0x1cc25
+    while (G.gameState !== GAME_STATE.RETURN_TO_MENU) {                          // 0x1cc2f cmp [0x30be4],0x1c; je 0x1e013
       startNewGame();                                   // L1 0x1cc3c..0x1d0b4
-      while (G.gameState !== 0x1c) {                        // 0x1d0b4 cmp [0x30be4],0x1c; je 0x1e002
+      while (G.gameState !== GAME_STATE.RETURN_TO_MENU) {                        // 0x1d0b4 cmp [0x30be4],0x1c; je 0x1e002
         await handleFrameInput();                                 // G1 0x1d0c1..0x1d630
         updateGameFrame();                                 // G2 0x1d630..0x1db3a
         await drawGameFrame();                                 // G3 0x1db3a..0x1dffd
