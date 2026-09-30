@@ -10,6 +10,7 @@ import * as textmode from './platform/textmode.js';
 import * as images from './platform/images.js';
 import * as vfs from './platform/vfs.js';
 import * as sounds from './platform/sounds.js';
+import * as songs from './platform/sound/song-clock.js';
 import './lib/index.js';
 import { crtInit, crtExit } from './lib/crt.js';
 
@@ -30,6 +31,7 @@ export async function runProgram() {
   await vfs.unpackArchives();              // assets/game/*.TGZ (SOUNDS.TGZ: the sound effects)
   await images.decodeAll();                // assets/game/*.PNG for PCX_Load
   sounds.mountAll();                       // assets/game/*.WAV -> *.DWD in the DOS file system
+  songs.mountAll();                        // placeholder F*.DWM files (the scores are gone; song-clock.js)
   crtInit();
   const ret = await F.main_1aa02(0, 0);     // main(argc, argv): both unused
   crtExit();

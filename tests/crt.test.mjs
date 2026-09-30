@@ -154,7 +154,7 @@ test('text-mode write: "\\n" -> "\\r\\n"; binary unchanged; fwrite return values
 
 test('Load_File pattern: fopen rb, fseek end, ftell, fseek 0, fread', () => {
   boot();
-  const data = readFileSync(join(ORIG, 'F1.DWM'));
+  const data = readFileSync(join(ORIG, 'HISCORE.PNG'));
   vfs.mountBytes('CLICK.DWD', new Uint8Array(data));
   const fp = F.fopen_2264a(str(scratch, 'click.dwd'), 0x307bc);
   assert.equal(F.fseek_23ee1(fp, 0, 2), 0);

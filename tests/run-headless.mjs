@@ -8,9 +8,9 @@
 //   --every S          additionally snapshot every S virtual seconds
 //   --realtime         use the wall clock instead of the virtual clock (for measuring the tick rate)
 //   --step MS          virtual time per yield (default 1 ms)
-//   --trace FILE       every 32 yields write "yield memHash dacHash oplHash": FNV-1a of game memory (data
+//   --trace FILE       every 32 yields write "yield memHash dacHash musicHash": FNV-1a of game memory (data
 //                      0x30000.., VGA 0xA0000.., heap 0x100000..+2 MB) and running hashes of the sound
-//                      card's DAC bytes and the music driver's OPL writes. Two runs of the same code give
+//                      card's DAC bytes and of the music driver's song clock (song, tick, playing/paused) at every trace line. Two runs of the same code give
 //                      identical files; refactors that keep behaviour must too (see docs). The dead part
 //                      of the emulated stack (below the stack pointer) is not hashed.
 //   --trace-skip A-B,… hex address ranges [A, B) left out of the memory hash (state the game never reads,
@@ -18,7 +18,7 @@
 //   --dump N:FILE      write the data segment + VGA + first 2 MB of heap at yield N to FILE (for finding where two
 //                      versions' traces diverge)
 //   --trace-visible    hash only what the player perceives instead of memory: VGA memory + the DAC palette
-//                      (plus the DAC/OPL hashes as always). For refactors that move heap addresses. The last
+//                      (plus the DAC/music hashes as always). For refactors that move heap addresses. The last
 //                      line also hashes every file the program wrote (e.g. SCORES.DAT).
 //
 // Virtual clock: the PIT scheduler (pit.setClock) and the VGA retrace (vga.setVgaClock) read a virtual
@@ -168,12 +168,13 @@ function runEvents() {
 
 // ---- trace (--trace) ------------------------------------------------------------------------------
 const traceLines = [];
+const stkrunMod = await import('../src/platform/sound/stkrun.js');
 const writtenFiles = new Set();
 if (traceFile) {
   vfs.setStore({ load: () => null, save: (name) => writtenFiles.add(name) });
 }
 const fnv = (h, b) => Math.imul(h ^ b, 0x01000193);
-let dacHash = 0x811c9dc5 | 0, oplHash = 0x811c9dc5 | 0;
+let dacHash = 0x811c9dc5 | 0, musicHash = 0x811c9dc5 | 0;
 function memHash() {
   let h = 0x811c9dc5 | 0;
   if (traceVisible) {
@@ -191,11 +192,14 @@ function memHash() {
   }
   return h >>> 0;
 }
-function traceLine() { traceLines.push(`${yields} ${memHash().toString(16)} ${(dacHash >>> 0).toString(16)} ${(oplHash >>> 0).toString(16)}`); }
+function traceLine() {
+  const m = stkrunMod.state().music;
+  if (m) for (const c of `${m.song}:${m.tickCount}:${m.status()}`) musicHash = fnv(musicHash, c.charCodeAt(0));
+  traceLines.push(`${yields} ${memHash().toString(16)} ${(dacHash >>> 0).toString(16)} ${(musicHash >>> 0).toString(16)}`);
+}
 if (traceFile) {
   const card = await import('../src/platform/sound/soundcard.js');
   card.setDigitalTap((bytes) => { for (const b of bytes) dacHash = fnv(dacHash, b); });
-  card.setOplTap((r, v) => { oplHash = fnv(fnv(oplHash, r), v); });
 }
 
 let yields = 0;

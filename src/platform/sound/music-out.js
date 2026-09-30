@@ -1,7 +1,7 @@
 // Music output (stage 2): the songs are pre-rendered OGG/Opus files (assets/game/F*.OGG, made by
 // tools/render-music.mjs from the DWM files with the STK sequencer + the DBOPL OPL2 emulator that used to
-// run live here). The sequencer (dwm-player.js) still runs on the STK timer, so dws_MSongStatus and the
-// song timing the program sees are unchanged; it no longer drives a chip. stkrun.js tells this module what
+// run live here). The song clock (song-clock.js: each song's length in STK timer ticks) runs on the timer, so
+// dws_MSongStatus and the song timing the program sees are unchanged. stkrun.js tells this module what
 // the sequencer does, and the matching recording plays in WebAudio:
 //   start(name)   dws_MPlay (and a loop rewind): play NAME.OGG from the beginning
 //   stop()        dws_MClear / dws_Kill: the driver keys all notes off -> short fade out
@@ -51,18 +51,6 @@ export async function attach(audioContext) {
     const copy = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength); // decodeAudioData detaches it
     buffers.set(base(n), await ctx.decodeAudioData(copy));
   }
-}
-
-// The DWM file whose bytes are at `track` (a view of emulated memory from dws_MPlay's far pointer).
-export function songName(track) {
-  for (const n of vfs.names()) {
-    if (!/\.DWM$/i.test(n)) continue;
-    const f = vfs.read(n);
-    let same = f.length <= track.length;
-    for (let i = 0; same && i < f.length; i++) same = f[i] === track[i];
-    if (same) return base(n);
-  }
-  return null;
 }
 
 function fadeOut() {

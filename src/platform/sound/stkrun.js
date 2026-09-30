@@ -1,8 +1,7 @@
 // DiamondWare STK 2.22 TSR (STKRUN.EXE), reimplemented: the API layer of segment 0380 (and the DWT timer,
 // segment 0530) of STKRUN, on top
-// of the verified reimplementations of its digitized mixer and DWM/OPL2 player:
-//   re/digi/digi-mixer.js  (DIGI.md; verified FAITHFUL for game-reachable behaviour)
-//   re/music/dwm-player.js (PLAYER.md, DWM_FORMAT.md; verified 0 diffs)
+// of the verified reimplementation of its digitized mixer (digi-mixer.js; re/digi/DIGI.md) and, for music,
+// song-clock.js: the timing of its DWM sequencer (stage 2: the music itself is a recording, music-out.js).
 // This file is the adapter: the API layer's own state and checks, and the hardware (soundcard.js).
 // Stage 2: the game calls it directly (export `stk`, used by lib/stk_client.js) with flat pointers. The
 // original path, client stubs marshalling arguments into a DOS buffer and INT 60h into the TSR, is gone.
@@ -33,7 +32,7 @@ import { u8, R16, R32, W16 } from '../../runtime/mem.js';
 import * as pit from '../pit.js';
 import * as card from './soundcard.js';
 import { DigiMixer, BLOCK_SIZE_BY_ENV } from './digi-mixer.js';
-import { STKMusic } from './dwm-player.js';
+import { SongClock, songOf } from './song-clock.js';
 import * as musicOut from './music-out.js';
 
 // ---- the machine STKRUN detects ------------------------------------------------------------------
@@ -56,7 +55,7 @@ export const SETUP = {
 // ---- state ----------------------------------------------------------------------------------------
 const S = { errno: 0, initted: 0, initBusy: 0, mixerInit: 0, fmOn: 0, digOn: 0 };
 let digi = null;   // DigiMixer: the digitized half (segments 02f1/0750)
-let music = null;  // STKMusic: sequencer 068a + OPL driver 05c1 (+ software mixer 07ac)
+let music = null;  // SongClock: the timing of sequencer 068a (+ the software mixer's music volume, 07ac)
 let everInit = false;
 const dwdViews = new Map();
 
@@ -142,10 +141,10 @@ function fnInit(dr, ideal) {
   if (mt === 5) throw new Error('stk Init: mixer type 5 (07b2) not ported (DIGI.md §6.1)');
   // FM (0380:08a9..08d2): ideal.+0 != 0 and dr+2 bit 0 -> FM init at port dr+0x1E (05c1:0542),
   // rhythm setup (0380:00b6), sequencer init (068a:027f), [0x298] = 1. The software mixer's init
-  // (07ac:0058, called at 0380:09b2) is also in STKMusic's constructor (dwsInit): it only re-levels
-  // the OPL carriers (setMusVol(255)).
+  // (07ac:0058, called at 0380:09b2) only sets the music volume to 255 (SongClock's initial state).
   if (R16(ideal) !== 0 && (R16(dr + 2) & 1)) {
-    music = new STKMusic(card.oplWrite, { mixer: mt === 1 ? 'software' : 'hardware' });
+    if (mt !== 1) throw new Error('stk Init: music volume with a hardware mixer chip is not modelled');
+    music = new SongClock();
     S.fmOn = 1;
   }
   // Digital (0380:08d8..0986): ideal.+2 != 0 and dr+2 bit 1 -> 02f1:0819 with rate ideal.+4, voices
@@ -288,7 +287,7 @@ function fnMPlay(mp) {
   if (!fmCheck()) return 0;
   const track = u8.subarray(R32(mp) >>> 0);
   const r = music.play(track, R16(mp + 4));
-  if (r === 0) { musicSong = musicOut.songName(track); musicOut.start(musicSong); return 1; } // 0380:0ccc
+  if (r === 0) { musicSong = songOf(track); musicOut.start(musicSong); return 1; } // 0380:0ccc
   return fail(r === 1 ? 3 : r === 2 ? 0x10 : r === 3 ? 0x11 : 0x12);  // 0380:0cd1..0cef
 }
 // 13 dws_MSongStatus (0380:0d6a -> 0d2e, retf 4): *result = 068a:03e1.

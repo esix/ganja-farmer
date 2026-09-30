@@ -73,10 +73,11 @@ The headless runner (`tests/run-headless.mjs`) does the same in Node with a virt
 - `digi-mixer.js`: the driver's software mixer for sound effects: 16 voices, priorities, the
   mixing arithmetic as in the original, played on an emulated Sound Blaster DMA at 10989 Hz
   (`soundcard.js`) and resampled into WebAudio (`audio-out.js`, a small AudioWorklet with a 50 ms buffer).
-- `dwm-player.js`: the driver's music sequencer. It runs on the timer so that song status and timing are
-  exact, but it no longer drives an FM chip. `music-out.js` plays the matching pre-rendered OGG
-  (`assets/game/F*.OGG`, rendered offline with the same sequencer and DOSBox's OPL2 emulator) and
-  applies the game's music volume.
+- `song-clock.js`: the timing of the driver's music sequencer: each song's length in timer ticks (measured
+  from the original scores), play / pause / loop / clear, and the music volume. `dws_MSongStatus` and so
+  the moment the game starts the next song are exact. `music-out.js` plays the matching pre-rendered OGG
+  (`assets/game/F*.OGG`, rendered offline from the original scores with DOSBox's OPL2 emulator) and applies
+  the game's music volume. The game still loads `f0.dwm` …; they are small placeholders created at start-up.
 
 ## Assets (`assets/game/`)
 
@@ -84,7 +85,6 @@ The headless runner (`tests/run-headless.mjs`) does the same in Node with a virt
 |---|---|---|
 | `*.PNG` | 320×200, 8-bit indexed, the original 256-colour palette | `PCX_Load` (the game asks for `name.pcx`) |
 | `SOUNDS.TGZ` | the 41 sound effects as 8-bit mono WAVs (10989 Hz) in one gzip-compressed tar (428 KB, one request; unpacked at start-up by `vfs.unpackArchives`) | each `NAME.WAV` is turned into `NAME.DWD` for the sound driver |
-| `F*.DWM` | the original DiamondWare music scores | the music sequencer (timing, status) |
 | `F*.OGG` | Opus, the scores rendered to audio | music playback |
 | `SCORES.DAT` | the original high-score table | read/written by the game (saved in `localStorage`) |
 

@@ -8,8 +8,7 @@
 //   mixing ISR (02f1:0478) whenever a half-buffer ends, so the ISR runs at the emulated time the
 //   DMA reaches the end of a half, as on the card. The SB IRQ is not routed through pic.js: STKRUN's
 //   ISR runs to completion like every other emulated handler, so its PIC priority/EOI has no effect.
-// FM (stage 2): no chip is emulated any more. The driver's register writes (dwm-player.js out callback)
-//   only reach the test tap; the music is a recording played by music-out.js (rendered offline with
+// FM (stage 2): no chip is emulated; the music is a recording played by music-out.js (rendered offline with
 //   DOSBox's DBOPL at 3579545/72 Hz and the same MIX_GAIN, tools/render-music.mjs).
 // Output: the DAC stream is resampled (linear interpolation) to the host rate.
 //   UNCERTAIN: the analog part of a real card (DAC reconstruction filter, the relative level of the
@@ -24,20 +23,16 @@ let digAcc = 0;      // fractional DAC bytes due
 let digLast = 0x80;  // last DAC byte (the DAC holds its value; 0x80 = silence)
 let sink = null;     // host output: { rate, write(Float32Array) } (audio-out.js)
 let outAcc = 0;
-const taps = { dig: null, opl: null }; // test/diagnostic taps
+const taps = { dig: null }; // test/diagnostic taps
 
 // ---- devices ------------------------------------------------------------------------------------
 export function startDigital(mixer) { digi = mixer; digAcc = 0; }   // DSP + DMA start (02f1:0891)
 export function stopDigital() { digi = null; digLast = 0x80; }      // DSP halt (02f1:07b7)
 export const digitalRunning = () => digi !== null;
 
-export function oplWrite(reg, val) {
-  if (taps.opl) taps.opl(reg, val);
-}
 
 export function setSink(s) { sink = s; outAcc = 0; }
 export function setDigitalTap(fn) { taps.dig = fn; }
-export function setOplTap(fn) { taps.opl = fn; }
 
 export function reset() {
   digi = null; digAcc = 0; digLast = 0x80; outAcc = 0;

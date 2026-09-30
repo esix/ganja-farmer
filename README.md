@@ -67,7 +67,7 @@ src/game/             the game's code, one file per original function (address_n
 src/lib/              library code: LaMothe graphics/input library, sound client, Watcom C runtime
 src/runtime/          flat memory with the original addresses, function registry, x87 helpers
 src/platform/         what the game runs on: display, timer, keyboard, mouse, files, sound
-assets/game/          the game's data files (PNG pictures, SOUNDS.TGZ effects, OGG music, DWM scores, SCORES.DAT)
+assets/game/          the game's data files (PNG pictures, SOUNDS.TGZ effects, OGG music, SCORES.DAT)
 assets/boot/          initial data-segment image, 8x8 ROM font, file manifest
 tests/                unit tests and the headless runner
 docs/                 architecture, data and function names, stage-2 notes, stage-1 porting rules

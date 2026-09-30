@@ -1,6 +1,6 @@
 // STK service layer (src/platform/sound/stkrun.js) driven through the real INT path: the ported
 // client stubs (src/lib/*dws_*.js) -> INT 60h -> stk.js -> stkrun.js -> digi-mixer.js /
-// dwm-player.js, with the emulated clock (pit.js) driving the STK timer and the sound card.
+// song-clock.js, with the emulated clock (pit.js) driving the STK timer and the sound card.
 // Run: node --test tests/stk.test.mjs
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
@@ -15,7 +15,7 @@ import * as stkrun from '../src/platform/sound/stkrun.js';
 import * as card from '../src/platform/sound/soundcard.js';
 import * as musicOut from '../src/platform/sound/music-out.js';
 import { DigiMixer } from '../src/platform/sound/digi-mixer.js';
-import { STKMusic } from '../src/platform/sound/dwm-player.js';
+import { SONG_TICKS, mountAll as mountSongs } from '../src/platform/sound/song-clock.js';
 import * as sounds from '../src/platform/sounds.js';
 
 const root = new URL('../', import.meta.url).pathname;
@@ -25,11 +25,11 @@ loadRomFont(readFileSync(root + 'assets/boot/font8x8.bin'));
 for (const n of readdirSync(GANJA)) vfs.mountBytes(n, readFileSync(GANJA + n));
 await vfs.unpackArchives(); // SOUNDS.TGZ -> *.WAV, as runProgram does
 sounds.mountAll(); // *.WAV -> *.DWD, as runProgram does
+mountSongs();      // placeholder F*.DWM, as runProgram does
 const snapshot = u8.slice(0, 0x800000);
 
 let fakeMs = 0;
 let dig = [];      // DAC bytes played (sound card tap)
-let oplw = [];     // OPL register writes (sound card tap)
 function boot() {
   u8.set(snapshot);
   pc.install({ onBiosKey: con.push, msSinceMidnight: 0 });
@@ -39,9 +39,8 @@ function boot() {
   pc.pit.setClock(() => fakeMs);
   pc.pit.setMaxCatchUp(Infinity);
   pc.pit.pump();
-  dig = []; oplw = [];
+  dig = [];
   card.setDigitalTap((b) => { for (const x of b) dig.push(x); });
-  card.setOplTap((r, v) => oplw.push((r << 8) | v));
   card.setSink(null);
 }
 // Advance emulated time in 1 ms steps (as the browser's setInterval(pump, 1) does).
@@ -185,49 +184,25 @@ test('DPlay/DDiscard/DSoundStatus/DPause sequence equals the reference mixer at 
   for (let i = 0; i < dig.length; i++) if (dig[i] !== out[i]) assert.fail('DAC byte ' + i + ': ' + dig[i] + ' != ' + out[i]);
 });
 
-test('MPlay: OPL register writes equal re/music player output for the same file and ticks (F1.DWM, F6.DWM)', async () => {
+test('MPlay / MSongStatus / MPause: a song ends after its length in STK ticks (song-clock.js)', async () => {
   boot();
   await gameInit();
-  // reference: re/music/dwm-player.js (verified against STKRUN) driven directly
-  const ref = [];
-  const drv = new STKMusic((r, v) => ref.push((r << 8) | v));
-  assert.deepEqual(oplw, ref, 'dws_Init: FM reset, rhythm setup, mixer init (159 writes)');
-  assert.equal(ref.length, 159);
-  await F.dws_XMusic_1eed0(0xfe);           // as the game (0x1c567 chunk)
-  drv.setMusicVolume(0xfe);
-  const mp = F.malloc_23dab(0x10);
-  const st = F.malloc_23dab(2);
-  for (const [name, ticks] of [['F1.DWM', 402], ['F6.DWM', 146]]) {
-    W32(mp, loadFile(name.toLowerCase())); W16(mp + 4, 1);
-    await F.dws_MPlay_1faa2(mp);            // client: fn 0x14 (MClear, 0x1fd9b) then fn 0x12
-    const buf = new Uint8Array(readFileSync(GANJA + name));
-    drv.clear(); drv.play(buf, 1);
-    await F.dws_MSongStatus_1fc3f(st);
-    assert.equal(R16(st), 1);
-    runStkTicks(ticks - 1);
-    for (let i = 0; i < ticks - 1; i++) drv.tick();
-    assert.deepEqual(oplw, ref);
-    await F.dws_MSongStatus_1fc3f(st);
-    assert.equal(R16(st), 1, name + ' still playing after ' + (ticks - 1) + ' ticks');
-    runStkTicks(1); drv.tick();
-    await F.dws_MSongStatus_1fc3f(st);
-    assert.equal(R16(st), 0, name + ' ends on tick ' + ticks + ' (PLAYER.md §3)');
-    assert.deepEqual(oplw, ref);
-  }
-  // pause / unpause / kill
-  W32(mp, loadFile('f0.dwm')); W16(mp + 4, 1);
-  await F.dws_MPlay_1faa2(mp); drv.clear(); drv.play(new Uint8Array(readFileSync(GANJA + 'F0.DWM')), 1);
-  runStkTicks(100); for (let i = 0; i < 100; i++) drv.tick();
-  await F.dws_MPause_1fe37(); drv.pause();
+  const mp = F.malloc_23dab(0x10), st = F.malloc_23dab(2);
+  W32(mp, loadFile('f6.dwm')); W16(mp + 4, 1);
+  await F.dws_MPlay_1faa2(mp);
   await F.dws_MSongStatus_1fc3f(st);
-  assert.equal(R16(st), 3);
-  runStkTicks(50);
-  await F.dws_MUnPause_1fec3(); drv.unpause();
-  runStkTicks(200); for (let i = 0; i < 200; i++) drv.tick();
-  await F.dwt_Kill_1ffe0();
-  await F.dws_Kill_1eda6(); drv.clear(); drv.fmKill();
-  assert.deepEqual(oplw, ref);
-  assert.ok(ref.length > 1000);
+  assert.equal(R16(st), 1, 'playing');
+  runStkTicks(SONG_TICKS.F6 - 1);
+  await F.dws_MSongStatus_1fc3f(st);
+  assert.equal(R16(st), 1, 'still playing one tick before the end');
+  await F.dws_MPause_1fe37();
+  runStkTicks(50);                              // paused: the clock holds
+  await F.dws_MSongStatus_1fc3f(st);
+  assert.equal(R16(st), 3, 'playing + paused');
+  await F.dws_MUnPause_1fec3();
+  runStkTicks(1);
+  await F.dws_MSongStatus_1fc3f(st);
+  assert.equal(R16(st), 0, 'ended on its last tick');
 });
 
 test('sound card output: the DAC is resampled to the host rate; dws_MPlay names the recording to play', async () => {
@@ -241,7 +216,6 @@ test('sound card output: the DAC is resampled to the host rate; dws_MPlay names 
   const song = loadFile('f1.dwm');
   W32(mp, song); W16(mp + 4, 1);
   await F.dws_MPlay_1faa2(mp);
-  assert.equal(musicOut.songName(u8.subarray(song)), 'F1');
   runMs(2000);
   assert.ok(Math.abs(frames.length - 96000) <= 2, 'frames ' + frames.length);
   let peak = 0; for (const x of frames) peak = Math.max(peak, Math.abs(x));
