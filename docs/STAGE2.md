@@ -12,7 +12,7 @@ it is listed below.
 | waiting | busy-wait loops yielded thousands of times per tick; a 1 ms timer pumped the PIT (a CPU core at 100%) | a yield sleeps until the next timer interrupt or an input event (`pc.attachBrowser`) |
 | display | every animation frame: palette rebuild, 64 000-pixel conversion, a canvas up to 16× the game's size | WebGL, redrawn only when video memory or the palette changed; sharp-bilinear scaling in a shader |
 | `async` | every game function `async`, every call awaited | only the 24 functions that can reach a wait |
-| pictures | PCX, decoded byte by byte through the emulated C runtime | 8-bit indexed PNG with the same palette, decoded once at start-up |
+| pictures | PCX, decoded byte by byte through the emulated C runtime | 8-bit indexed PNG with the same palette, decoded once at start-up; the 5 main-menu frames are one animated PNG (`MAINMENU.PNG`) |
 | sound effects | DWD | 8-bit WAVs (same samples) packed in one `SOUNDS.TGZ` (1 MB in 41 files -> 428 KB in one); the DWD bytes are rebuilt in memory for the driver |
 | music | DWM scores played live through an OPL2 emulator (WebAssembly) | pre-rendered OGG/Opus; the DWM files are gone: a song clock with each song's length in ticks gives the game the same song status (checked against the sequencer: 180000 random steps, identical) |
 | sound driver | 19 client wrappers + 30 helpers copying arguments and sounds into DOS memory and calling INT 60h | `lib/stk_client.js` calls the driver directly with the game's pointers |

@@ -84,6 +84,7 @@ The headless runner (`tests/run-headless.mjs`) does the same in Node with a virt
 | files | format | used by |
 |---|---|---|
 | `*.PNG` | 320×200, 8-bit indexed, the original 256-colour palette | `PCX_Load` (the game asks for `name.pcx`) |
+| `MAINMENU.PNG` | the main menu's 5 animation frames as one animated PNG (APNG, 110 ms per frame, in the order the menu shows them); a `Frames` text chunk names them `MAINMNB2, MAINMNB3, MAINMNB, MAINMNB4, MAINMNB5` | each frame is loaded by its old name (`mainmnb2.pcx` …) |
 | `SOUNDS.TGZ` | the 41 sound effects as 8-bit mono WAVs (10989 Hz) in one gzip-compressed tar (428 KB, one request; unpacked at start-up by `vfs.unpackArchives`) | each `NAME.WAV` is turned into `NAME.DWD` for the sound driver |
 | `F*.OGG` | Opus, the scores rendered to audio | music playback |
 | `SCORES.DAT` | the original high-score table | read/written by the game (saved in `localStorage`) |
