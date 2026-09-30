@@ -14,7 +14,7 @@ How the port is put together, as of stage 2. For the rules the game code was tra
    video, mouse, DOS memory);
 3. installs the sound layer, then `attachBrowserAudio` (AudioContext, the music recordings);
 4. attaches the display (canvas) and the browser input (`pc.attachBrowser`);
-5. runs the program (`machine.js` `runProgram`): decodes the PNG pictures, turns the WAVs back into
+5. runs the program (`machine.js` `runProgram`): unpacks `SOUNDS.TGZ`, decodes the PNG pictures, turns the WAVs back into
    DWDs for the sound driver, resets the C runtime's streams, calls `main` (`F.main_1aa02`), then closes
    files; the exit code is `main`'s return value.
 
@@ -83,7 +83,7 @@ The headless runner (`tests/run-headless.mjs`) does the same in Node with a virt
 | files | format | used by |
 |---|---|---|
 | `*.PNG` | 320×200, 8-bit indexed, the original 256-colour palette | `PCX_Load` (the game asks for `name.pcx`) |
-| `*.WAV` | 8-bit mono PCM, 10989 Hz | turned into `NAME.DWD` for the sound driver |
+| `SOUNDS.TGZ` | the 41 sound effects as 8-bit mono WAVs (10989 Hz) in one gzip-compressed tar (428 KB, one request; unpacked at start-up by `vfs.unpackArchives`) | each `NAME.WAV` is turned into `NAME.DWD` for the sound driver |
 | `F*.DWM` | the original DiamondWare music scores | the music sequencer (timing, status) |
 | `F*.OGG` | Opus, the scores rendered to audio | music playback |
 | `SCORES.DAT` | the original high-score table | read/written by the game (saved in `localStorage`) |

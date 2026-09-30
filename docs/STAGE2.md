@@ -13,7 +13,7 @@ it is listed below.
 | display | every animation frame: palette rebuild, 64 000-pixel conversion, a canvas up to 16× the game's size | WebGL, redrawn only when video memory or the palette changed; sharp-bilinear scaling in a shader |
 | `async` | every game function `async`, every call awaited | only the 24 functions that can reach a wait |
 | pictures | PCX, decoded byte by byte through the emulated C runtime | 8-bit indexed PNG with the same palette, decoded once at start-up |
-| sound effects | DWD | WAV; the DWD bytes are rebuilt in memory for the driver |
+| sound effects | DWD | 8-bit WAVs (same samples) packed in one `SOUNDS.TGZ` (1 MB in 41 files -> 428 KB in one); the DWD bytes are rebuilt in memory for the driver |
 | music | DWM played live through an OPL2 emulator (WebAssembly) | pre-rendered OGG/Opus, kept in step with the still-running sequencer |
 | sound driver | 19 client wrappers + 30 helpers copying arguments and sounds into DOS memory and calling INT 60h | `lib/stk_client.js` calls the driver directly with the game's pointers |
 | keyboard | 8042 ports, IRQ1 through an emulated PIC, INT 9 vector hooked via the DOS extender | key bytes go straight to the game's key table or the BIOS buffer |

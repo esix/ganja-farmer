@@ -53,6 +53,30 @@ export async function mountFromUrl(baseUrl, manifestUrl, onProgress) {
 
 export function mountBytes(name, bytes) { files.set(name.toUpperCase(), bytes); }
 
+// Archives: every NAME.TGZ in the file system (a gzip-compressed tar, e.g. SOUNDS.TGZ with the sound effects)
+// is replaced by the files it contains. One download instead of many small ones; the files inside are the
+// exact bytes (unlike a lossy audio format). Edit with: tar xzf SOUNDS.TGZ / tar --format ustar -czf ...
+async function gunzip(bytes) {
+  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+export async function unpackArchives() {
+  for (const name of [...files.keys()]) {
+    if (!name.endsWith('.TGZ')) continue;
+    const tar = await gunzip(files.get(name));
+    for (let p = 0; p + 512 <= tar.length;) {                 // ustar: 512-byte header, data padded to 512
+      const field = (o, n) => { let s = ''; for (let i = 0; i < n && tar[p + o + i]; i++) s += String.fromCharCode(tar[p + o + i]); return s; };
+      const entry = field(0, 100);
+      if (!entry) break;                                       // end-of-archive (zero block)
+      const size = parseInt(field(124, 12).trim() || '0', 8);
+      const type = field(156, 1);
+      if (type === '0' || type === '') mountBytes(entry.split('/').pop(), tar.slice(p + 512, p + 512 + size));
+      p += 512 + Math.ceil(size / 512) * 512;
+    }
+    files.delete(name);
+  }
+}
+
 export function names() { return [...files.keys()]; }
 export function exists(name) { return files.has(name.toUpperCase()); }
 export function read(name) { return files.get(name.toUpperCase()) || null; }

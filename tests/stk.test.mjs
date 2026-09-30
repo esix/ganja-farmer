@@ -23,6 +23,7 @@ const GANJA = root + 'assets/game/';
 loadInitialData(readFileSync(root + 'assets/boot/data_init.bin'));
 loadRomFont(readFileSync(root + 'assets/boot/font8x8.bin'));
 for (const n of readdirSync(GANJA)) vfs.mountBytes(n, readFileSync(GANJA + n));
+await vfs.unpackArchives(); // SOUNDS.TGZ -> *.WAV, as runProgram does
 sounds.mountAll(); // *.WAV -> *.DWD, as runProgram does
 const snapshot = u8.slice(0, 0x800000);
 
