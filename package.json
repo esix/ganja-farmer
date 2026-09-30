@@ -7,11 +7,14 @@
   "license": "GPL-3.0-or-later",
   "scripts": {
     "start": "http-server . -a 0.0.0.0 -p 8642 -c-1",
+    "build": "node scripts/build.mjs",
+    "preview": "http-server dist -a 0.0.0.0 -p 8643 -c-1",
     "test": "node --test tests/*.test.mjs && node tests/check-registry.mjs",
     "headless": "node tests/run-headless.mjs --out out/headless",
     "gen-index": "sh tools/gen-index.sh"
   },
   "devDependencies": {
+    "esbuild": "^0.28.2",
     "http-server": "^14.1.1"
   },
   "engines": {

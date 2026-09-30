@@ -13,7 +13,7 @@ npm install
 npm start          # http-server on 0.0.0.0:8642
 ```
 
-Open <http://localhost:8642/>. The server listens on all interfaces, so other machines on your network
+Open <http://localhost:8642/>. This serves the source modules directly, which is handy for development. The server listens on all interfaces, so other machines on your network
 can play too.
 
 | Control | Action |
@@ -49,6 +49,16 @@ The port was done in two stages; the git history keeps both.
 The game logic is still the translated original: the same memory layout, the same arithmetic, the
 same timing (18.2 Hz BIOS ticks, 72.8 Hz sound-driver ticks).
 
+## Build for deployment
+
+```sh
+npm run build      # dist/: index.html, one minified boot.js (+ source map), favicon, assets/
+npm run preview    # serves dist/ on 0.0.0.0:8643
+```
+
+`dist/` is a static site: copy it to any web server. The bundle (esbuild) is about 160 KB, 48 KB gzipped,
+instead of ~130 separate module requests.
+
 ## Tests
 
 ```sh
@@ -70,6 +80,7 @@ src/platform/         what the game runs on: display, timer, keyboard, mouse, fi
 assets/game/          the game's data files (PNG pictures, SOUNDS.TGZ effects, OGG music, SCORES.DAT)
 assets/boot/          initial data-segment image, 8x8 ROM font, file manifest
 tests/                unit tests and the headless runner
+scripts/build.mjs     the production build (esbuild)
 docs/                 architecture, data and function names, stage-2 notes, stage-1 porting rules
 ```
 
