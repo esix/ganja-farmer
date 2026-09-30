@@ -16,8 +16,6 @@ register(0x16b96, 'showGameOver_16b96', async function showGameOver() {
   F.Show_Double_Buffer_21531(G.doubleBuffer, 0);                  // 16bdb..16be2
   await F.Time_Delay_20404(0x24);                                     // 16be7..16bec
   await F.Screen_Transition_21673(0);                                 // 16bf1..16bf3
-  F.PCX_Init_207a0(pcxScratch);                                    // 16bf8..16bfd
   F.PCX_Load_20806(0x30174 /* "blank.pcx" */, pcxScratch, 1);      // 16c02..16c11
   F.PCX_Copy_To_Buffer_20bd7(pcxScratch, G.doubleBuffer);            // 16c16..16c21
-  F.PCX_Delete_20b69(pcxScratch);                                  // 16c26..16c2b
 });

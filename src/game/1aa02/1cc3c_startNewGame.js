@@ -17,10 +17,8 @@ export function startNewGame() {
   let i; // [ebp-8]
 
   // pcx_picture 0x31ee4 (LIBRARY.md), "back.pcx" (0x3048a: 62 61 63 6b 2e 70 63 78 00)
-  F.PCX_Init_207a0(pcxScratch);                                            // 0x1cc3c..0x1cc41
   F.PCX_Load_20806(0x3048a /* "back.pcx" */, pcxScratch, 1);               // 0x1cc46..0x1cc55
   F.PCX_Copy_To_Buffer_20bd7(pcxScratch, G.doubleBuffer);                    // 0x1cc5a..0x1cc65
-  F.PCX_Delete_20b69(pcxScratch);                                          // 0x1cc6a..0x1cc6f
 
   // Table at 0x5ff20, stride 0x30: +0 (x arg), +4 (y arg), +8 <- Read_Pixel_DB result.
   for (i = 0; i < 0x3c; i++) {                                                // 0x1cc74..0x1cc87, 0x1ccf0

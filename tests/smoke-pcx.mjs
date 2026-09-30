@@ -10,15 +10,17 @@ import * as pc from '../src/platform/pc.js';
 import * as con from '../src/platform/console.js';
 import { dac } from '../src/platform/display.js';
 import { crtInit } from '../src/lib/index.js';
+import * as images from '../src/platform/images.js';
 
 const root = new URL('../', import.meta.url).pathname;
-const [file = 'TITP.PCX', out = 'out.ppm'] = process.argv.slice(2);
+const [file = 'TITP.PCX', out = 'out.ppm'] /* the game's names; the files are PNGs now */ = process.argv.slice(2);
 
 loadInitialData(readFileSync(root + 'assets/boot/data_init.bin'));
 loadRomFont(readFileSync(root + 'assets/boot/font8x8.bin'));
 for (const n of readdirSync(root + 'assets/game')) vfs.mountBytes(n, readFileSync(root + 'assets/game/' + n));
 pc.install({ onBiosKey: con.push });
 crtInit();
+await images.decodeAll();
 
 const PCX = 0x31ee4; // the game's own pcx_picture instance (main passes &DAT_00031ee4)
 const name = F.malloc_23dab(64);
@@ -27,10 +29,8 @@ const msg = F.malloc_23dab(64);
 writeCString(msg, 'GANJA FARMER JS PORT');
 
 await F.Set_Video_Mode_203c6(0x13);
-await F.PCX_Init_207a0(PCX);
 const ok = await F.PCX_Load_20806(name, PCX, 1);
 await F.PCX_Show_Buffer_20b9b(PCX);
-await F.PCX_Delete_20b69(PCX);
 await F.Print_String_202cd(4, 190, 15, msg, 1);
 
 let ppm = 'P6\n320 200\n255\n';

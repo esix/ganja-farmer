@@ -63,7 +63,7 @@ The headless runner (`tests/run-headless.mjs`) does the same in Node with a virt
 | `mouse.js` | INT 33h driver over pointer events |
 | `vga.js`, `display.js`, `textmode.js` | DAC, retrace, mode set; the picture drawn with WebGL when memory or palette changed (2D canvas fallback); the text screen at exit |
 | `vfs.js`, `console.js` | the game's files (writes persist to `localStorage`); the DOS console: BIOS key buffer for `kbhit`/`getch`, `printf` output |
-| `images.js`, `png.js` | decode the 8-bit indexed PNGs for `PCX_Load` |
+| `images.js`, `png.js` | decode the 8-bit indexed PNGs (and animated PNG frames); `PCX_Load` binds a picture struct to its picture, which `PCX_Show_Buffer` / `PCX_Copy_To_Buffer` / `PCX_Get_Sprite` read |
 | `sounds.js` | rebuild each `NAME.DWD` from `NAME.WAV` in the DOS file system |
 
 ### Sound (`src/platform/sound/`)

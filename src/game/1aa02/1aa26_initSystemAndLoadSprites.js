@@ -41,35 +41,28 @@ export function initSystemAndLoadSprites() {
   F.dwt_Init_1ff4f(2);                                     // 1aab9..1aac4 (cdecl)
 
   // --- group 1: "gunsite.pcx" (0x3019c: 67 75 6e 73 69 74 65 2e 70 63 78 00), sprite struct 0x33aa4
-  F.PCX_Init_207a0(pcxScratch);                               // 1aac7..1aacc
   F.PCX_Load_20806(0x3019c /* "gunsite.pcx" */, pcxScratch, 1); // 1aad1..1aae0
   F.Sprite_Init_20ce5(gunSight, 0x8c, 0x19, 0xd, 0x11, 0, 0, 0, 0, 0, 0); // 1aae5..1ab07
   for (j = 0; j < 2; j++) {                                      // 1ab0c..1ab1f, 1ab15..1ab18 (signed jge)
     F.PCX_Get_Sprite_20c12(pcxScratch, gunSight, j, j, 0);     // 1ab21..1ab33
   }                                                              // 1ab38 jmp
-  F.PCX_Delete_20b69(pcxScratch);                             // 1ab3a..1ab3f
 
   // --- group 2: "van.pcx" (0x301a8: 76 61 6e 2e 70 63 78 00), sprite struct 0x33c30
-  F.PCX_Init_207a0(pcxScratch);                               // 1ab44..1ab49
   F.PCX_Load_20806(0x301a8 /* "van.pcx" */, pcxScratch, 1);   // 1ab4e..1ab5d
   F.Sprite_Init_20ce5(van, 0x82, 0xab, 0x40, 0x1e, 0, 0, 0, 0, 0, 0); // 1ab62..1ab84
   for (j = 0; j < 1; j++) {                                      // 1ab89..1ab9c, 1ab92..1ab95 (signed jge)
     F.PCX_Get_Sprite_20c12(pcxScratch, van, j, j, 0);     // 1ab9e..1abb0
   }                                                              // 1abb5 jmp
-  F.PCX_Delete_20b69(pcxScratch);                             // 1abb7..1abbc
 
   // --- group 3: "regbar.pcx" (0x301b0: 72 65 67 62 61 72 2e 70 63 78 00), sprite struct 0x33918
-  F.PCX_Init_207a0(pcxScratch);                               // 1abc1..1abc6
   F.PCX_Load_20806(0x301b0 /* "regbar.pcx" */, pcxScratch, 1); // 1abcb..1abda
   F.Sprite_Init_20ce5(statusBar, 1, 0, 0x13f, 0xa, 0, 0, 0, 0, 0, 0); // 1abdf..1abfe (xor ebx,ebx)
   for (j = 0; j < 1; j++) {                                      // 1ac03..1ac16, 1ac0c..1ac0f (signed jge)
     F.PCX_Get_Sprite_20c12(pcxScratch, statusBar, j, j, 0);     // 1ac18..1ac2a
   }                                                              // 1ac2f jmp
-  F.PCX_Delete_20b69(pcxScratch);                             // 1ac31..1ac36
 
   // --- group 4: "chopper2.pcx" (0x301bb: 63 68 6f 70 70 65 72 32 2e 70 63 78 00), 5 sprite structs at
   //     0x33f48 + i*0x18c
-  F.PCX_Init_207a0(pcxScratch);                               // 1ac3b..1ac40
   F.PCX_Load_20806(0x301bb /* "chopper2.pcx" */, pcxScratch, 1); // 1ac45..1ac54
   for (i = 0; i < 5; i++) {                                      // 1ac59..1ac6c, 1ac62..1ac65 (signed jge)
     F.Sprite_Init_20ce5(sprite(choppers, i).addr, 0x64, 0x14, 0x89, 0x2a, 0, 0, 0, 0, 0, 0); // 1ac72..1ac9d
@@ -88,11 +81,9 @@ export function initSystemAndLoadSprites() {
     sprite(choppers, i).x = (imod(r, 0x258) + 0x190) | 0; // 1ad73..1ad8f (idiv; edx + 0x190) (+0)
     sprite(choppers, i).counter2 = 0xa;               // 1ad95..1ad9c (+0x14)
   }                                                              // 1ada6 jmp
-  F.PCX_Delete_20b69(pcxScratch);                             // 1adab..1adb0
 
   // --- group 5: "ptroop.pcx" (0x301c8: 70 74 72 6f 6f 70 2e 70 63 78 00), 25 sprite structs at
   //     0x35b20 + i*0x18c; frames only cut into the first one, then copied to the others
-  F.PCX_Init_207a0(pcxScratch);                               // 1adb5..1adba
   F.PCX_Load_20806(0x301c8 /* "ptroop.pcx" */, pcxScratch, 1); // 1adbf..1adce
   for (i = 0; i < 0x19; i++) {                                   // 1add3..1ade6, 1addc..1addf (signed jge)
     F.Sprite_Init_20ce5(sprite(paratroopers, i).addr, 0xa0, -0x32, 0x26, 0x2d, 0, 0, 0, 0, 0, 0); // 1ade8..1ae13 (ebx = 0xffffffce)
@@ -117,5 +108,4 @@ export function initSystemAndLoadSprites() {
     }                                                            // 1af26 jmp
     sprite(paratroopers, j).numFrames = sprite(paratroopers).numFrames;      // 1af28..1af35 (+0x16c)
   }                                                              // 1af3b jmp
-  F.PCX_Delete_20b69(pcxScratch);                             // 1af3d..1af42
 }

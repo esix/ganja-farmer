@@ -10,10 +10,8 @@ register(0x115bc, 'showTitleScreen_115bc', async function showTitleScreen() {
   let i; // [ebp-4]
 
   i = 0;                                                     // 115d4
-  F.PCX_Init_207a0(pcxScratch);                           // 115db
   F.PCX_Load_20806(0x300eb /* "titp.pcx" */, pcxScratch, 1); // 115e5
   F.PCX_Show_Buffer_20b9b(pcxScratch);                    // 115f9
-  F.PCX_Delete_20b69(pcxScratch);                         // 11603
   for (i = 0; i < 0x41; i++) {                               // 1160d..11640 (signed jge)
     await F.Time_Delay_20404(1);                             // 11622
     if (i === 0x32) {                                        // 1162c

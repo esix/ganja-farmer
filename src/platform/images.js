@@ -21,3 +21,19 @@ export async function decodeAll() {
 }
 
 export function get(file) { return pictures.get(baseName(file)) || null; }
+
+// Which picture a pcx_picture struct holds (stage 2: PCX_Load binds, the readers look up; there is no pixel
+// buffer in emulated memory any more). Pixels are 64001 bytes: the picture plus the 0x0C byte the original
+// decoder left at buf[64000].
+const bound = new Map(); // struct address -> Uint8Array(64001)
+export function bind(img, pic) {
+  const px = new Uint8Array(64001);
+  px.set(pic.pixels);
+  px[64000] = 0x0c;
+  bound.set(img >>> 0, px);
+}
+export function pictureOf(img) {
+  const px = bound.get(img >>> 0);
+  if (!px) throw new Error(`pcx_picture 0x${(img >>> 0).toString(16)}: no picture loaded`);
+  return px;
+}

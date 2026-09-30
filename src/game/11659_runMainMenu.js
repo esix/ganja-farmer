@@ -66,16 +66,11 @@ register(0x11659, 'runMainMenu_11659', async function runMainMenu() {
   animFrame = 0;                                                              // 0x1168d
   idleCountdown = 0x168;                                                          // 0x11694
   spaceLatch = 0;                                                              // 0x1169b
-  F.PCX_Init_207a0(mainMenuPcx);                                          // 0x116a2..0x116a7
   F.PCX_Load_20806(0x300f4 /* "mainmnb.pcx" */, mainMenuPcx, 1);          // 0x116ac..0x116bb
   F.Read_Palette_20618(0, 0xff, PAL);                                 // 0x116c0..0x116cd
-  F.PCX_Init_207a0(mainMenuPcx2);                                          // 0x116d2..0x116d7
   F.PCX_Load_20806(0x30100 /* "mainmnb2.pcx" */, mainMenuPcx2, 1);         // 0x116dc..0x116eb
-  F.PCX_Init_207a0(mainMenuPcx3);                                          // 0x116f0..0x116f5
   F.PCX_Load_20806(0x3010d /* "mainmnb3.pcx" */, mainMenuPcx3, 1);         // 0x116fa..0x11709
-  F.PCX_Init_207a0(mainMenuPcx4);                                          // 0x1170e..0x11713
   F.PCX_Load_20806(0x3011a /* "mainmnb4.pcx" */, mainMenuPcx4, 1);         // 0x11718..0x11727
-  F.PCX_Init_207a0(mainMenuPcx5);                                          // 0x1172c..0x11731
   F.PCX_Load_20806(0x30127 /* "mainmnb5.pcx" */, mainMenuPcx5, 1);         // 0x11736..0x11745
   F.Squeeze_Mouse_230df(0, 0, 0, mouseButtons);                            // 0x1174a..0x11755
   F.Squeeze_Mouse_230df(2, 0, 0, 0);                                  // 0x1175a..0x11765
@@ -150,10 +145,8 @@ register(0x11659, 'runMainMenu_11659', async function runMainMenu() {
     if ((sprite(gunSight).x | 0) > 0xca && (sprite(gunSight).x | 0) < 0x132 &&
         (sprite(gunSight).y | 0) > 0xc && (sprite(gunSight).y | 0) < 0x2b && G.mouseButtons === 1) {
       F.Fill_Screen_20768(0);                                         // 0x119fb..0x119fd
-      F.PCX_Init_207a0(pcxScratch);                                      // 0x11a02..0x11a07
       F.PCX_Load_20806(0x30134 /* "blank.pcx" */, pcxScratch, 1);        // 0x11a0c..0x11a1b
       F.PCX_Copy_To_Buffer_20bd7(pcxScratch, G.doubleBuffer);              // 0x11a20..0x11a2b
-      F.PCX_Delete_20b69(pcxScratch);                                    // 0x11a30..0x11a35
       await F.runSoundOptionsMenu_10cac();                                                  // 0x11a3a
       F.Fill_Screen_20768(0);                                         // 0x11a3f..0x11a41
       F.Write_Palette_2069f(0, 0xff, PAL);                            // 0x11a46..0x11a53
@@ -195,7 +188,6 @@ register(0x11659, 'runMainMenu_11659', async function runMainMenu() {
         (sprite(gunSight).y | 0) > 0x93 && (sprite(gunSight).y | 0) < 0xb5 && G.mouseButtons === 1) {
       F.dws_DPlay_1eff8(sndDoubleClick);                                     // 0x11b73..0x11b7e
       F.Fill_Screen_20768(0);                                         // 0x11b81..0x11b83
-      F.PCX_Init_207a0(pcxScratch);                                      // 0x11b88..0x11b8d
       F.PCX_Load_20806(0x3013e /* "howto.pcx" */, pcxScratch, 1);        // 0x11b92..0x11ba1
       F.PCX_Show_Buffer_20b9b(pcxScratch);                               // 0x11ba6..0x11bab
       // 0x11bb0..0x11bbe: while ([0x64fe8] == 0) updateMusic();
@@ -204,17 +196,11 @@ register(0x11659, 'runMainMenu_11659', async function runMainMenu() {
         F.updateMusic_10050();                                                // 0x11bb9
         await yieldCpu();
       }
-      F.PCX_Delete_20b69(pcxScratch);                                    // 0x11bc0..0x11bc5
       F.Fill_Screen_20768(0);                                         // 0x11bca..0x11bcc
       spaceLatch = 1;                                                          // 0x11bd1
       F.Write_Palette_2069f(0, 0xff, PAL);                            // 0x11bd8..0x11be5
     }
   }                                                                         // 0x11bea jmp 0x11784
 
-  F.PCX_Delete_20b69(mainMenuPcx);                                        // 0x11bef..0x11bf4
-  F.PCX_Delete_20b69(mainMenuPcx2);                                        // 0x11bf9..0x11bfe
-  F.PCX_Delete_20b69(mainMenuPcx3);                                        // 0x11c03..0x11c08
-  F.PCX_Delete_20b69(mainMenuPcx4);                                        // 0x11c0d..0x11c12
-  F.PCX_Delete_20b69(mainMenuPcx5);                                        // 0x11c17..0x11c1c
   stackFree(0x308);                                                         // 0x11c21 epilogue
 });

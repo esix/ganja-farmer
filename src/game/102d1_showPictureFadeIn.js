@@ -47,7 +47,6 @@ register(0x102d1, 'showPictureFadeIn_102d1', async function showPictureFadeIn(fi
   const c = stackAlloc(4); // [ebp-4..ebp-1]: color bytes at [ebp-4], [ebp-3], [ebp-2] (address passed to callees)
 
   F.Fill_Screen_20768(0); // 102f0..102f2
-  F.PCX_Init_207a0(pcxScratch); // 102f7..102fc
   F.PCX_Load_20806(file, pcxScratch, 1); // 10301..1030e
 
   // 10313..10373
@@ -140,7 +139,6 @@ register(0x102d1, 'showPictureFadeIn_102d1', async function showPictureFadeIn(fi
   }
 
   await F.Time_Delay_20404(delay); // 1064f..10652
-  F.PCX_Delete_20b69(pcxScratch); // 10657..1065c
   if (effect !== 0x34) {
     await F.Screen_Transition_21673(effect); // 10661..1066a
   }

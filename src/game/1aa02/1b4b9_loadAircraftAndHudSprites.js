@@ -17,7 +17,6 @@ export function loadAircraftAndHudSprites() {
   let j; // [ebp-8]
 
   // ---- group "cloud.pcx" ----
-  F.PCX_Init_207a0(pcxScratch);                                          // 0x1b4b9..0x1b4be
   F.PCX_Load_20806(0x30212 /* "cloud.pcx" = 63 6c 6f 75 64 2e 70 63 78 00 */, pcxScratch, 1); // 0x1b4c3..0x1b4d2
   for (i = 0; i < 0xc8; i++) {                                              // 0x1b4d7..0x1b4ed, 0x1b4e0 inc, 0x1b559 jmp
     F.Sprite_Init_20ce5(sprite(bongSmoke, i).addr, -200, -200, 0xd,
@@ -26,10 +25,8 @@ export function loadAircraftAndHudSprites() {
       F.PCX_Get_Sprite_20c12(pcxScratch, sprite(bongSmoke, i).addr, j, (j + 2) | 0, 0); // 0x1b534..0x1b552
     }
   }
-  F.PCX_Delete_20b69(pcxScratch);                                        // 0x1b55b..0x1b560
 
   // ---- group "a-10.pcx" ----
-  F.PCX_Init_207a0(pcxScratch);                                          // 0x1b565..0x1b56a
   F.PCX_Load_20806(0x3021c /* "a-10.pcx" = 61 2d 31 30 2e 70 63 78 00 */, pcxScratch, 1); // 0x1b56f..0x1b57e
   for (i = 0; i < 1; i++) {                                                 // 0x1b583..0x1b596, 0x1b58c inc, 0x1b636 jmp
     F.Sprite_Init_20ce5(sprite(a10Jets, i).addr, -500, 0xa, 0x78,
@@ -41,10 +38,8 @@ export function loadAircraftAndHudSprites() {
     sprite(a10Jets, i).counter1 = -9;                           // 0x1b614..0x1b61b (0xfffffff7)
     sprite(a10Jets, i).counter2 = 1;                            // 0x1b625..0x1b62c
   }
-  F.PCX_Delete_20b69(pcxScratch);                                        // 0x1b63b..0x1b640
 
   // ---- group "bomb.pcx" ----
-  F.PCX_Init_207a0(pcxScratch);                                          // 0x1b645..0x1b64a
   F.PCX_Load_20806(0x30225 /* "bomb.pcx" = 62 6f 6d 62 2e 70 63 78 00 */, pcxScratch, 1); // 0x1b64f..0x1b65e
   for (i = 0; i < 4; i++) {                                                 // 0x1b663..0x1b676, 0x1b66c inc, 0x1b6f1 jmp
     F.Sprite_Init_20ce5(sprite(bombs, i).addr, -100, 0, 0x10,
@@ -54,10 +49,8 @@ export function loadAircraftAndHudSprites() {
     }
     sprite(bombs, i).state = BOMB.INACTIVE;                            // 0x1b6e0..0x1b6e7
   }
-  F.PCX_Delete_20b69(pcxScratch);                                        // 0x1b6f6..0x1b6fb
 
   // ---- group "nums.pcx" (three sprite arrays, one PCX_Delete) ----
-  F.PCX_Init_207a0(pcxScratch);                                          // 0x1b700..0x1b705
   F.PCX_Load_20806(0x3022e /* "nums.pcx" = 6e 75 6d 73 2e 70 63 78 00 */, pcxScratch, 1); // 0x1b70a..0x1b719
   for (i = 0; i < 7; i++) {                                                 // 0x1b71e..0x1b731, 0x1b727 inc, 0x1b79e jmp
     // EDX = (i << 2) + 0x30 (0x1b74b..0x1b751); EAX = i*0x18c + ESI(0x44010) (0x1b754..0x1b760)
@@ -83,10 +76,8 @@ export function loadAircraftAndHudSprites() {
       F.PCX_Get_Sprite_20c12(pcxScratch, sprite(levelDigits, i).addr, j, j, 0); // 0x1b883..0x1b89e
     }
   }
-  F.PCX_Delete_20b69(pcxScratch);                                        // 0x1b8a7..0x1b8ac
 
   // ---- group "exp2.pcx" ----
-  F.PCX_Init_207a0(pcxScratch);                                          // 0x1b8b1..0x1b8b6
   F.PCX_Load_20806(0x30237 /* "exp2.pcx" = 65 78 70 32 2e 70 63 78 00 */, pcxScratch, 1); // 0x1b8bb..0x1b8ca
   for (i = 0; i < 0xd; i++) {                                               // 0x1b8cf..0x1b8e2, 0x1b8d8 inc, 0x1b99a jmp
     F.Sprite_Init_20ce5(sprite(explosions, i).addr, -50, -50, 0x2c,
@@ -99,5 +90,4 @@ export function loadAircraftAndHudSprites() {
       F.PCX_Get_Sprite_20c12(pcxScratch, sprite(explosions, i).addr, j, (j - 6) | 0, 1); // 0x1b975..0x1b993
     }
   }
-  F.PCX_Delete_20b69(pcxScratch);                                        // 0x1b99f..0x1b9a4
 }

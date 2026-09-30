@@ -38,10 +38,8 @@ register(0x1128e, 'showHighScoreScreen_1128e', async function showHighScoreScree
 
   counter = 0x12c;                                                          // 0x112a6
   done = 0;                                                                 // 0x112ad
-  F.PCX_Init_207a0(pcxScratch);                                          // 0x112b4..0x112b9
   F.PCX_Load_20806(0x300cc /* "hiscore.pcx" */, pcxScratch, 1);          // 0x112be..0x112cd
   F.PCX_Copy_To_Buffer_20bd7(pcxScratch, G.doubleBuffer);                  // 0x112d2..0x112dd
-  F.PCX_Delete_20b69(pcxScratch);                                        // 0x112e2..0x112e7
   sprite(jah).x = 0xfa;                                                       // 0x112ec
   sprite(jah).y = 0xa;                                                        // 0x112f6
   F.Behind_Sprite_Clip_2106f(jah, G.doubleBuffer);                  // 0x11300..0x1130b
