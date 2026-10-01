@@ -6,6 +6,8 @@ It runs in any modern browser, without an emulator such as DOSBox.
 You are John Parker, Rasta Soldier, with a 20 mm AA gun on top of a 1969 VW microbus. Protect your herb
 from The MAN.
 
+![Ganja Farmer: a helicopter drops paratroopers over the herb field](docs/screenshot.png)
+
 ## Play
 
 ```sh
