@@ -18,6 +18,13 @@ import { CRUISE_MISSILE, NUKE_CLOUD, WEAPON } from '../states.js';
 import { KEY, a10Jets, bombs, bongSmoke, choppers, cropDusters, cruiseMissile, dusterSpray, explosions, groundTroops, gunSight, jah, killsDigits, levelDigits, messageBox, missile, missileSmoke, missileTarget, nukeCloud, paratroopers, plants, powerupDrop, rasta, scoreDigits, statusBar, ufo, van } from '../data.js';
 import { G, keyDown, sprite } from '../access.js';
 
+// STAGE 2 CHANGE (gameplay, by request): while the left button is held, the default gun fires again every
+// DEFAULT_GUN_REPEAT_FRAMES game frames (the game loop runs at ~18 frames/s, so 3 -> ~6 shots/s, about the pace of
+// fast clicking; the automatic gun, which fires every other frame, ~9 shots/s, stays faster). A press still fires
+// at once and a release still re-arms at once.
+const DEFAULT_GUN_REPEAT_FRAMES = 3;
+let defaultGunHeldFrames = 0;
+
 export function updateGameFrame() {
   let i; // [ebp-8]
 
@@ -83,6 +90,12 @@ export function updateGameFrame() {
   if (G.currentWeapon === WEAPON.DEFAULT_GUN) {                                   // 1d769..1d770
     if (!(G.fireReady !== 0 || G.mouseButtons === 1)) {           // 1d772..1d782
       G.fireReady = 1;                                           // 1d786
+      defaultGunHeldFrames = 0;
+    } else if (G.fireReady === 0 && G.mouseButtons === 1 && ++defaultGunHeldFrames >= DEFAULT_GUN_REPEAT_FRAMES) {
+      // STAGE 2 CHANGE (gameplay, by request): holding the button repeats the default gun, so it no longer
+      // needs a click per shot. The original re-armed it only on release (above).
+      G.fireReady = 1;
+      defaultGunHeldFrames = 0;
     }
   }
 

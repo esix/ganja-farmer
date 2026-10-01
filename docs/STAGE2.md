@@ -30,6 +30,11 @@ CPU on the main menu: the tab used more than a full core before; the main thread
 
 ## Where behaviour now differs from the original
 
+- **Holding the fire button repeats the default gun** (a gameplay change, by request): about 6 shots/s while
+  held (every 3 game frames; `DEFAULT_GUN_REPEAT_FRAMES` in `src/game/1aa02/1d630_updateGameFrame.js`). In the
+  original the default gun fired once per click. Clicking still works as before, and the automatic gun (~9
+  shots/s) stays faster.
+
 - **Music** is a recording:
   - Pause/resume continues the recording mid-note. The original driver cut the notes and restarted
     them at their next event.
